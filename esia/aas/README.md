@@ -1,21 +1,14 @@
 # go-api-epgu/esia/aas
 
 OAuth2-клиент для запроса согласия и маркера доступа ЕСИА
-для получателей услуг ЕПГУ - физических лиц.
-
-Клиент поддерживает логирование HTTP-запросов и ответов и обработку ошибок 
-и может быть использован для отладки взаимодействия с ЕСИА.
+для получателей услуг ЕПГУ — физических лиц.
 
 ## Методы
 
-- [Client.AuthURI](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.AuthURI) - 
-  формирует ссылку на страницу ЕСИА для предоставления пользователем запрошенных прав
-- [Client.ParseCallback](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.ParseCallback) - 
-  возвращает код авторизации из callback-запроса к `redirect_uri`
-- [Client.TokenExchange](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.TokenExchange) - 
-  обменивает код авторизации на маркер доступа (токен)
-- [Client.TokenUpdate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.TokenUpdate) - 
-  обновляет маркер доступа по идентификатору пользователя (OID)
+- [Client.AuthURI](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.AuthURI) — формирует ссылку на страницу ЕСИА для предоставления пользователем запрошенных прав
+- [Client.ParseCallback](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.ParseCallback) — возвращает код авторизации из callback-запроса к `redirect_uri`
+- [Client.TokenExchange](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.TokenExchange) — обменивает код авторизации на маркер доступа (токен)
+- [Client.TokenUpdate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.TokenUpdate) — обновляет маркер доступа по идентификатору пользователя (OID)
 
 ## Примеры
 - [Запрос согласия пользователя и получения маркера доступа](/examples/esia-token-request/main.go)

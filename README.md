@@ -2,20 +2,12 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/ofstudio/go-api-epgu.svg)](https://pkg.go.dev/github.com/ofstudio/go-api-epgu)
 
 REST-клиент для работы с [API Госуслуг (ЕПГУ)](https://partners.gosuslugi.ru/catalog/api_for_gu) 
-и OAuth2-клиент для запроса согласия и маркера доступа ЕСИА
-для получателей услуг ЕПГУ - физических лиц.
 
-Библиотека поддерживают полное логирование запросов и ответов, а также обработку ошибок API 
-и может быть использована для отладки взаимодействия с ЕПГУ и ЕСИА.
+## Методы
 
-## REST-клиент для API Госуслуг
-
- - [Client.OrderCreate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCreate) - \
-   создание заявления
- - [Client.OrderPushChunked](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunked) -
-   загрузка архива по частям
- - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) -
-   запрос детальной информации по отправленному заявлению
+ - [Client.OrderCreate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCreate) — создание заявления
+ - [Client.OrderPushChunked](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunked) — загрузка архива по частям
+ - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) — запрос детальной информации по отправленному заявлению
 
 ## Запрос согласия пользователя и получение маркера доступа ЕСИА
 
