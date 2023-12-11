@@ -6,16 +6,23 @@ import (
 	"fmt"
 )
 
+// PushAttachment - файл вложения к создаваемому заявлению (см [PushArchive])
 type PushAttachment struct {
-	Filename string
-	Data     []byte
+	Filename string // Имя файла с расширением. Пример: "req_346ee59c-a428-42f6-342e-c780dd2e278e.xml"
+	Data     []byte // Содержимое файла
 }
 
+// PushArchive - архив вложений к создаваемому заявлению.
+// Используется для методов [Client.OrderPush] и [Client.OrderPushChunked].
 type PushArchive struct {
-	Name  string
-	Files []PushAttachment
+	Name  string           // Имя архива (без расширения). Пример: "35002123456-archive"
+	Files []PushAttachment // Файлы вложений
 }
 
+// Zip - формирует zip-архив из файлов вложений.
+//
+// В случае успеха возвращает байты архива.
+// В случае ошибки возвращает [ErrZipCreate], [ErrZipWrite] или [ErrZipClose].
 func (a *PushArchive) Zip() ([]byte, error) {
 	if len(a.Files) == 0 {
 		return nil, ErrNoFiles

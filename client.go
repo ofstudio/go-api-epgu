@@ -12,11 +12,12 @@ import (
 	"github.com/ofstudio/go-api-epgu/utils"
 )
 
-// DefaultChunkSize - размер чанка по умолчанию для метода [Client.PushChunked].
+// DefaultChunkSize - размер чанка по умолчанию для метода [Client.OrderPushChunked].
 // Если размер архива вложения будет больше, то метод отправит архив несколькими запросами.
 // Значение можно изменить с помощью [Client.WithChunkSize].
 //
-// Подробнее см. "Спецификация API ЕПГУ", раздел "Отправка заявления (загрузка архива по частям)"
+// Подробнее см. "Спецификация API ЕПГУ версия 1.12",
+// раздел "2.1.3 Отправка заявления (загрузка архива по частям)".
 const DefaultChunkSize = 5_000_000
 
 // Client - REST-клиент для API Госуслуг.
@@ -37,6 +38,7 @@ func NewClient(baseURI string) *Client {
 	}
 }
 
+// WithDebug - включает логирование HTTP-запросов и ответов к ЕПГУ.
 func (c *Client) WithDebug(logger utils.Logger) *Client {
 	if c == nil {
 		return nil
@@ -46,6 +48,7 @@ func (c *Client) WithDebug(logger utils.Logger) *Client {
 	return c
 }
 
+// WithHTTPClient - устанавливает http-клиент для запросов к ЕПГУ.
 func (c *Client) WithHTTPClient(httpClient *http.Client) *Client {
 	if c != nil && httpClient != nil {
 		c.httpClient = httpClient
@@ -53,6 +56,11 @@ func (c *Client) WithHTTPClient(httpClient *http.Client) *Client {
 	return c
 }
 
+// WithChunkSize устанавливает максимальный размер чанка для метода [Client.OrderPushChunked].
+// По умолчанию используется [DefaultChunkSize].
+//
+// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// раздел "2.1.3 Отправка заявления (загрузка архива по частям)"
 func (c *Client) WithChunkSize(n int) *Client {
 	if c != nil && n > 0 {
 		c.chunkSize = n
@@ -60,14 +68,19 @@ func (c *Client) WithChunkSize(n int) *Client {
 	return c
 }
 
-// OrderCreate - создание заявления
+// OrderCreate - создание заявления.
 //
 //	POST /api/gusmev/order
 //
-// Этот метод необходимо использовать только в случае, если по ВС предусмотрено
-// внесение данных о номере заявления ЕПГУ в XML запроса.
+// Подробнее см. "Спецификация API ЕПГУ версия 1.12",
+// раздел "2.1.2 Создание заявления".
 //
-// todo Возвращаемые ошибки
+// В случае успеха возвращает номер созданного заявления.
+// В случае ошибки возвращает цепочку из [ErrOrderCreate] и следующих возможных ошибок:
+//   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
+//   - [ErrUnmarshal] - ошибка разбора ответа
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
+//   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 	req, err := http.NewRequest(http.MethodPost, c.baseURI+"/api/gusmev/order", bytes.NewReader(meta.JSON()))
 	if err != nil {
@@ -103,55 +116,20 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 	return orderResponse.OrderId, nil
 }
 
-func (c *Client) OrderInfo(token string, orderId int) (*dto.OrderInfoResponse, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/gusmev/order/%d", c.baseURI, orderId), nil)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrRequestPrepare, err)
-	}
-	req.Header.Set("Content-Type", "application/JSON; charset=utf-8")
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	c.logReq(req)
-
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrRequestCall, err)
-	}
-
-	c.logRes(res)
-
-	// todo 204 code
-	if res.StatusCode >= 400 {
-		return nil, fmt.Errorf("%w: %w", ErrOrderInfo, responseError(res))
-	}
-
-	orderInfoRes := &dto.OrderInfoResponse{}
-	//goland:noinspection ALL
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrResponseRead, err)
-	}
-	if err = json.Unmarshal(body, orderInfoRes); err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrUnmarshal, err)
-	}
-
-	return orderInfoRes, nil
-
-}
-
-// PushChunked - загрузка архива по частям
+// OrderPushChunked - загрузка архива по частям
 //
 //	POST /api/gusmev/push/chunked
 //
-// Этот метод необходимо использовать только в случае, если по ВС
-// предусмотрено внесение данных о номере заявления ЕПГУ в XML запроса
-// или размер загружаемого zip архива более 5Мб.
+// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// раздел "2.1.3 Отправка заявления (загрузка архива по частям)"
 //
-// Подробнее см. "Спецификация API ЕПГУ", раздел "Отправка заявления (загрузка архива по частям)"
-//
-// todo Возвращаемые ошибки
-func (c *Client) PushChunked(token string, id int, meta OrderMeta, archive PushArchive) error {
+// В случае ошибки возвращает цепочку из [ErrPushChunked] и следующих возможных ошибок:
+//   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
+//   - [ErrMultipartBodyPrepare] - ошибка подготовки multipart-содержимого
+//   - [ErrZipCreate], [ErrZipWrite], [ErrZipClose] - ошибки формирования zip-архива
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
+//   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
+func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive PushArchive) error {
 	zip, err := archive.Zip()
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrPushChunked, err)
@@ -203,6 +181,7 @@ func (c *Client) PushChunked(token string, id int, meta OrderMeta, archive PushA
 
 		c.logRes(res)
 
+		// todo 204 code
 		if res.StatusCode >= 400 {
 			return fmt.Errorf("%w: %w", ErrPushChunked, responseError(res))
 		}
@@ -211,12 +190,52 @@ func (c *Client) PushChunked(token string, id int, meta OrderMeta, archive PushA
 	return nil
 }
 
-//// OrderCreate - POST /api/gusmev/push
-//func (c *Client) Push() {
-//	panic("not implemented")
-//}
+// OrderInfo - запрос детальной информации по отправленному заявлению.
 //
-//// OrderGet - POST /api/gusmev/order/{orderId}
-//func (c *Client) OrderGet() {
-//	panic("not implemented")
-//}
+//	POST /api/gusmev/order/{orderId}
+//
+// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// раздел "2.4. Получение деталей по заявлению".
+//
+// В случае успеха возвращает детальную информацию по заявлению.
+// В случае ошибки возвращает цепочку из ErrOrderInfo и  и следующих возможных ошибок:
+//   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
+//   - [ErrUnmarshal] - ошибка разбора ответа
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
+//   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
+func (c *Client) OrderInfo(token string, orderId int) (*dto.OrderInfoResponse, error) {
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/gusmev/order/%d", c.baseURI, orderId), nil)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrRequestPrepare, err)
+	}
+	req.Header.Set("Content-Type", "application/JSON; charset=utf-8")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	c.logReq(req)
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrRequestCall, err)
+	}
+
+	c.logRes(res)
+
+	// todo 204 code
+	if res.StatusCode >= 400 {
+		return nil, fmt.Errorf("%w: %w", ErrOrderInfo, responseError(res))
+	}
+
+	orderInfoRes := &dto.OrderInfoResponse{}
+	//goland:noinspection ALL
+	defer res.Body.Close()
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrResponseRead, err)
+	}
+	if err = json.Unmarshal(body, orderInfoRes); err != nil {
+		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrUnmarshal, err)
+	}
+
+	return orderInfoRes, nil
+
+}

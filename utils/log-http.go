@@ -8,10 +8,12 @@ import (
 	"strings"
 )
 
+// Logger - интерфейс для логирования HTTP-запросов и ответов.
 type Logger interface {
 	Print(...any)
 }
 
+// LogReq логирует HTTP-запрос.
 func LogReq(req *http.Request, logger Logger) {
 	if logger == nil {
 		return
@@ -20,6 +22,7 @@ func LogReq(req *http.Request, logger Logger) {
 	logger.Print(">>> Request to ", req.URL.String(), "\n", sanitize(string(dump)), "\n\n")
 }
 
+// LogRes логирует HTTP-запрос.
 func LogRes(res *http.Response, logger Logger) {
 	if logger == nil {
 		return

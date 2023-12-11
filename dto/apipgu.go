@@ -1,16 +1,42 @@
 package dto
 
+// ErrorResponse - ответ API ЕПГУ при ошибке
+//
+// Подробнее см. "Спецификация API ЕПГУ версия 1.12",
+// "Приложение 4. Ошибки, возвращаемые при запросах к API ЕПГУ"
+//
+// Пример JSON-ответа при ошибке:
+//
+//	{
+//	  "code": "order_access",
+//	  "message": "У пользователя нет прав для работы с текущим заявлением"
+//	}
 type ErrorResponse struct {
-	Code    string `JSON:"code"`
-	Message string `JSON:"message"`
+	Code    string `JSON:"code"`    // Код ошибки
+	Message string `JSON:"message"` // Сообщение об ошибке
 }
 
+// OrderIdResponse - ответ API ЕПГУ с номером созданного заявления.
 type OrderIdResponse struct {
 	OrderId int `JSON:"orderId"`
 }
 
+// OrderInfoResponse - ответ API ЕПГУ с детальной информацией по отправленному заявлению.
+//
+// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// раздел "2.4. Получение деталей по заявлению".
+//
+// Пример для заявления "Доставка пенсии и социальных выплат СФР" (10000000109):
+//
+//	{
+//	  "code": "OK",
+//	  "message": null,
+//	  "messageId": "2252fb21-92f8-61ee-a6f0-7ed53c117861",
+//	  "order": "{...}"
+//	}
 type OrderInfoResponse struct {
-	Code    string `JSON:"code"`
-	Message string `JSON:"message"`
-	Order   string `JSON:"order"`
+	Code      string `JSON:"code"`      // Код состояния заявления в соответствии с Приложением 1 Спецификации
+	Message   string `JSON:"message"`   // Текстовое сообщение, описывающее текущее состояние запроса на создание заявления
+	MessageId string `json:"messageId"` // [Не документировано, GUID]
+	Order     string `JSON:"order"`     // В случае, если заявление уже создано на портале и отправлено в ведомство, параметр содержит строку в виде экранированного JSON-объекта
 }
