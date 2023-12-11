@@ -18,13 +18,13 @@ import "github.com/ofstudio/go-api-epgu/dto"
 //	  "order": {...}
 //	}
 type OrderInfo struct {
-	Code      string // Код состояния заявления в соответствии с Приложением 1 Спецификации
-	Message   string // Текстовое сообщение, описывающее текущее состояние запроса на создание заявления
-	MessageId string // [Не документировано, GUID]
-	Order     *Order // Детали заявления, если оно уже создано на портале и отправлено в ведомство
+	Code      string        // Код состояния заявления в соответствии с Приложением 1 Спецификации
+	Message   string        // Текстовое сообщение, описывающее текущее состояние запроса на создание заявления
+	MessageId string        // [Не документировано, GUID]
+	Order     *OrderDetails // Детали заявления, если оно уже создано на портале и отправлено в ведомство
 }
 
-// Order - детальная информация по заявлению (см  [OrderInfo]).
+// OrderDetails - детальная информация по заявлению (см  [OrderInfo]).
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 //
@@ -346,7 +346,7 @@ type OrderDetails struct {
 
 }
 
-// OrderStatus - статусы заявления структуры [Order]
+// OrderStatus - статусы заявления структуры [OrderDetails]
 type OrderStatus struct {
 
 	// Основные аттрибуты
@@ -375,7 +375,7 @@ type OrderStatus struct {
 
 }
 
-// OrderStatusHistory - история статуса заявления структуры [Order].
+// OrderStatusHistory - история статуса заявления структуры [OrderDetails].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 type OrderStatusHistory struct {
@@ -405,7 +405,7 @@ type OrderStatusHistory struct {
 
 }
 
-// OrderAttachmentFile - файл заявления, отправленный пользователем из структуры [Order].
+// OrderAttachmentFile - файл заявления, отправленный пользователем из структуры [OrderDetails].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 type OrderAttachmentFile struct {
@@ -423,7 +423,7 @@ type OrderAttachmentFile struct {
 	Type     string `json:"type"`     // Тип
 }
 
-// OrderResponseFile - информация о файле в ответе заявления из структуры [Order].
+// OrderResponseFile - информация о файле в ответе заявления из структуры [OrderDetails].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 type OrderResponseFile struct {
@@ -442,7 +442,7 @@ type OrderResponseFile struct {
 	FileSize       int    `json:"fileSize"`       // Размер файла
 }
 
-// OrderAttributeEvent - атрибуты событий для заявления из структуры [Order].
+// OrderAttributeEvent - атрибуты событий для заявления из структуры [OrderDetails].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 type OrderAttributeEvent struct {
@@ -451,7 +451,7 @@ type OrderAttributeEvent struct {
 	OldValue string `json:"oldValue"` // Старое значение
 }
 
-// OrderQrlink - не документированное поле (см [Order]).
+// OrderQrlink - не документированное поле (см [OrderDetails]).
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 type OrderQrlink struct {
