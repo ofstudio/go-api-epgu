@@ -10,8 +10,8 @@
 //
 // # Примеры
 //
-//   - [examples/esia-token-request] - запрос согласия пользователя и получения маркера доступа
-//   - [examples/esia-token-update] - обновление маркера доступа
+//   - [github.com/ofstudio/go-api-epgu/examples/esia-token-request] - запрос согласия пользователя и получения маркера доступа
+//   - [github.com/ofstudio/go-api-epgu/examples/esia-token-update] - обновление маркера доступа
 //
 // # Требования
 //  1. Информационная система (ИС) должна быть зарегистрирована на
