@@ -245,7 +245,7 @@ type OrderDetails struct {
 	Id                   int                   `json:"id"`                   // Номер заявления
 	OrderStatusId        int                   `json:"orderStatusId"`        // Код статуса заявления
 	Statuses             []OrderStatus         `json:"statuses"`             // Статусы заявления
-	CurrentStatusHistory []OrderStatusHistory  `json:"currentStatusHistory"` // История статуса
+	CurrentStatusHistory OrderStatusHistory    `json:"currentStatusHistory"` // История статуса
 	Updated              dto.Time              `json:"updated"`              // Дата и время обновления статуса заявления
 	Closed               bool                  `json:"closed"`               // Флаг наличия финального статуса
 	HasResult            bool                  `json:"hasResult"`            // Флаг передачи файла в ответ на заявление
