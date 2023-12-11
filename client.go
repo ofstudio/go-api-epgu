@@ -96,7 +96,7 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 	return orderIdResponse.OrderId, nil
 }
 
-// OrderPushChunked - загрузка архива по частям
+// OrderPushChunked - загрузка архива по частям.
 //
 //	POST /api/gusmev/push/chunked
 //

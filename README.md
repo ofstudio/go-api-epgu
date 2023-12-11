@@ -10,7 +10,12 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
 
 ## REST-клиент для API Госуслуг
 
-_В процессе разработки..._
+ - [Client.OrderCreate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCreate) - \
+   создание заявления
+ - [Client.OrderPushChunked](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunked) -
+   загрузка архива по частям
+ - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) -
+   запрос детальной информации по отправленному заявлению
 
 ## Запрос согласия пользователя и получение маркера доступа ЕСИА
 
