@@ -30,6 +30,7 @@ var (
 	ErrZipCreate             = errors.New("ошибка создания файла в zip-архиве")
 	ErrZipWrite              = errors.New("ошибка записи файла в zip-архив")
 	ErrZipClose              = errors.New("ошибка закрытия zip-архива")
+	ErrGUID                  = errors.New("не удалось сгенерировать GUID")
 )
 
 // # HTTP-ошибки

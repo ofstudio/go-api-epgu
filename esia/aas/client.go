@@ -10,8 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/ofstudio/go-api-epgu/esia/signature"
 	"github.com/ofstudio/go-api-epgu/utils"
 )
@@ -95,7 +93,7 @@ func (c *Client) AuthURI(scope, redirectURI string, permissions Permissions) (st
 	timestamp := time.Now().UTC().Format(tsLayout)
 	state, err := guid()
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrAuthURI, err)
+		return "", fmt.Errorf("%w: %w: %w", ErrAuthURI, ErrGUID, err)
 	}
 	clientSecret, err := c.sign(c.clientId, scope, timestamp, state, redirectURI)
 	if err != nil {
@@ -160,7 +158,7 @@ func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeR
 	timestamp := time.Now().UTC().Format(tsLayout)
 	state, err := guid()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrTokenExchange, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrGUID, err)
 	}
 	clientSecret, err := c.sign(c.clientId, scope, timestamp, state, redirectURI, code)
 	if err != nil {
@@ -225,7 +223,7 @@ func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, e
 	scope := "prm_chg?oid=" + oid
 	state, err := guid()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrTokenUpdate, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrGUID, err)
 	}
 	clientSecret, err := c.sign(c.clientId, scope, timestamp, state, redirectURI)
 	if err != nil {
@@ -301,12 +299,4 @@ func (c *Client) logRes(res *http.Response) {
 	}
 }
 
-var guid = guidFunc
-
-func guidFunc() (string, error) {
-	guid, err := uuid.NewRandom()
-	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrGUID, err)
-	}
-	return guid.String(), nil
-}
+var guid = utils.GUID

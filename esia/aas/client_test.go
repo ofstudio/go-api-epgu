@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/ofstudio/go-api-epgu/esia/signature"
+	"github.com/ofstudio/go-api-epgu/utils"
 )
 
 type suiteTestClient struct {
@@ -27,7 +28,7 @@ func (suite *suiteTestClient) SetupTest() {
 }
 
 func (suite *suiteTestClient) TearDownSubTest() {
-	guid = guidFunc
+	guid = utils.GUID
 	gock.Off()
 }
 
