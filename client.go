@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"mime/multipart"
 	"net/http"
 
@@ -82,38 +81,19 @@ func (c *Client) WithChunkSize(n int) *Client {
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
-	req, err := http.NewRequest(http.MethodPost, c.baseURI+"/api/gusmev/order", bytes.NewReader(meta.JSON()))
-	if err != nil {
-		return 0, fmt.Errorf("%w: %w: %w", ErrOrderCreate, ErrRequestPrepare, err)
-	}
-	req.Header.Set("Content-Type", "application/JSON; charset=utf-8")
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	c.logReq(req)
-
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return 0, fmt.Errorf("%w: %w: %w", ErrOrderCreate, ErrRequestCall, err)
+	orderIdResponse := &dto.OrderIdResponse{}
+	if err := c.request(
+		http.MethodPost,
+		"/api/gusmev/order",
+		"application/JSON; charset=utf-8",
+		token,
+		bytes.NewReader(meta.JSON()),
+		orderIdResponse,
+	); err != nil {
+		return 0, fmt.Errorf("%w: %w", ErrOrderCreate, err)
 	}
 
-	c.logRes(res)
-
-	if res.StatusCode >= 400 {
-		return 0, fmt.Errorf("%w: %w", ErrOrderCreate, responseError(res))
-	}
-
-	var orderResponse dto.OrderIdResponse
-	//goland:noinspection ALL
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return 0, fmt.Errorf("%w: %w: %w", ErrOrderCreate, ErrResponseRead, err)
-	}
-	if err = json.Unmarshal(body, &orderResponse); err != nil {
-		return 0, fmt.Errorf("%w: %w: %w", ErrOrderCreate, ErrUnmarshal, err)
-	}
-
-	return orderResponse.OrderId, nil
+	return orderIdResponse.OrderId, nil
 }
 
 // OrderPushChunked - загрузка архива по частям
@@ -165,25 +145,16 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 		}
 
 		// make request
-		req, err := http.NewRequest(http.MethodPost, c.baseURI+"/api/gusmev/push/chunked", body)
-		if err != nil {
-			return fmt.Errorf("%w: %w: %w", ErrPushChunked, ErrRequestPrepare, err)
-		}
-		req.Header.Set("Content-Type", "multipart/form-data; boundary="+w.Boundary())
-		req.Header.Set("Authorization", "Bearer "+token)
-
-		c.logReq(req)
-
-		res, err := c.httpClient.Do(req)
-		if err != nil {
-			return fmt.Errorf("%w: %w: %w", ErrPushChunked, ErrRequestCall, err)
-		}
-
-		c.logRes(res)
-
-		// todo 204 code
-		if res.StatusCode >= 400 {
-			return fmt.Errorf("%w: %w", ErrPushChunked, responseError(res))
+		orderIdResponse := &dto.OrderIdResponse{}
+		if err = c.request(
+			http.MethodPost,
+			"/api/gusmev/push/chunked",
+			"multipart/form-data; boundary="+w.Boundary(),
+			token,
+			body,
+			orderIdResponse,
+		); err != nil {
+			return fmt.Errorf("%w: %w", ErrPushChunked, err)
 		}
 	}
 
@@ -203,39 +174,33 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 //   - [ErrUnmarshal] - ошибка разбора ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
-func (c *Client) OrderInfo(token string, orderId int) (*dto.OrderInfoResponse, error) {
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/api/gusmev/order/%d", c.baseURI, orderId), nil)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrRequestPrepare, err)
-	}
-	req.Header.Set("Content-Type", "application/JSON; charset=utf-8")
-	req.Header.Set("Authorization", "Bearer "+token)
+func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 
-	c.logReq(req)
-
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrRequestCall, err)
-	}
-
-	c.logRes(res)
-
-	// todo 204 code
-	if res.StatusCode >= 400 {
-		return nil, fmt.Errorf("%w: %w", ErrOrderInfo, responseError(res))
+	orderInfoResponse := &dto.OrderInfoResponse{}
+	if err := c.request(
+		http.MethodPost,
+		fmt.Sprintf("/api/gusmev/order/%d", orderId),
+		"",
+		token,
+		nil,
+		orderInfoResponse,
+	); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrOrderInfo, err)
 	}
 
-	orderInfoRes := &dto.OrderInfoResponse{}
-	//goland:noinspection ALL
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrResponseRead, err)
-	}
-	if err = json.Unmarshal(body, orderInfoRes); err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrUnmarshal, err)
+	orderInfo := &OrderInfo{
+		Code:      orderInfoResponse.Code,
+		Message:   orderInfoResponse.Message,
+		MessageId: orderInfoResponse.MessageId,
 	}
 
-	return orderInfoRes, nil
+	// unmarshal order field
+	if orderInfoResponse.Order != "" {
+		orderInfo.Order = &OrderDetails{}
+		if err := json.Unmarshal([]byte(orderInfoResponse.Order), orderInfo.Order); err != nil {
+			return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrUnmarshal, err)
+		}
+	}
 
+	return orderInfo, nil
 }
