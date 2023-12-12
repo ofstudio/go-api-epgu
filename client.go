@@ -104,12 +104,16 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 // раздел "2.1.3 Отправка заявления (загрузка архива по частям)"
 //
 // В случае ошибки возвращает цепочку из [ErrPushChunked] и следующих возможных ошибок:
+//   - [ErrNilArchive] - не передан архив
 //   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
 //   - [ErrMultipartBodyPrepare] - ошибка подготовки multipart-содержимого
 //   - [ErrZipCreate], [ErrZipWrite], [ErrZipClose] - ошибки формирования zip-архива
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
-func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive PushArchive) error {
+func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive *Archive) error {
+	if archive == nil {
+		return fmt.Errorf("%w: %w", ErrPushChunked, ErrNilArchive)
+	}
 	zip, err := archive.Zip()
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrPushChunked, err)
@@ -159,6 +163,55 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 	}
 
 	return nil
+}
+
+// OrderPush - формирование заявления единым методом
+//
+//	POST /api/gusmev/push
+//
+// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// раздел "2.1.4 Формирование заявления единым методом"
+//
+// В случае успеха возвращает номер созданного заявления.
+// В случае ошибки возвращает цепочку из [ErrPush] и следующих возможных ошибок:
+//   - [ErrNilArchive] - не передан архив
+//   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
+//   - [ErrMultipartBodyPrepare] - ошибка подготовки multipart-содержимого
+//   - [ErrZipCreate], [ErrZipWrite], [ErrZipClose] - ошибки формирования zip-архива
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
+//   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
+func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int, error) {
+	if archive == nil {
+		return 0, fmt.Errorf("%w: %w", ErrPush, ErrNilArchive)
+	}
+	zip, err := archive.Zip()
+	if err != nil {
+		return 0, fmt.Errorf("%w: %w", ErrPush, err)
+	}
+
+	body := &bytes.Buffer{}
+	w := multipart.NewWriter(body)
+	if err = multipartBodyPrepare(
+		w,
+		withMeta(meta),
+		withFile(archive.Name+".zip", zip),
+	); err != nil {
+		return 0, fmt.Errorf("%w: %w", ErrPush, err)
+	}
+
+	orderIdResponse := &dto.OrderIdResponse{}
+	if err = c.request(
+		http.MethodPost,
+		"/api/gusmev/push",
+		"multipart/form-data; boundary="+w.Boundary(),
+		token,
+		body,
+		orderIdResponse,
+	); err != nil {
+		return 0, fmt.Errorf("%w: %w", ErrPush, err)
+	}
+
+	return orderIdResponse.OrderId, nil
 }
 
 // OrderInfo - запрос детальной информации по отправленному заявлению.
