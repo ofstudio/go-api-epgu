@@ -25,7 +25,7 @@ var (
 	ErrRequestCall           = errors.New("ошибка вызова запроса")
 	ErrResponseRead          = errors.New("ошибка чтения ответа")
 	ErrUnexpectedContentType = errors.New("неожиданный тип содержимого")
-	ErrUnmarshal             = errors.New("ошибка чтения JSON")
+	ErrJSONUnmarshal         = errors.New("ошибка чтения JSON")
 	ErrNoFiles               = errors.New("нет файлов во вложении")
 	ErrZipCreate             = errors.New("ошибка создания файла в zip-архиве")
 	ErrZipWrite              = errors.New("ошибка записи файла в zip-архив")
@@ -174,7 +174,7 @@ func jsonError(body []byte) error {
 	errorRes := &dto.ErrorResponse{}
 	err := json.Unmarshal(body, errorRes)
 	if err != nil {
-		return fmt.Errorf("%w: %w", ErrUnmarshal, err)
+		return fmt.Errorf("%w: %w", ErrJSONUnmarshal, err)
 	}
 
 	switch errorRes.Code {

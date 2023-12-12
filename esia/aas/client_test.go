@@ -202,7 +202,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 
 		token, err := suite.client.TokenExchange("test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
-		suite.ErrorIs(err, ErrUnmarshal)
+		suite.ErrorIs(err, ErrJSONUnmarshal)
 		suite.Nil(token)
 	})
 
@@ -309,7 +309,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 
 		token, err := suite.client.TokenUpdate("test", "test")
 		suite.ErrorIs(err, ErrTokenUpdate)
-		suite.ErrorIs(err, ErrUnmarshal)
+		suite.ErrorIs(err, ErrJSONUnmarshal)
 		suite.Nil(token)
 	})
 

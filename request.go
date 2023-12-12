@@ -48,7 +48,7 @@ func (c *Client) request(
 		return fmt.Errorf("%w: %w", ErrResponseRead, err)
 	}
 	if err = json.Unmarshal(resBody, result); err != nil {
-		return fmt.Errorf("%w: %w", ErrUnmarshal, err)
+		return fmt.Errorf("%w: %w", ErrJSONUnmarshal, err)
 	}
 
 	return nil

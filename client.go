@@ -77,7 +77,7 @@ func (c *Client) WithChunkSize(n int) *Client {
 // В случае успеха возвращает номер созданного заявления.
 // В случае ошибки возвращает цепочку из [ErrOrderCreate] и следующих возможных ошибок:
 //   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
-//   - [ErrUnmarshal] - ошибка разбора ответа
+//   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
@@ -171,7 +171,7 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 // В случае успеха возвращает детальную информацию по заявлению.
 // В случае ошибки возвращает цепочку из ErrOrderInfo и  и следующих возможных ошибок:
 //   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
-//   - [ErrUnmarshal] - ошибка разбора ответа
+//   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
@@ -198,7 +198,7 @@ func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 	if orderInfoResponse.Order != "" {
 		orderInfo.Order = &OrderDetails{}
 		if err := json.Unmarshal([]byte(orderInfoResponse.Order), orderInfo.Order); err != nil {
-			return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrUnmarshal, err)
+			return nil, fmt.Errorf("%w: %w: %w", ErrOrderInfo, ErrJSONUnmarshal, err)
 		}
 	}
 

@@ -148,7 +148,7 @@ func (c *Client) ParseCallback(query url.Values) (string, string, error) {
 //   - [ErrRequestPrepare] - ошибка подготовки запроса
 //   - [ErrRequestCall] - ошибка вызова запроса
 //   - [ErrResponseRead] - ошибка чтения ответа
-//   - [ErrUnmarshal] - ошибка разбора ответа
+//   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - [ErrUnexpectedContentType] - неожидаемый Content-Type ответа
 //   - ошибок ЕСИА ErrESIA_xxxxxx ([ErrESIA_007004] и др.)
 //
@@ -205,7 +205,7 @@ func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeR
 
 	result := &TokenExchangeResponse{}
 	if err = json.Unmarshal(body, result); err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrUnmarshal, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrJSONUnmarshal, err)
 	}
 
 	return result, nil
@@ -269,7 +269,7 @@ func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, e
 
 	result := &TokenExchangeResponse{}
 	if err = json.Unmarshal(body, result); err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrUnmarshal, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrJSONUnmarshal, err)
 	}
 
 	return result, nil
