@@ -145,9 +145,7 @@ func (c *Client) ParseCallback(query url.Values) (string, string, error) {
 // Возвращает ответ от ЕСИА [TokenExchangeResponse] либо цепочку ошибок из [ErrTokenExchange] и других:
 //   - [ErrSign] - ошибка подписи запроса
 //   - [ErrGUID] - при невозможности сформировать GUID
-//   - [ErrRequestPrepare] - ошибка подготовки запроса
-//   - [ErrRequestCall] - ошибка вызова запроса
-//   - [ErrResponseRead] - ошибка чтения ответа
+//   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - [ErrUnexpectedContentType] - неожидаемый Content-Type ответа
 //   - ошибок ЕСИА ErrESIA_xxxxxx ([ErrESIA_007004] и др.)
@@ -179,7 +177,7 @@ func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeR
 
 	req, err := http.NewRequest(http.MethodPost, c.baseURI+TokenEndpoint, strings.NewReader(reqBody.Encode()))
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrRequestPrepare, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrRequest, err)
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -187,7 +185,7 @@ func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeR
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrRequestCall, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrRequest, err)
 	}
 
 	c.logRes(res)
@@ -200,7 +198,7 @@ func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeR
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrResponseRead, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrRequest, err)
 	}
 
 	result := &TokenExchangeResponse{}
@@ -243,7 +241,7 @@ func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, e
 
 	req, err := http.NewRequest(http.MethodPost, c.baseURI+TokenEndpoint, strings.NewReader(reqBody.Encode()))
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrRequestPrepare, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrRequest, err)
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
@@ -251,7 +249,7 @@ func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, e
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrRequestCall, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrRequest, err)
 	}
 
 	c.logRes(res)
@@ -264,7 +262,7 @@ func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, e
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrResponseRead, err)
+		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrRequest, err)
 	}
 
 	result := &TokenExchangeResponse{}

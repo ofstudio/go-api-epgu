@@ -17,21 +17,19 @@ var (
 	ErrPushChunked = errors.New("ошибка OrderPushChunked")
 	ErrPush        = errors.New("ошибка OrderPush")
 	ErrOrderInfo   = errors.New("ошибка OrderInfo ")
+	ErrService     = errors.New("ошибка услуги")
 )
 
 // # Ошибки второго уровня
 var (
-	ErrMultipartBodyPrepare  = errors.New("ошибка подготовки multipart-содержимого")
-	ErrRequestPrepare        = errors.New("ошибка подготовки запроса")
-	ErrRequestCall           = errors.New("ошибка вызова запроса")
-	ErrResponseRead          = errors.New("ошибка чтения ответа")
+	ErrMultipartBody         = errors.New("ошибка подготовки multipart-содержимого")
+	ErrRequest               = errors.New("ошибка HTTP-запроса")
 	ErrUnexpectedContentType = errors.New("неожиданный тип содержимого")
 	ErrJSONUnmarshal         = errors.New("ошибка чтения JSON")
 	ErrNoFiles               = errors.New("нет файлов во вложении")
-	ErrZipCreate             = errors.New("ошибка создания файла в zip-архиве")
-	ErrZipWrite              = errors.New("ошибка записи файла в zip-архив")
-	ErrZipClose              = errors.New("ошибка закрытия zip-архива")
+	ErrZip                   = errors.New("ошибка создания zip-архива")
 	ErrGUID                  = errors.New("не удалось сгенерировать GUID")
+	ErrXMLMarshal            = errors.New("ошибка создания XML")
 	ErrNilArchive            = errors.New("не передан архив")
 )
 
@@ -159,7 +157,7 @@ func httpStatusError(statusCode int) error {
 func bodyError(res *http.Response) error {
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return fmt.Errorf("%w: %w", ErrResponseRead, err)
+		return fmt.Errorf("%w: %w", ErrRequest, err)
 	}
 	ct := res.Header.Get("Content-Type")
 	switch {

@@ -23,9 +23,7 @@ var (
 	ErrNoState               = errors.New("отсутствует поле state")
 	ErrGUID                  = errors.New("не удалось сгенерировать GUID")
 	ErrSign                  = errors.New("ошибка подписания")
-	ErrRequestPrepare        = errors.New("ошибка подготовки запроса")
-	ErrRequestCall           = errors.New("ошибка вызова запроса")
-	ErrResponseRead          = errors.New("ошибка чтения ответа")
+	ErrRequest               = errors.New("ошибка HTTP-запроса")
 	ErrJSONUnmarshal         = errors.New("ошибка чтения JSON")
 	ErrUnexpectedContentType = errors.New("неожиданный тип содержимого")
 )
@@ -178,7 +176,7 @@ func bodyError(res *http.Response) error {
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return fmt.Errorf("%w: %w", ErrResponseRead, err)
+		return fmt.Errorf("%w: %w", ErrRequest, err)
 	}
 	ct := res.Header.Get("Content-Type")
 	switch {

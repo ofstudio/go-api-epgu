@@ -20,7 +20,7 @@ type Archive struct {
 }
 
 // NewArchive - создает архив из файлов вложений.
-// В случае ошибки возвращает [ErrZipCreate], [ErrZipWrite] или [ErrZipClose].
+// В случае ошибки возвращает [ErrZip].
 func NewArchive(name string, files ...File) (*Archive, error) {
 	if len(files) == 0 {
 		return nil, ErrNoFiles
@@ -31,15 +31,15 @@ func NewArchive(name string, files ...File) (*Archive, error) {
 	for _, file := range files {
 		fileWriter, err := zipWriter.Create(file.Filename)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %w", ErrZipCreate, err)
+			return nil, fmt.Errorf("%w: %w", ErrZip, err)
 		}
 		if _, err = fileWriter.Write(file.Data); err != nil {
-			return nil, fmt.Errorf("%w: %w", ErrZipWrite, err)
+			return nil, fmt.Errorf("%w: %w", ErrZip, err)
 		}
 	}
 
 	if err := zipWriter.Close(); err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrZipClose, err)
+		return nil, fmt.Errorf("%w: %w", ErrZip, err)
 	}
 
 	return &Archive{

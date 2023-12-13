@@ -76,7 +76,7 @@ func (c *Client) WithChunkSize(n int) *Client {
 //
 // В случае успеха возвращает номер созданного заявления.
 // В случае ошибки возвращает цепочку из [ErrOrderCreate] и следующих возможных ошибок:
-//   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
+//   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
@@ -105,9 +105,8 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 //
 // В случае ошибки возвращает цепочку из [ErrPushChunked] и следующих возможных ошибок:
 //   - [ErrNilArchive] - не передан архив
-//   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
-//   - [ErrMultipartBodyPrepare] - ошибка подготовки multipart-содержимого
-//   - [ErrZipCreate], [ErrZipWrite], [ErrZipClose] - ошибки формирования zip-архива
+//   - [ErrRequest] - ошибка HTTP-запроса
+//   - [ErrMultipartBody] - ошибка подготовки multipart-содержимого
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive *Archive) error {
@@ -172,9 +171,8 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 // В случае успеха возвращает номер созданного заявления.
 // В случае ошибки возвращает цепочку из [ErrPush] и следующих возможных ошибок:
 //   - [ErrNilArchive] - не передан архив
-//   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
-//   - [ErrMultipartBodyPrepare] - ошибка подготовки multipart-содержимого
-//   - [ErrZipCreate], [ErrZipWrite], [ErrZipClose] - ошибки формирования zip-архива
+//   - [ErrRequest] - ошибка HTTP-запроса
+//   - [ErrMultipartBody] - ошибка подготовки multipart-содержимого
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int, error) {
@@ -216,7 +214,7 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 //
 // В случае успеха возвращает детальную информацию по заявлению.
 // В случае ошибки возвращает цепочку из ErrOrderInfo и следующих возможных ошибок:
-//   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
+//   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])

@@ -12,11 +12,11 @@ func multipartBodyPrepare(w *multipart.Writer, fns ...multipartFunc) error {
 	var err error
 	for _, fn := range fns {
 		if err = fn(w); err != nil {
-			return fmt.Errorf("%w: %w", ErrMultipartBodyPrepare, err)
+			return fmt.Errorf("%w: %w", ErrMultipartBody, err)
 		}
 	}
 	if err = w.Close(); err != nil {
-		return fmt.Errorf("%w: %w", ErrMultipartBodyPrepare, err)
+		return fmt.Errorf("%w: %w", ErrMultipartBody, err)
 	}
 	return nil
 }

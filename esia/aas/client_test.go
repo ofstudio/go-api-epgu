@@ -220,7 +220,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 	suite.Run("error request call", func() {
 		token, err := suite.client.TokenExchange("test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
-		suite.ErrorIs(err, ErrRequestCall)
+		suite.ErrorIs(err, ErrRequest)
 		suite.Nil(token)
 	})
 
@@ -327,7 +327,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 	suite.Run("error request call", func() {
 		token, err := suite.client.TokenUpdate("test", "test")
 		suite.ErrorIs(err, ErrTokenUpdate)
-		suite.ErrorIs(err, ErrRequestCall)
+		suite.ErrorIs(err, ErrRequest)
 		suite.Nil(token)
 	})
 
