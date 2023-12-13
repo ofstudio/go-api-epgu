@@ -15,23 +15,20 @@ type File struct {
 // Archive - архив вложений к создаваемому заявлению.
 // Используется для методов [Client.OrderPush] и [Client.OrderPushChunked].
 type Archive struct {
-	Name  string // Имя архива (без расширения). Пример: "35002123456-archive"
-	Files []File // Файлы вложений
+	Name string // Имя архива (без расширения). Пример: "35002123456-archive"
+	Data []byte // Содержимое архива в zip-формате
 }
 
-// Zip - формирует zip-архив из файлов вложений.
-//
-// В случае успеха возвращает байты архива.
+// NewArchive - создает архив из файлов вложений.
 // В случае ошибки возвращает [ErrZipCreate], [ErrZipWrite] или [ErrZipClose].
-func (a *Archive) Zip() ([]byte, error) {
-	if len(a.Files) == 0 {
+func NewArchive(name string, files ...File) (*Archive, error) {
+	if len(files) == 0 {
 		return nil, ErrNoFiles
 	}
 
 	var b bytes.Buffer
 	zipWriter := zip.NewWriter(&b)
-
-	for _, file := range a.Files {
+	for _, file := range files {
 		fileWriter, err := zipWriter.Create(file.Filename)
 		if err != nil {
 			return nil, fmt.Errorf("%w: %w", ErrZipCreate, err)
@@ -45,5 +42,8 @@ func (a *Archive) Zip() ([]byte, error) {
 		return nil, fmt.Errorf("%w: %w", ErrZipClose, err)
 	}
 
-	return b.Bytes(), nil
+	return &Archive{
+		Name: name,
+		Data: b.Bytes(),
+	}, nil
 }

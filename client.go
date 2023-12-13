@@ -111,22 +111,19 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive *Archive) error {
-	if archive == nil {
+	if archive == nil || len(archive.Data) == 0 {
 		return fmt.Errorf("%w: %w", ErrPushChunked, ErrNilArchive)
 	}
-	zip, err := archive.Zip()
-	if err != nil {
-		return fmt.Errorf("%w: %w", ErrPushChunked, err)
-	}
-	total := 1 + len(zip)/(c.chunkSize+1)
+
+	total := 1 + len(archive.Data)/(c.chunkSize+1)
 
 	for current := 0; current < total; current++ {
 		// prepare chunk
 		end := current*c.chunkSize + c.chunkSize
-		if end > len(zip) {
-			end = len(zip)
+		if end > len(archive.Data) {
+			end = len(archive.Data)
 		}
-		chunk := zip[current*c.chunkSize : end]
+		chunk := archive.Data[current*c.chunkSize : end]
 
 		filename := archive.Name
 		if total > 1 {
@@ -138,7 +135,7 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 		// prepare multipart body
 		body := &bytes.Buffer{}
 		w := multipart.NewWriter(body)
-		if err = multipartBodyPrepare(
+		if err := multipartBodyPrepare(
 			w,
 			withOrderId(id),
 			withMeta(meta),
@@ -150,7 +147,7 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 
 		// make request
 		orderIdResponse := &dto.OrderIdResponse{}
-		if err = c.request(
+		if err := c.request(
 			http.MethodPost,
 			"/api/gusmev/push/chunked",
 			"multipart/form-data; boundary="+w.Boundary(),
@@ -181,26 +178,22 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int, error) {
-	if archive == nil {
+	if archive == nil || len(archive.Data) == 0 {
 		return 0, fmt.Errorf("%w: %w", ErrPush, ErrNilArchive)
-	}
-	zip, err := archive.Zip()
-	if err != nil {
-		return 0, fmt.Errorf("%w: %w", ErrPush, err)
 	}
 
 	body := &bytes.Buffer{}
 	w := multipart.NewWriter(body)
-	if err = multipartBodyPrepare(
+	if err := multipartBodyPrepare(
 		w,
 		withMeta(meta),
-		withFile(archive.Name+".zip", zip),
+		withFile(archive.Name+".zip", archive.Data),
 	); err != nil {
 		return 0, fmt.Errorf("%w: %w", ErrPush, err)
 	}
 
 	orderIdResponse := &dto.OrderIdResponse{}
-	if err = c.request(
+	if err := c.request(
 		http.MethodPost,
 		"/api/gusmev/push",
 		"multipart/form-data; boundary="+w.Boundary(),
@@ -222,7 +215,7 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 // раздел "2.4. Получение деталей по заявлению".
 //
 // В случае успеха возвращает детальную информацию по заявлению.
-// В случае ошибки возвращает цепочку из ErrOrderInfo и  и следующих возможных ошибок:
+// В случае ошибки возвращает цепочку из ErrOrderInfo и следующих возможных ошибок:
 //   - [ErrRequestPrepare], [ErrRequestCall], [ErrResponseRead] - ошибки выполнения запроса
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
