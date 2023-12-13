@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:Request
+        xmlns:ns0="urn://cmv.pfr.ru/zdp/1.0.1"
+        xmlns:cmv="urn://cmv.pfr.ru/types/1.0.1"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn://cmv.pfr.ru/zdp/1.0.1 zdp-1.0.1.xsd"
+>
+    <cmv:SNILS>00066666699</cmv:SNILS>
+    <cmv:ExternalRegistrationData>
+        <cmv:ExternalRegistrationNumber>2662455582</cmv:ExternalRegistrationNumber>
+        <cmv:ExternalRegistrationDate>2023-04-13</cmv:ExternalRegistrationDate>
+    </cmv:ExternalRegistrationData>
+    <cmv:OKATO>36401383000</cmv:OKATO>
+    <cmv:OKTMO>45344000</cmv:OKTMO>
+    <cmv:MFCCode>2662455582</cmv:MFCCode>
+    <cmv:ApplicationFileName>req_8f8b7e4b-dec8-4dac-8a02-3dcde44d4fb2.xml</cmv:ApplicationFileName>
+    <ns0:FRGUTargetId>10002953957</ns0:FRGUTargetId>
+</ns0:Request>
