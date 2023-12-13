@@ -134,13 +134,12 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 		// prepare multipart body
 		body := &bytes.Buffer{}
 		w := multipart.NewWriter(body)
-		if err := multipartBodyPrepare(
-			w,
-			withOrderId(id),
-			withMeta(meta),
-			withFile(filename, chunk),
-			withChunkNum(current, total),
-		); err != nil {
+		if err := newMultipartBuilder(w).
+			withOrderId(id).
+			withMeta(meta).
+			withFile(filename, chunk).
+			withChunkNum(current, total).
+			build(); err != nil {
 			return fmt.Errorf("%w: %w", ErrPushChunked, err)
 		}
 
@@ -182,11 +181,10 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 
 	body := &bytes.Buffer{}
 	w := multipart.NewWriter(body)
-	if err := multipartBodyPrepare(
-		w,
-		withMeta(meta),
-		withFile(archive.Name+".zip", archive.Data),
-	); err != nil {
+	if err := newMultipartBuilder(w).
+		withMeta(meta).
+		withFile(archive.Name+".zip", archive.Data).
+		build(); err != nil {
 		return 0, fmt.Errorf("%w: %w", ErrPush, err)
 	}
 
