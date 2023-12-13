@@ -63,10 +63,17 @@ func NewClient(baseURI, clientId string, signer signature.Provider) *Client {
 }
 
 // WithDebug - включает логирование запросов и ответов
+// Формат лога:
+//
+//	>>> Request to {url}
+//	...
+//	{полный HTTP-запрос}
+//	...
+//	<<< Response from {url}
+//	...
+//	{полный HTTP-ответ}
+//	...
 func (c *Client) WithDebug(logger utils.Logger) *Client {
-	if c == nil {
-		return nil
-	}
 	c.logger = logger
 	c.debug = logger != nil
 	return c
@@ -74,7 +81,7 @@ func (c *Client) WithDebug(logger utils.Logger) *Client {
 
 // WithHTTPClient - устанавливает http-клиент для запросов к ЕСИА
 func (c *Client) WithHTTPClient(httpClient *http.Client) *Client {
-	if c != nil && httpClient != nil {
+	if httpClient != nil {
 		c.httpClient = httpClient
 	}
 	return c

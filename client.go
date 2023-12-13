@@ -38,10 +38,17 @@ func NewClient(baseURI string) *Client {
 }
 
 // WithDebug - включает логирование HTTP-запросов и ответов к ЕПГУ.
+// Формат лога:
+//
+//	>>> Request to {url}
+//	...
+//	{полный HTTP-запрос}
+//	...
+//	<<< Response from {url}
+//	...
+//	{полный HTTP-ответ}
+//	...
 func (c *Client) WithDebug(logger utils.Logger) *Client {
-	if c == nil {
-		return nil
-	}
 	c.logger = logger
 	c.debug = logger != nil
 	return c
@@ -49,7 +56,7 @@ func (c *Client) WithDebug(logger utils.Logger) *Client {
 
 // WithHTTPClient - устанавливает http-клиент для запросов к ЕПГУ.
 func (c *Client) WithHTTPClient(httpClient *http.Client) *Client {
-	if c != nil && httpClient != nil {
+	if httpClient != nil {
 		c.httpClient = httpClient
 	}
 	return c
@@ -61,7 +68,7 @@ func (c *Client) WithHTTPClient(httpClient *http.Client) *Client {
 // Подробнее см "Спецификация API ЕПГУ версия 1.12",
 // раздел "2.1.3 Отправка заявления (загрузка архива по частям)"
 func (c *Client) WithChunkSize(n int) *Client {
-	if c != nil && n > 0 {
+	if n > 0 {
 		c.chunkSize = n
 	}
 	return c
