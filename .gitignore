@@ -5,6 +5,9 @@ _data
 # IDE
 .idea
 
+# MS Office leftovers
+~$*
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
