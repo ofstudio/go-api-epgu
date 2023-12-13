@@ -7,16 +7,24 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
 
  - [Client.OrderCreate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCreate) — создание заявления
  - [Client.OrderPushChunked](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunked) — загрузка архива по частям
+ - [Client.OrderPush](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPush) — формирование заявления единым методом
  - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) — запрос детальной информации по отправленному заявлению
 
-## Запрос согласия пользователя и получение маркера доступа ЕСИА
+## Запрос согласия и получение маркера доступа ЕСИА
 
 - [esia/aas](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas) — OAuth2-клиент для получения маркера доступа ЕСИА
 - [esia/signature](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/signature) — подпись запросов к ЕСИА
 
+## Услуги API ЕПГУ
+
+- [services/sfr/10000000109-zdp](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/services/sfr/10000000109-zdp) — "Доставка пенсии и социальных выплат ПФР"
+
+
 ## Примеры
 - [Запрос согласия пользователя и получения маркера доступа](/examples/esia-token-request/main.go)
 - [Обновление маркера доступа](/examples/esia-token-update/main.go)
+- [Создание заявления и загрузка архива по частям](/examples/order-push-chunked/main.go)
+- [Получение детальной информации по отправленному заявлению](/examples/order-info/main.go)
 
 ## Установка
 
