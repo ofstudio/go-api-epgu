@@ -160,7 +160,7 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 	return nil
 }
 
-// OrderPush - формирование заявления единым методом
+// OrderPush - формирование заявления единым методом.
 //
 //	POST /api/gusmev/push
 //
