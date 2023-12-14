@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="2.0" elementFormDefault="qualified" xmlns="http://пф.рф/АФ/2018-12-07" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:УТ2="http://пф.рф/УТ/2017-08-21" targetNamespace="http://пф.рф/АФ/2018-12-07">
+	<xs:annotation>
+		<xs:documentation>Типы данных, расширяющие пространство имен http://пф.рф/АФ</xs:documentation>
+		<xs:documentation>Рекомендуемый префикс для пространства имен http://пф.рф/АФ/2018-12-07 - АФ5</xs:documentation>
+	</xs:annotation>
+	<xs:import namespace="http://пф.рф/УТ/2017-08-21" schemaLocation="УнифТипы_2017-08-21.xsd" />
+	<xs:element name="GUID" type="УТ2:ТипGUID">
+		<xs:annotation>
+			<xs:documentation>Глобальный идентификатор электронного документа, присваиваемый составителем. Относится к зоне идентификации документа. Реализация спецификации стандарта http://www.ietf.org/rfc/rfc4122.txt</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="ВОтветНа" type="УТ2:ТипGUID">
+		<xs:annotation>
+			<xs:documentation>Глобальный идентификатор электронного документа, в ответ на который сформирован документ. Относится к зоне идентификации документа. Реализация спецификации стандарта http://www.ietf.org/rfc/rfc4122.txt</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="ДатаВремя" type="xs:dateTime">
+		<xs:annotation>
+			<xs:documentation>Дата и время формирования электронного документа</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="ПрограммаПодготовки" type="УТ2:ТипНепустаяСтрока">
+		<xs:annotation>
+			<xs:documentation>Наименование программы подготовки электронного документа</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:group name="ГрСлужебнаяИнформация">
+		<xs:annotation>
+			<xs:documentation>Тип для представления служебной информации о составителе, дате и времени составления, идентификационной и иной информации об электронном документе.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element ref="GUID">
+				<xs:annotation>
+					<xs:documentation>Глобальный идентификатор электронного документа, присваиваемый составителем. Относится к зоне идентификации документа. Реализация спецификации стандарта http://www.ietf.org/rfc/rfc4122.txt</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ВОтветНа" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Глобальный идентификатор электронного документа, в ответ на который сформирован документ. Относится к зоне идентификации документа. Реализация спецификации стандарта http://www.ietf.org/rfc/rfc4122.txt</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="ДатаВремя">
+				<xs:annotation>
+					<xs:documentation>Дата и время формирования электронного документа</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:group>
+	<xs:complexType name="ТипСлужебнаяИнформация">
+		<xs:annotation>
+			<xs:documentation>Тип для представления служебной информации о составителе, дате и времени составления, идентификационной и иной информации об электронном документе.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:group ref="ГрСлужебнаяИнформация">
+				<xs:annotation>
+					<xs:documentation>Тип для представления служебной информации о составителе, дате и времени составления, идентификационной и иной информации об электронном документе</xs:documentation>
+				</xs:annotation>
+			</xs:group>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ТипСлужебнаяИнформацияППЭД">
+		<xs:annotation>
+			<xs:documentation>Тип для представления служебной информации со сведениями о программе подготовки электронного документа.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="ТипСлужебнаяИнформация">
+				<xs:sequence>
+					<xs:element ref="ПрограммаПодготовки">
+						<xs:annotation>
+							<xs:documentation>Сведения о программе, в которой был подготовлен документ</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:simpleType name="ТипНомерВерсии">
+		<xs:annotation>
+			<xs:documentation>Номер версии</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="20" />
+			<xs:pattern value="\d*(\.\d{1,3})*" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="XMLФайл">
+		<xs:annotation>
+			<xs:documentation>Тип, представляющий правило заполнения пути к xml-файлу</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value=".*\.[xX][mM][lL]" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="XLSФайл">
+		<xs:annotation>
+			<xs:documentation>Тип, представляющий правило заполнения пути к xls(x)-файлу</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value=".*\.[xX][lL][sS]" />
+			<xs:pattern value=".*\.[xX][lL][sS][xX]" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="XSDСхема">
+		<xs:annotation>
+			<xs:documentation>Тип, задающий правило заполнения пути к XSD схеме</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value=".*\.[xX][sS][dD]" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="XSLФайл">
+		<xs:annotation>
+			<xs:documentation>Тип, представляющий правило заполнения пути к файлу xslt-преобразования</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value=".*\.[xX][sS][lL]" />
+			<xs:pattern value=".*\.[xX][sS][lL][tT]" />
+			<xs:pattern value=".*\.[fF][oO]" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="DOCФайл">
+		<xs:annotation>
+			<xs:documentation>Тип, представляющий правило заполнения пути к файлу MS Word</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value=".*\.[dD][oO][cC]" />
+			<xs:pattern value=".*\.[dD][oO][cC][xX]" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ТипКодРезультата">
+		<xs:annotation>
+			<xs:documentation>Код результата проверки</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="2" />
+			<xs:pattern value="\d{2}" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ТипОписаниеПеременной">
+		<xs:annotation>
+			<xs:documentation>Тип, используемый для описания переменной</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Описание" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Краткое описание для чего вводится переменная</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Декларация" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Принимаемое переменной значение</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ТипВременнойПериод">
+		<xs:annotation>
+			<xs:documentation>Тип для описания временных периодов, определяющихся датой и временем начала периода ("с") и датой и временем окончания периода ("по")</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="С" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>Дата и время начала периода ("с")</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="По" type="xs:dateTime">
+				<xs:annotation>
+					<xs:documentation>Дата и время окончания периода ("по")</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ТипСлужебнаяИнформацияЭП">
+		<xs:annotation>
+			<xs:documentation>Тип для представления служебной информации со сведениями о реквизитах электронной подписи.</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="ТипСлужебнаяИнформация">
+				<xs:sequence>
+					<xs:element ref="РеквизитыЭП" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>Сведения о реквизитах электронной подписи</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="ТипРеквизитыЭП">
+		<xs:annotation>
+			<xs:documentation>Тип для представления сведений о реквизитах электронной подписи.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ОсновноеНазвание" type="УТ2:ТипНепустаяСтрока" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Основное название</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Владелец" type="УТ2:ТипФИО">
+				<xs:annotation>
+					<xs:documentation>ФИО владельца сертификата ЭП (кому выдан сертификат)</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Издатель" type="УТ2:ТипНепустаяСтрока">
+				<xs:annotation>
+					<xs:documentation>Издатель сертификата ЭП</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Идентификатор" type="УТ2:ТипНепустаяСтрока">
+				<xs:annotation>
+					<xs:documentation>Идентификатор сертификата ЭП</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="СрокДействия" type="ТипВременнойПериод">
+				<xs:annotation>
+					<xs:documentation>Срок действия сертификата ЭП</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="СрокДействияЗакрытогоКлюча" type="ТипВременнойПериод" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Срок действия закрытого ключа ЭП</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="РеквизитыЭП" type="ТипРеквизитыЭП">
+		<xs:annotation>
+			<xs:documentation>Сведения о реквизитах электронной подписи</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+</xs:schema>

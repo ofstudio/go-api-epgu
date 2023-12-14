@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema version="2.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" xmlns="http://пф.рф/ВЗЛ/ЗДП/2016-04-15" xmlns:АФ="http://пф.рф/АФ" xmlns:ВЗЛ="http://пф.рф/ВЗЛ/типы/2014-01-01" xmlns:УТ="http://пф.рф/унифицированныеТипы/2014-01-01" targetNamespace="http://пф.рф/ВЗЛ/ЗДП/2016-04-15">
+	<xs:import namespace="http://пф.рф/унифицированныеТипы/2014-01-01" schemaLocation="../../УнифТипы_2014-01-01.xsd" />
+	<xs:import namespace="http://пф.рф/ВЗЛ/типы/2014-01-01" schemaLocation="../ТипыВЗЛ_2014-01-01.xsd" />
+	<xs:import namespace="http://пф.рф/АФ" schemaLocation="../../ТипыОбщие.xsd" />
+	<xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="../../xmldsig_core_schema.xsd" />
+	<xs:annotation>
+		<xs:documentation>Схема проверки документа содержащего заявление о доставке пенсии</xs:documentation>
+	</xs:annotation>
+	<xs:element name="ЭДПФР">
+		<xs:annotation>
+			<xs:documentation>Корневой элемент. Электронный документ ЗДП (Заявление о доставке пенсии). Содержит сведения самого документа и служебную информацию об электронном документе.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="ЗДП">
+					<xs:annotation>
+						<xs:documentation>Заявление о доставке пенсии</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:complexContent>
+							<xs:extension base="ВЗЛ:ТипЗаявлениеВЗЛ">
+								<xs:sequence>
+									<xs:element name="Анкета">
+										<xs:annotation>
+											<xs:documentation>Анкетные данные застрахованного лица</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:complexContent>
+												<xs:extension base="ВЗЛ:ТипАнкетаВЗЛ">
+													<xs:sequence>
+														<xs:element ref="УТ:АдресЭлПочты" minOccurs="0">
+															<xs:annotation>
+																<xs:documentation>Адрес электронной почты</xs:documentation>
+															</xs:annotation>
+														</xs:element>
+														<xs:element ref="УТ:УдостоверяющийДокументОграниченногоСрока" minOccurs="0">
+															<xs:annotation>
+																<xs:documentation>Документ, удостоверяющий личность</xs:documentation>
+															</xs:annotation>
+														</xs:element>
+													</xs:sequence>
+												</xs:extension>
+											</xs:complexContent>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="Представитель" minOccurs="0" type="УТ:ТипПредставитель">
+										<xs:annotation>
+											<xs:documentation>Сведения о представителе застрахованного лица</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="ПредыдущееМестоЖительства" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Указываются сведения о последнем адресе проживания заявителя до выезда за пределы Российской Федерации. Заполняется в случае, если заявитель проживает за пределами РФ.</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:group ref="УТ:ГрАдресаФЛ">
+													<xs:annotation>
+														<xs:documentation>Группа элементов со сведениями об адресах.</xs:documentation>
+													</xs:annotation>
+												</xs:group>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="СведенияОДоставке">
+										<xs:annotation>
+											<xs:documentation>Сведения о доставке пенсии(п.3 заявления)</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element name="ДатаДоставки" minOccurs="0">
+													<xs:annotation>
+														<xs:documentation>Дата начала доставки пенсии</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:date">
+															<xs:pattern value=".{8}01" />
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:element>
+												<xs:element name="МестоДоставки">
+													<xs:annotation>
+														<xs:documentation>По какому месту доставлять пенсию: 1 - по месту жительства; 2 - по месту пребывания; 3 - по месту фактического проживания;  4 - по месту нахождения организации (заполняется при подаче заявления представителем-юридическим лицом)</xs:documentation>
+													</xs:annotation>
+													<xs:simpleType>
+														<xs:restriction base="xs:integer">
+															<xs:enumeration value="1" />
+															<xs:enumeration value="2" />
+															<xs:enumeration value="3" />
+															<xs:enumeration value="4" />
+														</xs:restriction>
+													</xs:simpleType>
+												</xs:element>
+												<xs:group ref="ГрСведенияДоставки">
+													<xs:annotation>
+														<xs:documentation>Группа элементов со сведениями о способе доставки пенсии</xs:documentation>
+													</xs:annotation>
+												</xs:group>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="СведенияОДоставкеДоЗаключенияДоговора" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Сведения о доставке пенсии до заключения договора предусмотренного частью 14 статьи 21 Федерального закона от 28.12.2013 № 400-ФЗ «О страховых пенсиях». Заполняется в случае выбора организации для доставки пенсии, с которой не заключен указанный договор (п.4 заявления)</xs:documentation>
+										</xs:annotation>
+										<xs:complexType>
+											<xs:sequence>
+												<xs:group ref="ГрСведенияДоставки">
+													<xs:annotation>
+														<xs:documentation>Группа элементов со сведениями о способе доставки пенсии</xs:documentation>
+													</xs:annotation>
+												</xs:group>
+											</xs:sequence>
+										</xs:complexType>
+									</xs:element>
+									<xs:element name="ПризнакОзнакомления" type="xs:boolean">
+										<xs:annotation>
+											<xs:documentation>Сведения об ознакомлении заявителя с положениями п 5. заявления.
+											 1 - ознакомлен, 0 - не ознакомлен.</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:extension>
+						</xs:complexContent>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="ЭлектроннаяПодпись" xmlns="http://www.w3.org/2000/09/xmldsig#" type="SignatureType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Электронная подпись (ЭП) в соответствии со спецификацией XMLDsig</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="СлужебнаяИнформация">
+					<xs:annotation>
+						<xs:documentation>Служебная информация об электронном документе</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:complexContent>
+							<xs:extension base="АФ:ТипСлужебнаяИнформация">
+								<xs:sequence>
+									<xs:element name="НомерВнешний" type="xs:normalizedString">
+										<xs:annotation>
+											<xs:documentation>Номер по журналу регистрации, присвоенный в момент подачи заявления (уведомления)</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="ДатаПодачи" type="xs:date">
+										<xs:annotation>
+											<xs:documentation>Дата подачи заявления</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+									<xs:element name="ВизуальныйКонтроль" type="xs:string" minOccurs="0">
+										<xs:annotation>
+											<xs:documentation>Ошибки, выявленные при визуальном контроле.</xs:documentation>
+										</xs:annotation>
+									</xs:element>
+								</xs:sequence>
+							</xs:extension>
+						</xs:complexContent>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="СписокДокументов" type="ВЗЛ:ТипСписокЭД" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Список документов предоставляемых застрахованным лицом</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:group name="ГрСведенияДоставки">
+		<xs:annotation>
+			<xs:documentation>Группа, содержащая сведения о доставке почты заявителю</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Получатель">
+				<xs:annotation>
+					<xs:documentation>Кому доставлять пенсию: 1 - пенсионеру; 2 - представителю</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:enumeration value="1" />
+						<xs:enumeration value="2" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="СпособДоставки">
+				<xs:annotation>
+					<xs:documentation>Способ доставки пенсии: 1 - через организацию почтовой связи; 2 - через кредитную организацию; 3 - через иную организацию, занимающуюся доставкой пенсии</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:enumeration value="1" />
+						<xs:enumeration value="2" />
+						<xs:enumeration value="3" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="НаименованиеОрганизации" type="xs:normalizedString" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Наименование кредитной, либо иной организации, занимающейся доставкой пенсии</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="СпособВручения" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Способ вручения пенсии: 1 - путем вручения в кассе организации; 2 - путем вручения на дому. Заполняется при выборе способа доставки через организацию почтовой связи  или иную организацию, занимающеюся доставкой пенсии</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:enumeration value="1" />
+						<xs:enumeration value="2" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Адрес" type="УТ:ТипАдресОбщий" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Адрес, по которому должна доставляться пенсия</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="НомерСчета" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Номер счета получателя пенсии в указанной кредитной организации</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="[0-9]+" />
+						<xs:minLength value="1" />
+						<xs:maxLength value="20" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:group>
+</xs:schema>
