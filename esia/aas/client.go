@@ -2,9 +2,7 @@ package aas
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -125,13 +123,17 @@ func (c *Client) AuthURI(scope, redirectURI string, permissions Permissions) (st
 // ParseCallback - возвращает код авторизации code и state из
 // query-параметров callback-запроса к redirect_uri от ЕСИА.
 //
+// Подробнее см "Методические рекомендации по использованию ЕСИА",
+// раздел "Получение авторизационного кода (v2/ac)".
+//
 // В случае ошибки возвращает цепочку из [ErrParseCallback] и других:
 //   - [ErrNoState] - отсутствует параметр state
 //   - [ErrParseCallback] - ошибка разбора параметров
 //   - ошибка ЕСИА: ErrESIAxxxxxx ([ErrESIA_007003] и др.)
 //
-// Подробнее см "Методические рекомендации по использованию ЕСИА",
-// раздел "Получение авторизационного кода (v2/ac)".
+// Пример сообщения об ошибке:
+//
+//	ESIA-007014: Запрос не содержит обязательного параметра [error='invalid_request', error_description='ESIA-007014: The request does not contain the mandatory parameter' state='48d1a8dc-0b7d-418a-b4ef-2c7797f77dc9']'
 func (c *Client) ParseCallback(query url.Values) (string, string, error) {
 	state := query.Get("state")
 	if state == "" {
@@ -149,6 +151,9 @@ func (c *Client) ParseCallback(query url.Values) (string, string, error) {
 // TokenExchange обменивает код авторизации на маркер доступа.
 // Параметры scope и redirectURI должны быть такими же, как и при вызове [Client.AuthURI].
 //
+// Подробнее см "Методические рекомендации по использованию ЕСИА",
+// раздел "Получение маркера доступа в обмен на авторизационный код (v3/te)".
+//
 // Возвращает ответ от ЕСИА [TokenExchangeResponse] либо цепочку ошибок из [ErrTokenExchange] и других:
 //   - [ErrSign] - ошибка подписи запроса
 //   - [ErrGUID] - при невозможности сформировать GUID
@@ -157,8 +162,9 @@ func (c *Client) ParseCallback(query url.Values) (string, string, error) {
 //   - [ErrUnexpectedContentType] - неожидаемый Content-Type ответа
 //   - ошибок ЕСИА ErrESIA_xxxxxx ([ErrESIA_007004] и др.)
 //
-// Подробнее см "Методические рекомендации по использованию ЕСИА",
-// раздел "Получение маркера доступа в обмен на авторизационный код (v3/te)".
+// Пример сообщения об ошибке:
+//
+//	HTTP 400 Bad request: ESIA-007014: Запрос не содержит обязательного параметра [error='invalid_request', error_description='ESIA-007014: The request does not contain the mandatory parameter' state='48d1a8dc-0b7d-418a-b4ef-2c7797f77dc9']'
 func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeResponse, error) {
 	timestamp := time.Now().UTC().Format(tsLayout)
 	state, err := guid()
@@ -182,35 +188,16 @@ func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeR
 	reqBody.Set("grant_type", "authorization_code")
 	reqBody.Set("token_type", "Bearer")
 
-	req, err := http.NewRequest(http.MethodPost, c.baseURI+TokenEndpoint, strings.NewReader(reqBody.Encode()))
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrRequest, err)
-	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	c.logReq(req)
-
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrRequest, err)
-	}
-
-	c.logRes(res)
-
-	if res.StatusCode >= 400 {
-		return nil, fmt.Errorf("%w: %w", ErrTokenExchange, exchangeError(res))
-	}
-
-	//goland:noinspection ALL
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrRequest, err)
-	}
-
 	result := &TokenExchangeResponse{}
-	if err = json.Unmarshal(body, result); err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenExchange, ErrJSONUnmarshal, err)
+
+	if err = c.request(
+		http.MethodPost,
+		TokenEndpoint,
+		"application/x-www-form-urlencoded",
+		strings.NewReader(reqBody.Encode()),
+		result,
+	); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrTokenExchange, err)
 	}
 
 	return result, nil
@@ -218,11 +205,12 @@ func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeR
 
 // TokenUpdate обновляет маркер доступа по идентификатору пользователя (OID),
 // используя scope="prm_chg". Параметр redirectURI должен быть таким же, как и при вызове AuthURI.
-// Возвращает ответ от ЕСИА [TokenExchangeResponse] либо цепочку ошибок из [ErrTokenUpdate] и
-// ошибок аналогичных TokenExchange.
 //
 // Подробнее см "Методические рекомендации по интеграции с REST API Цифрового профиля"
 // раздел "Online-режим запроса согласий".
+//
+// Возвращает ответ от ЕСИА [TokenExchangeResponse] либо цепочку ошибок из [ErrTokenUpdate] и
+// ошибок аналогичных TokenExchange.
 func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, error) {
 	timestamp := time.Now().UTC().Format(tsLayout)
 	scope := "prm_chg?oid=" + oid
@@ -246,37 +234,16 @@ func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, e
 	reqBody.Set("grant_type", "client_credentials")
 	reqBody.Set("token_type", "Bearer")
 
-	req, err := http.NewRequest(http.MethodPost, c.baseURI+TokenEndpoint, strings.NewReader(reqBody.Encode()))
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrRequest, err)
-	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	c.logReq(req)
-
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrRequest, err)
-	}
-
-	c.logRes(res)
-
-	if res.StatusCode >= 400 {
-		return nil, fmt.Errorf("%w: %w", ErrTokenUpdate, exchangeError(res))
-	}
-
-	//goland:noinspection ALL
-	defer res.Body.Close()
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrRequest, err)
-	}
-
 	result := &TokenExchangeResponse{}
-	if err = json.Unmarshal(body, result); err != nil {
-		return nil, fmt.Errorf("%w: %w: %w", ErrTokenUpdate, ErrJSONUnmarshal, err)
+	if err = c.request(
+		http.MethodPost,
+		TokenEndpoint,
+		"application/x-www-form-urlencoded",
+		strings.NewReader(reqBody.Encode()),
+		result,
+	); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrTokenUpdate, err)
 	}
-
 	return result, nil
 }
 
