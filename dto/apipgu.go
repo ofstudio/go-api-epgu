@@ -12,8 +12,9 @@ package dto
 //	  "message": "У пользователя нет прав для работы с текущим заявлением"
 //	}
 type ErrorResponse struct {
-	Code    string `JSON:"code"`    // Код ошибки
-	Message string `JSON:"message"` // Сообщение об ошибке
+	Code    string `json:"code"`    // Код ошибки
+	Message string `json:"message"` // Сообщение об ошибке
+	Error   string `json:"error"`   // Сообщение об ошибке (может возникать, если ошибка не от API ЕПГУ, а от промежуточного сервера)
 }
 
 // OrderIdResponse - ответ API ЕПГУ с номером созданного заявления.
