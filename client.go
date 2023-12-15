@@ -124,7 +124,7 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 		return fmt.Errorf("%w: %w", ErrPushChunked, ErrNilArchive)
 	}
 
-	total := 1 + len(archive.Data)/(c.chunkSize+1)
+	total := 1 + (len(archive.Data)-1)/(c.chunkSize)
 
 	for current := 0; current < total; current++ {
 		// prepare chunk
