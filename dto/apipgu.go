@@ -19,7 +19,7 @@ type ErrorResponse struct {
 
 // OrderIdResponse - ответ API ЕПГУ с номером созданного заявления.
 type OrderIdResponse struct {
-	OrderId int `JSON:"orderId"`
+	OrderId int `json:"orderId"`
 }
 
 // OrderInfoResponse - ответ API ЕПГУ с детальной информацией по отправленному заявлению.
@@ -36,8 +36,8 @@ type OrderIdResponse struct {
 //	  "order": "{...}"
 //	}
 type OrderInfoResponse struct {
-	Code      string `JSON:"code"`      // Код состояния заявления в соответствии с Приложением 1 Спецификации
-	Message   string `JSON:"message"`   // Текстовое сообщение, описывающее текущее состояние запроса на создание заявления
+	Code      string `json:"code"`      // Код состояния заявления в соответствии с Приложением 1 Спецификации
+	Message   string `json:"message"`   // Текстовое сообщение, описывающее текущее состояние запроса на создание заявления
 	MessageId string `json:"messageId"` // [Не документировано, GUID]
-	Order     string `JSON:"order"`     // В случае, если заявление уже создано на портале и отправлено в ведомство, параметр содержит строку в виде экранированного JSON-объекта
+	Order     string `json:"order"`     // В случае, если заявление уже создано на портале и отправлено в ведомство, параметр содержит строку в виде экранированного JSON-объекта
 }

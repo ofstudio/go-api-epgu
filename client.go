@@ -92,7 +92,7 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 	if err := c.request(
 		http.MethodPost,
 		"/api/gusmev/order",
-		"application/JSON; charset=utf-8",
+		"application/json; charset=utf-8",
 		token,
 		bytes.NewReader(meta.JSON()),
 		orderIdResponse,
