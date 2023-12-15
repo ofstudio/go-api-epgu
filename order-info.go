@@ -254,11 +254,11 @@ type OrderDetails struct {
 
 	// Дополнительные аттрибуты
 
-	HasNewStatus           bool   `json:"hasNewStatus"`           // Флаг нового статуса для заявления
-	CurrentStatusHistoryId int    `json:"currentStatusHistoryId"` // Идентификатор статуса заявления
-	OrderStatusName        string `json:"orderStatusName"`        // Наименование статуса заявления
-	StateOrgStatusCode     string `json:"stateOrgStatusCode"`     // Код ведомственного статуса
-	StateOrgStatusName     string `json:"stateOrgStatusName"`     // Наименование ведомственного статуса
+	HasNewStatus           bool   `json:"hasNewStatus"`                 // Флаг нового статуса для заявления
+	CurrentStatusHistoryId int    `json:"currentStatusHistoryId"`       // Идентификатор статуса заявления
+	OrderStatusName        string `json:"orderStatusName"`              // Наименование статуса заявления
+	StateOrgStatusCode     string `json:"stateOrgStatusCode,omitempty"` // Код ведомственного статуса
+	StateOrgStatusName     string `json:"stateOrgStatusName,omitempty"` // Наименование ведомственного статуса
 
 	StateOrgId         int    `json:"stateOrgId"`         // Код ведомства
 	StateStructureName string `json:"stateStructureName"` // Наименование ведомства
@@ -266,33 +266,33 @@ type OrderDetails struct {
 	StateStructureId   string `json:"stateStructureId"`   // Код ведомства [по ФРГУ]
 	Gisdo              bool   `json:"gisdo"`              // Признак подключенности ведомства к ФГИС ДО
 
-	SourceSystem       string `json:"sourceSystem"`       // Наименование системы откуда было подано заявление [мнемоника ИС-потребителя API ЕПГУ]
-	CreationMode       string `json:"creationMode"`       // Режим создания
-	ExtSystem          bool   `json:"extSystem"`          // Признак, что создано внешней системой (через сервис ЕЛК)
-	OwnerId            int    `json:"ownerId"`            // Идентификатор пользователя [OID на Госуслугах / ЕСИА]
-	UserId             int    `json:"userId"`             // Идентификатор пользователя [OID на Госуслугах / ЕСИА]
-	PersonType         string `json:"personType"`         // Тип пользователя
-	UserSelectedRegion string `json:"userSelectedRegion"` // Код ОКАТО местоположения пользователя
-	TestUser           bool   `json:"testUser"`           // Флаг тестового пользователя
-	Location           string `json:"location"`           // Код уровня услуги [ОКАТО пользователя?]
-	OrgUserName        string `json:"orgUserName"`        // Наименование организации пользователя
+	SourceSystem       string `json:"sourceSystem"`          // Наименование системы откуда было подано заявление [мнемоника ИС-потребителя API ЕПГУ]
+	CreationMode       string `json:"creationMode"`          // Режим создания
+	ExtSystem          bool   `json:"extSystem"`             // Признак, что создано внешней системой (через сервис ЕЛК)
+	OwnerId            int    `json:"ownerId"`               // Идентификатор пользователя [OID на Госуслугах / ЕСИА]
+	UserId             int    `json:"userId"`                // Идентификатор пользователя [OID на Госуслугах / ЕСИА]
+	PersonType         string `json:"personType"`            // Тип пользователя
+	UserSelectedRegion string `json:"userSelectedRegion"`    // Код ОКАТО местоположения пользователя
+	TestUser           bool   `json:"testUser"`              // Флаг тестового пользователя
+	Location           string `json:"location"`              // Код уровня услуги [ОКАТО пользователя?]
+	OrgUserName        string `json:"orgUserName,omitempty"` // Наименование организации пользователя
 
-	OrderType         string         `json:"orderType"`         // Тип заявления
-	EserviceId        string         `json:"eserviceId"`        // Идентификатор формы заявления
-	ServiceTargetId   string         `json:"serviceTargetId"`   // Идентификатор цели
-	ServicePassportId string         `json:"servicePassportId"` // Идентификатор паспорта услуги
-	ServiceName       string         `json:"serviceName"`       // Наименование цели
-	DeprecatedService bool           `json:"deprecatedService"` // Признак, что услуга больше не заказывается
-	HubForm           bool           `json:"hubForm"`           // Признак, что форма-концентратор
-	HubFormVersion    int            `json:"hubFormVersion"`    // Идентификатор регионо-зависимой формы старого конструктора форм
-	AdmLevelCode      string         `json:"admLevelCode"`      // Уровень услуги (региональный/федеральный)
-	MultRegion        bool           `json:"multRegion"`        // Признак регионозависимости
-	ServiceEpguId     string         `json:"serviceEpguId"`     // Идентификатор цели услуги ЕПГУ
-	FormVersion       string         `json:"formVersion"`       // Версия
-	ServiceUrl        string         `json:"serviceUrl"`        // Ссылка на заявление
-	PortalCode        string         `json:"portalCode"`        // Код портала
-	PortalName        string         `json:"portalName"`        // Наименование портала
-	PossibleServices  map[string]any `json:"possibleServices"`  // [Не документировано]
+	OrderType         string         `json:"orderType"`                // Тип заявления
+	EserviceId        string         `json:"eserviceId"`               // Идентификатор формы заявления
+	ServiceTargetId   string         `json:"serviceTargetId"`          // Идентификатор цели
+	ServicePassportId string         `json:"servicePassportId"`        // Идентификатор паспорта услуги
+	ServiceName       string         `json:"serviceName"`              // Наименование цели
+	DeprecatedService bool           `json:"deprecatedService"`        // Признак, что услуга больше не заказывается
+	HubForm           bool           `json:"hubForm"`                  // Признак, что форма-концентратор
+	HubFormVersion    int            `json:"hubFormVersion,omitempty"` // Идентификатор регионо-зависимой формы старого конструктора форм
+	AdmLevelCode      string         `json:"admLevelCode"`             // Уровень услуги (региональный/федеральный)
+	MultRegion        bool           `json:"multRegion"`               // Признак регионозависимости
+	ServiceEpguId     string         `json:"serviceEpguId"`            // Идентификатор цели услуги ЕПГУ
+	FormVersion       string         `json:"formVersion"`              // Версия
+	ServiceUrl        string         `json:"serviceUrl,omitempty"`     // Ссылка на заявление
+	PortalCode        string         `json:"portalCode,omitempty"`     // Код портала
+	PortalName        string         `json:"portalName,omitempty"`     // Наименование портала
+	PossibleServices  map[string]any `json:"possibleServices"`         // [Не документировано]
 
 	OrderDate               dto.DateTime          `json:"orderDate"`               // Дата и время создания заявления
 	RequestDate             dto.DateTime          `json:"requestDate"`             // Метка даты и времени запроса
@@ -307,17 +307,17 @@ type OrderDetails struct {
 	AllowToDelete           bool                  `json:"allowToDelete"`           // Флаг удаления заявки
 	DraftHidden             bool                  `json:"draftHidden"`             // Признак скрытия черновика
 	CheckQueue              bool                  `json:"checkQueue"`              // Флаг проверки очереди
-	EQueueEvents            []map[string]any      `json:"EQueueEvents"`            // Массив объектов eQueueEvent [структура элемента массива не документирована]
+	EQueueEvents            []map[string]any      `json:"eQueueEvents"`            // Массив объектов eQueueEvent [структура элемента массива не документирована]
 	UseAsTemplate           bool                  `json:"useAsTemplate"`           // Флаг черновика заявления
 	WithDelivery            bool                  `json:"withDelivery"`            // Флаг доставки
 	WithCustomResult        bool                  `json:"withCustomResult"`        // Признак необходимости отображения кнопки в Деталях заявления услуги
-	PowerMnemonic           string                `json:"powerMnemonic"`           // Мнемоника полномочия, с которым подается заявление
+	PowerMnemonic           string                `json:"powerMnemonic,omitempty"` // Мнемоника полномочия, с которым подается заявление
 	ReadyToPush             bool                  `json:"readyToPush"`             // Служебный параметр
 	Elk                     bool                  `json:"elk"`                     // [Не документировано]
 
-	SmevTx        string `json:"smevTx"`        // Код транзакции СМЭВ3
-	SmevMessageId string `json:"smevMessageId"` // Идентификатор СМЭВ-сообщения от ведомства, сменившего статус
-	RoutingCode   string `json:"routingCode"`   // Код маршрутизации СМЭВ-сообщения в ведомство
+	SmevTx        string `json:"smevTx"`                // Код транзакции СМЭВ3
+	SmevMessageId string `json:"smevMessageId"`         // Идентификатор СМЭВ-сообщения от ведомства, сменившего статус
+	RoutingCode   string `json:"routingCode,omitempty"` // Код маршрутизации СМЭВ-сообщения в ведомство
 
 	PaymentRequired     bool             `json:"paymentRequired"`     // Флаг наличия оплаты
 	NoPaidPaymentCount  int              `json:"noPaidPaymentCount"`  // Количество неоплаченных платежей
@@ -337,9 +337,9 @@ type OrderDetails struct {
 	InfoMessages     []map[string]any `json:"infoMessages"`     // Информация о сообщениях [структура объекта сообщения не документирована]
 	UnreadMessageCnt int              `json:"unreadMessageCnt"` // Кол-во непрочитанных сообщений
 
-	NotifySms   string `json:"notifySms"`   // Флаг необходимости уведомления о смене статуса через СМС
-	NotifyEmail string `json:"notifyEmail"` // Флаг необходимости уведомления о смене статуса через сообщение на эл. почту
-	NotifyPush  string `json:"notifyPush"`  // Флаг необходимости уведомления о смене статуса через push-сообщение
+	NotifySms   string `json:"notifySms,omitempty"`   // Флаг необходимости уведомления о смене статуса через СМС
+	NotifyEmail string `json:"notifyEmail,omitempty"` // Флаг необходимости уведомления о смене статуса через сообщение на эл. почту
+	NotifyPush  string `json:"notifyPush,omitempty"`  // Флаг необходимости уведомления о смене статуса через push-сообщение
 
 	Qrlink OrderQrlink `json:"qrlink"` // [Не документировано]
 	Steps  []any       `json:"steps"`  // [Не документировано]
@@ -351,18 +351,18 @@ type OrderStatus struct {
 
 	// Основные аттрибуты
 
-	Id                  int          `json:"id"`                  // Идентификатор статуса
-	StatusId            int          `json:"statusId"`            // Код статуса
-	Title               string       `json:"title"`               // Наименование статуса
-	Date                dto.DateTime `json:"date"`                // Дата и время смены статуса
-	OrderId             int          `json:"orderId"`             // Номер заявления
-	FinalStatus         bool         `json:"finalStatus"`         // Флаг финального статуса
-	HasResult           string       `json:"hasResult"`           // Флаг передачи файла в ответ на заявление
-	CancelAllowed       bool         `json:"cancelAllowed"`       // Флаг возможности отменить заявление
-	Sender              string       `json:"sender"`              // Отправитель СМЭВ-сообщения о смене статуса
-	Comment             string       `json:"comment"`             // Комментарий к статусу
-	StateOrgStatusCode  string       `json:"stateOrgStatusCode"`  // Код ведомственного статуса
-	StateOrgStatusDescr string       `json:"stateOrgStatusDescr"` // Наименование ведомственного статуса
+	Id                  int          `json:"id"`                            // Идентификатор статуса
+	StatusId            int          `json:"statusId"`                      // Код статуса
+	Title               string       `json:"title"`                         // Наименование статуса
+	Date                dto.DateTime `json:"date"`                          // Дата и время смены статуса
+	OrderId             int          `json:"orderId"`                       // Номер заявления
+	FinalStatus         bool         `json:"finalStatus"`                   // Флаг финального статуса
+	HasResult           string       `json:"hasResult"`                     // Флаг передачи файла в ответ на заявление
+	CancelAllowed       bool         `json:"cancelAllowed"`                 // Флаг возможности отменить заявление
+	Sender              string       `json:"sender,omitempty"`              // Отправитель СМЭВ-сообщения о смене статуса
+	Comment             string       `json:"comment,omitempty"`             // Комментарий к статусу
+	StateOrgStatusCode  string       `json:"stateOrgStatusCode,omitempty"`  // Код ведомственного статуса
+	StateOrgStatusDescr string       `json:"stateOrgStatusDescr,omitempty"` // Наименование ведомственного статуса
 
 	// Дополнительные аттрибуты
 
@@ -370,7 +370,7 @@ type OrderStatus struct {
 	DeliveryCancelAllowed bool   `json:"deliveryCancelAllowed"` // Флаг наличия отмены доставки
 	SendMessageAllowed    bool   `json:"sendMessageAllowed"`    // Признак разрешения отправки сообщения
 	EditAllowed           bool   `json:"editAllowed"`           // Признак редактирования
-	Mnemonic              string `json:"mnemonic"`              // Мнемоника ИС отправителя
+	Mnemonic              string `json:"mnemonic,omitempty"`    // Мнемоника ИС отправителя
 	StatusColorCode       string `json:"statusColorCode"`       // [Не документировано]
 
 }
@@ -382,19 +382,19 @@ type OrderStatusHistory struct {
 
 	// Основные аттрибуты
 
-	Id                  int          `json:"id"`                  // Идентификатор статуса
-	StatusId            int          `json:"statusId"`            // Код статуса
-	Title               string       `json:"title"`               // Наименование статуса
-	Date                dto.DateTime `json:"date"`                // Дата и время смены статуса
-	OrderId             int          `json:"orderId"`             // Номер заявления
-	FinalStatus         bool         `json:"finalStatus"`         // Флаг финального статуса
-	HasResult           string       `json:"hasResult"`           // Флаг передачи файла в ответ на заявление
-	CancelAllowed       bool         `json:"cancelAllowed"`       // Флаг наличия отмены
-	Sender              string       `json:"sender"`              // Наименование ведомства
-	Comment             string       `json:"comment"`             // Комментарий
-	StateOrgStatusCode  string       `json:"stateOrgStatusCode"`  // Код ведомственного статуса
-	StateOrgStatusDescr string       `json:"stateOrgStatusDescr"` // Наименование ведомственного статуса
-	StatusColorCode     string       `json:"statusColorCode"`     // [Не документировано]
+	Id                  int          `json:"id"`                            // Идентификатор статуса
+	StatusId            int          `json:"statusId"`                      // Код статуса
+	Title               string       `json:"title"`                         // Наименование статуса
+	Date                dto.DateTime `json:"date"`                          // Дата и время смены статуса
+	OrderId             int          `json:"orderId"`                       // Номер заявления
+	FinalStatus         bool         `json:"finalStatus"`                   // Флаг финального статуса
+	HasResult           string       `json:"hasResult"`                     // Флаг передачи файла в ответ на заявление
+	CancelAllowed       bool         `json:"cancelAllowed"`                 // Флаг наличия отмены
+	Sender              string       `json:"sender,omitempty"`              // Наименование ведомства
+	Comment             string       `json:"comment,omitempty"`             // Комментарий
+	StateOrgStatusCode  string       `json:"stateOrgStatusCode,omitempty"`  // Код ведомственного статуса
+	StateOrgStatusDescr string       `json:"stateOrgStatusDescr,omitempty"` // Наименование ведомственного статуса
+	StatusColorCode     string       `json:"statusColorCode"`               // [Не документировано]
 
 	// Дополнительные аттрибуты
 
