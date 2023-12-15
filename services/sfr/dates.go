@@ -27,8 +27,8 @@ type DateTime struct {
 }
 
 // NewDateTime - конструктор [DateTime].
-func NewDateTime(year int, month time.Month, day, hour, min, sec int, loc *time.Location) DateTime {
-	return DateTime{time.Date(year, month, day, hour, min, sec, 0, loc)}
+func NewDateTime(year int, month time.Month, day, hour, min, sec int) DateTime {
+	return DateTime{time.Date(year, month, day, hour, min, sec, 0, time.UTC)}
 }
 
 // MarshalXML - реализация интерфейса [xml.Marshaler].
