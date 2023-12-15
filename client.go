@@ -19,6 +19,10 @@ import (
 // раздел "2.1.3 Отправка заявления (загрузка архива по частям)".
 const DefaultChunkSize = 5_000_000
 
+// DefaultArchiveName - имя архива по умолчанию для методов [Client.OrderPush] и [Client.OrderPushChunked].
+// Используется, если в [Archive.Name] не передано имя архива.
+const DefaultArchiveName = "archive"
+
 // Client - REST-клиент для API Госуслуг.
 type Client struct {
 	baseURI    string
@@ -85,7 +89,7 @@ func (c *Client) WithChunkSize(n int) *Client {
 // В случае ошибки возвращает цепочку из [ErrOrderCreate] и следующих возможных ошибок:
 //   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
-//   - [ErrNoOrderID] - не передан ID заявления
+//   - [ErrWrongOrderID] - в ответе не передан ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
@@ -101,7 +105,7 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 		return 0, fmt.Errorf("%w: %w", ErrOrderCreate, err)
 	}
 	if orderIdResponse.OrderId == 0 {
-		return 0, fmt.Errorf("%w: %w", ErrOrderCreate, ErrNoOrderID)
+		return 0, fmt.Errorf("%w: %w", ErrOrderCreate, ErrWrongOrderID)
 	}
 	return orderIdResponse.OrderId, nil
 }
@@ -117,12 +121,19 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 //   - [ErrNilArchive] - не передан архив
 //   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrMultipartBody] - ошибка подготовки multipart-содержимого
+//   - [ErrWrongOrderID] - в ответе не передан или передан некорректный ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
-func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive *Archive) error {
+func (c *Client) OrderPushChunked(token string, orderId int, meta OrderMeta, archive *Archive) error {
 	if archive == nil || len(archive.Data) == 0 {
 		return fmt.Errorf("%w: %w", ErrPushChunked, ErrNilArchive)
 	}
+
+	filename := archive.Name
+	if archive.Name == "" {
+		filename = DefaultArchiveName
+	}
+	extension := ".zip"
 
 	total := 1 + (len(archive.Data)-1)/(c.chunkSize)
 
@@ -134,20 +145,17 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 		}
 		chunk := archive.Data[current*c.chunkSize : end]
 
-		filename := archive.Name
 		if total > 1 {
-			filename = archive.Name + fmt.Sprintf(".z%03d", current+1)
-		} else {
-			filename += ".zip"
+			extension = fmt.Sprintf(".z%03d", current+1)
 		}
 
 		// prepare multipart body
 		body := &bytes.Buffer{}
 		w := multipart.NewWriter(body)
 		if err := newMultipartBuilder(w).
-			withOrderId(id).
+			withOrderId(orderId).
 			withMeta(meta).
-			withFile(filename, chunk).
+			withFile(filename+extension, chunk).
 			withChunkNum(current, total).
 			build(); err != nil {
 			return fmt.Errorf("%w: %w", ErrPushChunked, err)
@@ -164,6 +172,9 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 			orderIdResponse,
 		); err != nil {
 			return fmt.Errorf("%w: %w", ErrPushChunked, err)
+		}
+		if orderIdResponse.OrderId != orderId {
+			return fmt.Errorf("%w: %w", ErrPushChunked, ErrWrongOrderID)
 		}
 	}
 
@@ -182,6 +193,7 @@ func (c *Client) OrderPushChunked(token string, id int, meta OrderMeta, archive 
 //   - [ErrNilArchive] - не передан архив
 //   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrMultipartBody] - ошибка подготовки multipart-содержимого
+//   - [ErrWrongOrderID] - в ответе не передан ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int, error) {
@@ -189,11 +201,16 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 		return 0, fmt.Errorf("%w: %w", ErrPush, ErrNilArchive)
 	}
 
+	filename := archive.Name
+	if archive.Name == "" {
+		filename = DefaultArchiveName
+	}
+
 	body := &bytes.Buffer{}
 	w := multipart.NewWriter(body)
 	if err := newMultipartBuilder(w).
 		withMeta(meta).
-		withFile(archive.Name+".zip", archive.Data).
+		withFile(filename+".zip", archive.Data).
 		build(); err != nil {
 		return 0, fmt.Errorf("%w: %w", ErrPush, err)
 	}
@@ -208,6 +225,9 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 		orderIdResponse,
 	); err != nil {
 		return 0, fmt.Errorf("%w: %w", ErrPush, err)
+	}
+	if orderIdResponse.OrderId == 0 {
+		return 0, fmt.Errorf("%w: %w", ErrPush, ErrWrongOrderID)
 	}
 
 	return orderIdResponse.OrderId, nil

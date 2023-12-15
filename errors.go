@@ -31,7 +31,7 @@ var (
 	ErrGUID                  = errors.New("не удалось сгенерировать GUID")
 	ErrXMLMarshal            = errors.New("ошибка создания XML")
 	ErrNilArchive            = errors.New("не передан архив")
-	ErrNoOrderID             = errors.New("не передан ID заявления")
+	ErrWrongOrderID          = errors.New("некорректный ID заявления")
 )
 
 // # HTTP-ошибки
@@ -50,7 +50,7 @@ var (
 	ErrStatusBadGateway            = errors.New("некорректный шлюз")            // HTTP 502
 	ErrStatusServiceUnavailable    = errors.New("сервис недоступен")            // HTTP 503
 	ErrStatusGatewayTimeout        = errors.New("шлюз не отвечает")             // HTTP 504
-	ErrStatusStatusUnexpected      = errors.New("неожиданный HTTP-статус")      // Другие HTTP-коды ошибок
+	ErrStatusUnexpected            = errors.New("неожиданный HTTP-статус")      // Другие HTTP-коды ошибок
 )
 
 // # Ошибки ЕПГУ
@@ -113,6 +113,9 @@ var (
 
 	// Ошибка ЕПГУ: неизвестное значение code
 	ErrCodeUnexpected = errors.New("неожиданный код ошибки")
+
+	// Ошибка ЕПГУ: code не указан
+	ErrCodeNotSpecified = errors.New("код ошибки не указан")
 )
 
 // HTTP 403 Forbidden: доступ запрещен: доступ запрещен для ВИС, отправляющей запрос [code='access_denied_system', message='ValidationCommonError.notAllowed']
@@ -120,6 +123,11 @@ func responseError(res *http.Response) error {
 	if res == nil || (res.StatusCode != 204 && res.StatusCode < 400) {
 		return nil
 	}
+
+	if res.StatusCode == 204 {
+		return fmt.Errorf("HTTP %s: %w", res.Status, ErrStatusOrderNotFound)
+	}
+
 	return fmt.Errorf(
 		"HTTP %s: %w: %w",
 		res.Status, httpStatusError(res.StatusCode), bodyError(res),
@@ -128,8 +136,6 @@ func responseError(res *http.Response) error {
 
 func httpStatusError(statusCode int) error {
 	switch statusCode {
-	case 204:
-		return ErrStatusOrderNotFound
 	case 400:
 		return ErrStatusBadRequest
 	case 401:
@@ -151,7 +157,7 @@ func httpStatusError(statusCode int) error {
 	case 504:
 		return ErrStatusGatewayTimeout
 	default:
-		return ErrStatusStatusUnexpected
+		return ErrStatusUnexpected
 	}
 }
 
@@ -161,24 +167,20 @@ func bodyError(res *http.Response) error {
 		return fmt.Errorf("%w: %w", ErrRequest, err)
 	}
 	ct := res.Header.Get("Content-Type")
-	switch {
-	case strings.HasPrefix(ct, "application/json"):
+	if strings.HasPrefix(ct, "application/json") {
 		return jsonError(body)
-	case strings.HasPrefix(ct, "text/plain") || ct == "":
-		return textError(body)
-	default:
-		return fmt.Errorf("%w [%s]", ErrUnexpectedContentType, ct)
 	}
+	return fmt.Errorf("%w: '%s'", ErrUnexpectedContentType, ct)
 }
 
 func jsonError(body []byte) error {
-	errorRes := &dto.ErrorResponse{}
-	err := json.Unmarshal(body, errorRes)
+	errResponse := &dto.ErrorResponse{}
+	err := json.Unmarshal(body, errResponse)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrJSONUnmarshal, err)
 	}
 
-	switch errorRes.Code {
+	switch errResponse.Code {
 	case "access_denied_person_permissions":
 		err = ErrCodeAccessDeniedPersonPermissions
 	case "access_denied_service":
@@ -209,13 +211,22 @@ func jsonError(body []byte) error {
 		err = ErrCodePushDenied
 	case "service_not_found":
 		err = ErrCodeServiceNotFound
+	case "":
+		err = ErrCodeNotSpecified
 	default:
 		err = ErrCodeUnexpected
 	}
 
-	return fmt.Errorf(" %w [code='%s', message='%s']", err, errorRes.Code, errorRes.Message)
-}
+	var fields []string
+	if errResponse.Code != "" {
+		fields = append(fields, fmt.Sprintf("code='%s'", errResponse.Code))
+	}
+	if errResponse.Message != "" {
+		fields = append(fields, fmt.Sprintf("message='%s'", errResponse.Message))
+	}
+	if errResponse.Error != "" {
+		fields = append(fields, fmt.Sprintf("error='%s'", errResponse.Error))
+	}
 
-func textError(body []byte) error {
-	return errors.New(strings.Replace(string(body), "\n", "\\n", -1))
+	return fmt.Errorf("%w [%s]", err, strings.Join(fields, ", "))
 }
