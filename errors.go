@@ -31,6 +31,7 @@ var (
 	ErrGUID                  = errors.New("не удалось сгенерировать GUID")
 	ErrXMLMarshal            = errors.New("ошибка создания XML")
 	ErrNilArchive            = errors.New("не передан архив")
+	ErrNoOrderID             = errors.New("не передан ID заявления")
 )
 
 // # HTTP-ошибки

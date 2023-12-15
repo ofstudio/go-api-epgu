@@ -85,6 +85,7 @@ func (c *Client) WithChunkSize(n int) *Client {
 // В случае ошибки возвращает цепочку из [ErrOrderCreate] и следующих возможных ошибок:
 //   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
+//   - [ErrNoOrderID] - не передан ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
@@ -99,7 +100,9 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 	); err != nil {
 		return 0, fmt.Errorf("%w: %w", ErrOrderCreate, err)
 	}
-
+	if orderIdResponse.OrderId == 0 {
+		return 0, fmt.Errorf("%w: %w", ErrOrderCreate, ErrNoOrderID)
+	}
 	return orderIdResponse.OrderId, nil
 }
 
