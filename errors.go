@@ -18,6 +18,7 @@ var (
 	ErrPush        = errors.New("ошибка OrderPush")
 	ErrOrderInfo   = errors.New("ошибка OrderInfo ")
 	ErrService     = errors.New("ошибка услуги")
+	ErrOrderCancel        = errors.New("ошибка OrderCancel")
 )
 
 // # Ошибки второго уровня

@@ -276,3 +276,89 @@ func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 
 	return orderInfo, nil
 }
+
+// fixme: вызов POST /api/gusmev/order/3500308079/cancel возвращает 400 Bad Request
+//	 {
+//		 "code":"bad_request",
+//		 "message":"Required request parameter 'reason' for method parameter type String is not present"
+//	 }
+//	 Параметр reason не описан в спецификации API ЕПГУ версия 1.12
+// OrderCancel - отмена заявления.
+//
+//	POST /api/gusmev/order/{orderId}/cancel
+//
+// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// раздел "2.2. Отмена заявления".
+//
+// В случае ошибки возвращает цепочку из [ErrOrderCancel] и следующих возможных ошибок:
+//   - [ErrRequest] - ошибка HTTP-запроса
+//   - [ErrJSONUnmarshal] - ошибка разбора ответа
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
+//   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeCancelNotAllowed])
+//func (c *Client) OrderCancel(token string, orderId int) error {
+//	if err := c.requestJSON(
+//		http.MethodPost,
+//		fmt.Sprintf("/api/gusmev/order/%d/cancel", orderId),
+//		"",
+//		token,
+//		nil,
+//		nil,
+//	); err != nil {
+//		return fmt.Errorf("%w: %w", ErrOrderCancel, err)
+//	}
+//	return nil
+//}
+
+// AttachmentDownload - скачивание файла вложения созданного заявления.
+//
+//	GET /api/storage/v2/files/{objectId}/{objectType}/download?mnemonic={mnemonic}
+//
+// Параметр link - значение поля [OrderAttachmentFile.Link] из ответа метода [Client.OrderInfo].
+// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// раздел "4. Скачивание файла".
+//
+// В случае успеха возвращает содержимое файла.
+// В случае ошибки возвращает цепочку из [ErrAttachmentDownload] и следующих возможных ошибок:
+//   - [ErrRequest] - ошибка HTTP-запроса
+//   - [ErrInvalidFileLink] - некорректный параметр link
+func (c *Client) AttachmentDownload(token string, link string) ([]byte, error) {
+	uri, err := attachmentURI(link)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrAttachmentDownload, err)
+	}
+
+	resBody, err := c.requestBody(
+		http.MethodGet,
+		"/api/storage/v2/files"+uri,
+		"",
+		token,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrAttachmentDownload, err)
+	}
+
+	return resBody, nil
+}
+
+// reAttachmentURI - регулярное выражение для разбора URI вида:
+// "terrabyte://00/1230254874/req_8d8567db-d445-4759-a122-6b4cefeca22c.xml/2"
+// $1 - {objectId}
+// $2 - {mnemonic}
+// $3 - {objectType}
+var reAttachmentURI = regexp.MustCompile(`^terrabyte://.*/(.*)/(.*)/(.*)$`)
+
+// attachmentURI - формирует URI для скачивания файла вложения.
+// Параметр link - значение поля [OrderAttachmentFile.Link].
+// Возвращает URI вида:
+//
+//	/{objectId}/{objectType}/download?mnemonic={mnemonic}
+//
+// либо ошибку [ErrInvalidFileLink], если передан некорректный параметр link.
+func attachmentURI(link string) (string, error) {
+	matches := reAttachmentURI.FindStringSubmatch(link)
+	if len(matches) != 4 {
+		return "", ErrInvalidFileLink
+	}
+	return fmt.Sprintf("/%s/%s/download?mnemonic=%s", matches[1], matches[3], matches[2]), nil
+}
