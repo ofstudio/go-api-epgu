@@ -13,12 +13,13 @@ import (
 
 // # Ошибки первого уровня
 var (
-	ErrOrderCreate = errors.New("ошибка OrderCreate")
-	ErrPushChunked = errors.New("ошибка OrderPushChunked")
-	ErrPush        = errors.New("ошибка OrderPush")
-	ErrOrderInfo   = errors.New("ошибка OrderInfo ")
-	ErrService     = errors.New("ошибка услуги")
+	ErrOrderCreate        = errors.New("ошибка OrderCreate")
+	ErrPushChunked        = errors.New("ошибка OrderPushChunked")
+	ErrPush               = errors.New("ошибка OrderPush")
+	ErrOrderInfo          = errors.New("ошибка OrderInfo ")
 	ErrOrderCancel        = errors.New("ошибка OrderCancel")
+	ErrAttachmentDownload = errors.New("ошибка AttachmentDownload")
+	ErrService            = errors.New("ошибка услуги")
 )
 
 // # Ошибки второго уровня
@@ -33,6 +34,7 @@ var (
 	ErrXMLMarshal            = errors.New("ошибка создания XML")
 	ErrNilArchive            = errors.New("не передан архив")
 	ErrWrongOrderID          = errors.New("некорректный ID заявления")
+	ErrInvalidFileLink       = errors.New("некорректная ссылка на файл")
 )
 
 // # HTTP-ошибки
