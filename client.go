@@ -94,7 +94,7 @@ func (c *Client) WithChunkSize(n int) *Client {
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 	orderIdResponse := &dto.OrderIdResponse{}
-	if err := c.request(
+	if err := c.requestJSON(
 		http.MethodPost,
 		"/api/gusmev/order",
 		"application/json; charset=utf-8",
@@ -163,7 +163,7 @@ func (c *Client) OrderPushChunked(token string, orderId int, meta OrderMeta, arc
 
 		// make request
 		orderIdResponse := &dto.OrderIdResponse{}
-		if err := c.request(
+		if err := c.requestJSON(
 			http.MethodPost,
 			"/api/gusmev/push/chunked",
 			"multipart/form-data; boundary="+w.Boundary(),
@@ -216,7 +216,7 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 	}
 
 	orderIdResponse := &dto.OrderIdResponse{}
-	if err := c.request(
+	if err := c.requestJSON(
 		http.MethodPost,
 		"/api/gusmev/push",
 		"multipart/form-data; boundary="+w.Boundary(),
@@ -241,7 +241,7 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 // раздел "2.4. Получение деталей по заявлению".
 //
 // В случае успеха возвращает детальную информацию по заявлению.
-// В случае ошибки возвращает цепочку из ErrOrderInfo и следующих возможных ошибок:
+// В случае ошибки возвращает цепочку из [ErrOrderInfo] и следующих возможных ошибок:
 //   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
@@ -249,7 +249,7 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 
 	orderInfoResponse := &dto.OrderInfoResponse{}
-	if err := c.request(
+	if err := c.requestJSON(
 		http.MethodPost,
 		fmt.Sprintf("/api/gusmev/order/%d", orderId),
 		"",
