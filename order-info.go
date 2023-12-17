@@ -2,7 +2,7 @@ package apipgu
 
 import "github.com/ofstudio/go-api-epgu/dto"
 
-// OrderInfo - детальная информация по отправленному заявлению.
+// OrderInfo - детальная информация по отправленному заявлению метода [Client.OrderInfo].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12",
 // раздел "2.4. Получение деталей по заявлению".
@@ -24,7 +24,7 @@ type OrderInfo struct {
 	Order     *OrderDetails // Детали заявления, если оно уже создано на портале и отправлено в ведомство
 }
 
-// OrderDetails - детальная информация по заявлению (см  [OrderInfo]).
+// OrderDetails - детальная информация по заявлению из структуры [OrderInfo] метода [Client.OrderInfo].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 //
@@ -346,7 +346,7 @@ type OrderDetails struct {
 
 }
 
-// OrderStatus - статусы заявления структуры [OrderDetails]
+// OrderStatus - статусы заявления структуры [OrderDetails] метода [Client.OrderInfo].
 type OrderStatus struct {
 
 	// Основные аттрибуты
@@ -375,7 +375,7 @@ type OrderStatus struct {
 
 }
 
-// OrderStatusHistory - история статуса заявления структуры [OrderDetails].
+// OrderStatusHistory - история статуса заявления структуры [OrderDetails] метода [Client.OrderInfo].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 type OrderStatusHistory struct {
@@ -405,7 +405,7 @@ type OrderStatusHistory struct {
 
 }
 
-// OrderAttachmentFile - файл заявления, отправленный пользователем из структуры [OrderDetails].
+// OrderAttachmentFile - файл заявления, отправленный пользователем из структуры [OrderDetails] метода [Client.OrderInfo].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 type OrderAttachmentFile struct {
@@ -442,7 +442,7 @@ type OrderResponseFile struct {
 	FileSize       int    `json:"fileSize"`       // Размер файла
 }
 
-// OrderAttributeEvent - атрибуты событий для заявления из структуры [OrderDetails].
+// OrderAttributeEvent - атрибуты событий для заявления из структуры [OrderDetails] метода [Client.OrderInfo].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 type OrderAttributeEvent struct {
@@ -451,7 +451,7 @@ type OrderAttributeEvent struct {
 	OldValue string `json:"oldValue"` // Старое значение
 }
 
-// OrderQrlink - не документированное поле (см [OrderDetails]).
+// OrderQrlink - не документированное поле структуры [OrderDetails] метода [Client.OrderInfo].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12", раздел "2.4. Получение деталей по заявлению".
 type OrderQrlink struct {
