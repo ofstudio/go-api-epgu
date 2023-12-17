@@ -11,7 +11,7 @@ import (
 	"github.com/ofstudio/go-api-epgu/dto"
 )
 
-// # Ошибки первого уровня
+// Ошибки первого уровня.
 var (
 	ErrOrderCreate        = errors.New("ошибка OrderCreate")
 	ErrPushChunked        = errors.New("ошибка OrderPushChunked")
@@ -23,7 +23,7 @@ var (
 	ErrService            = errors.New("ошибка услуги")
 )
 
-// # Ошибки второго уровня
+// Ошибки второго уровня.
 var (
 	ErrMultipartBody         = errors.New("ошибка подготовки multipart-содержимого")
 	ErrRequest               = errors.New("ошибка HTTP-запроса")
@@ -38,7 +38,7 @@ var (
 	ErrInvalidFileLink       = errors.New("некорректная ссылка на файл")
 )
 
-// # HTTP-ошибки
+// HTTP-ошибки.
 //
 // Подробнее см. "Спецификация API ЕПГУ версия 1.12",
 // "Приложение 4. Ошибки, возвращаемые при запросах к API ЕПГУ"
@@ -57,7 +57,7 @@ var (
 	ErrStatusUnexpected            = errors.New("неожиданный HTTP-статус")      // Другие HTTP-коды ошибок
 )
 
-// # Ошибки ЕПГУ
+// Ошибки ЕПГУ.
 //
 // Подробнее см. "Спецификация API ЕПГУ версия 1.12",
 // "Приложение 4. Ошибки, возвращаемые при запросах к API ЕПГУ"
@@ -122,7 +122,10 @@ var (
 	ErrCodeNotSpecified = errors.New("код ошибки не указан")
 )
 
-// HTTP 403 Forbidden: доступ запрещен: доступ запрещен для ВИС, отправляющей запрос [code='access_denied_system', message='ValidationCommonError.notAllowed']
+// responseError возвращает ошибку из HTTP-ответа от API ЕПГУ.
+// Пример сообщения об ошибке:
+//
+//	HTTP 403 Forbidden: доступ запрещен: доступ запрещен для ВИС, отправляющей запрос [code='access_denied_system', message='ValidationCommonError.notAllowed']
 func responseError(res *http.Response) error {
 	if res == nil || (res.StatusCode != 204 && res.StatusCode < 400) {
 		return nil

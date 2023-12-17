@@ -291,9 +291,7 @@ func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeCancelNotAllowed])
 //
-// # Примечание
-//
-// В настоящий момент (декабрь 2023) вызов метода возвращает ошибку HTTP 400 Bad Request:
+// Примечание. В настоящий момент (декабрь 2023) вызов метода возвращает ошибку HTTP 400 Bad Request:
 //
 //	 {
 //		 "code":"bad_request",

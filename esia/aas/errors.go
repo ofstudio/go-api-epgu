@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// # Ошибки первого уровня
+// Ошибки первого уровня.
 var (
 	ErrAuthURI       = errors.New("ошибка при создании авторизационной ссылки")
 	ErrParseCallback = errors.New("ошибка обратного вызова")
@@ -18,7 +18,7 @@ var (
 	ErrTokenUpdate   = errors.New("ошибка обновления токена")
 )
 
-// # Ошибки второго уровня
+// Ошибки второго уровня.
 var (
 	ErrNoState               = errors.New("отсутствует поле state")
 	ErrGUID                  = errors.New("не удалось сгенерировать GUID")
@@ -28,7 +28,7 @@ var (
 	ErrUnexpectedContentType = errors.New("неожиданный тип содержимого")
 )
 
-// # Ошибки ЕСИА
+// Ошибки ЕСИА.
 var (
 	ErrESIA_036700 = errors.New("ESIA-036700: Не указана мнемоника типа согласия")
 	ErrESIA_036701 = errors.New("ESIA-036701: Не найден тип согласия")
