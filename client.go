@@ -278,12 +278,6 @@ func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 	return orderInfo, nil
 }
 
-// fixme: вызов POST /api/gusmev/order/3500308079/cancel возвращает 400 Bad Request
-//	 {
-//		 "code":"bad_request",
-//		 "message":"Required request parameter 'reason' for method parameter type String is not present"
-//	 }
-//	 Параметр reason не описан в спецификации API ЕПГУ версия 1.12
 // OrderCancel - отмена заявления.
 //
 //	POST /api/gusmev/order/{orderId}/cancel
@@ -296,19 +290,32 @@ func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeCancelNotAllowed])
-//func (c *Client) OrderCancel(token string, orderId int) error {
-//	if err := c.requestJSON(
-//		http.MethodPost,
-//		fmt.Sprintf("/api/gusmev/order/%d/cancel", orderId),
-//		"",
-//		token,
-//		nil,
-//		nil,
-//	); err != nil {
-//		return fmt.Errorf("%w: %w", ErrOrderCancel, err)
-//	}
-//	return nil
-//}
+//
+// # Примечание
+//
+// В настоящий момент (декабрь 2023) вызов метода возвращает ошибку HTTP 400 Bad Request:
+//
+//	 {
+//		 "code":"bad_request",
+//		 "message":"Required request parameter 'reason' for method parameter type String is not present"
+//	 }
+//
+// При этом, параметр reason не описан в спецификации API ЕПГУ версия 1.12.
+// На данный момент ни одна из доступных услуг API ЕПГУ не предусматривает
+// возможность отмены. Вероятно, спецификация метода будет изменена в будущем.
+func (c *Client) OrderCancel(token string, orderId int) error {
+	if err := c.requestJSON(
+		http.MethodPost,
+		fmt.Sprintf("/api/gusmev/order/%d/cancel", orderId),
+		"application/json; charset=utf-8",
+		token,
+		nil,
+		nil,
+	); err != nil {
+		return fmt.Errorf("%w: %w", ErrOrderCancel, err)
+	}
+	return nil
+}
 
 // AttachmentDownload - скачивание файла вложения созданного заявления.
 //
