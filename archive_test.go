@@ -20,8 +20,8 @@ type suiteTestArchive struct {
 func (suite *suiteTestArchive) TestNewArchive() {
 
 	suite.Run("success", func() {
-		file1 := File{Filename: "file1.txt", Data: []byte("This is file 1")}
-		file2 := File{Filename: "file2.txt", Data: []byte("This is file 2")}
+		file1 := ArchiveFile{Filename: "file1.txt", Data: []byte("This is file 1")}
+		file2 := ArchiveFile{Filename: "file2.txt", Data: []byte("This is file 2")}
 
 		archive, err := NewArchive("test", file1, file2)
 		suite.NoError(err)
@@ -43,14 +43,14 @@ func (suite *suiteTestArchive) TestNewArchive() {
 
 }
 
-func (suite *suiteTestArchive) unZip(zipFile *zip.File) File {
+func (suite *suiteTestArchive) unZip(zipFile *zip.File) ArchiveFile {
 	f, err := zipFile.Open()
 	suite.Require().NoError(err)
 	b := bytes.Buffer{}
 	_, err = io.Copy(&b, f)
 	suite.Require().NoError(err)
 	suite.NoError(f.Close())
-	return File{
+	return ArchiveFile{
 		Filename: zipFile.Name,
 		Data:     b.Bytes(),
 	}

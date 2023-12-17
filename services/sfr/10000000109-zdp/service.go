@@ -124,8 +124,8 @@ func (s *Service) Archive(orderId int) (*apipgu.Archive, error) {
 	}
 	s.logData(transFileName, transXML)
 
-	reqFile := apipgu.File{Filename: reqFileName, Data: append([]byte(xml.Header), reqXML...)}
-	transFile := apipgu.File{Filename: transFileName, Data: append([]byte(xml.Header), transXML...)}
+	reqFile := apipgu.ArchiveFile{Filename: reqFileName, Data: append([]byte(xml.Header), reqXML...)}
+	transFile := apipgu.ArchiveFile{Filename: transFileName, Data: append([]byte(xml.Header), transXML...)}
 
 	archive, err := apipgu.NewArchive(archiveFileName, reqFile, transFile)
 	if err != nil {

@@ -6,8 +6,8 @@ import (
 	"fmt"
 )
 
-// File - файл вложения к создаваемому заявлению (см [Archive])
-type File struct {
+// ArchiveFile - файл вложения для формирования архива [Archive] к создаваемому заявлению
+type ArchiveFile struct {
 	Filename string // Имя файла с расширением. Пример: "req_346ee59c-a428-42f6-342e-c780dd2e278e.xml"
 	Data     []byte // Содержимое файла
 }
@@ -21,7 +21,7 @@ type Archive struct {
 
 // NewArchive - создает архив из файлов вложений.
 // В случае ошибки возвращает [ErrZip].
-func NewArchive(name string, files ...File) (*Archive, error) {
+func NewArchive(name string, files ...ArchiveFile) (*Archive, error) {
 	if len(files) == 0 {
 		return nil, ErrNoFiles
 	}
