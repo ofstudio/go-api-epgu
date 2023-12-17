@@ -21,7 +21,7 @@ import (
 const DefaultChunkSize = 5_000_000
 
 // DefaultArchiveName - имя архива по умолчанию для методов [Client.OrderPush] и [Client.OrderPushChunked].
-// Используется, если в [Archive.Name] не передано имя архива.
+// Используется, если в [Archive].Name не передано имя архива.
 const DefaultArchiveName = "archive"
 
 // Client - REST-клиент для API Госуслуг.
@@ -117,6 +117,9 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12",
 // раздел "2.1.3 Отправка заявления (загрузка архива по частям)"
+//
+// Максимальный размер чанка по умолчанию: [DefaultChunkSize],
+// может быть изменен с помощью [Client.WithChunkSize].
 //
 // В случае ошибки возвращает цепочку из [ErrPushChunked] и следующих возможных ошибок:
 //   - [ErrNilArchive] - не передан архив
@@ -319,7 +322,7 @@ func (c *Client) OrderCancel(token string, orderId int) error {
 //
 //	GET /api/storage/v2/files/{objectId}/{objectType}/download?mnemonic={mnemonic}
 //
-// Параметр link - значение поля [OrderAttachmentFile.Link] из ответа метода [Client.OrderInfo].
+// Параметр link - значение поля [OrderAttachmentFile].Link из ответа метода [Client.OrderInfo].
 // Подробнее см "Спецификация API ЕПГУ версия 1.12",
 // раздел "4. Скачивание файла".
 //

@@ -3,8 +3,8 @@ package apipgu
 // Типы запрашиваемого справочника (плоский / иерархический)
 // для метода [Client.Dict].
 const (
-	DictFilterOneLevel string = "ONELEVEL" // Плоский справочник метода [Client.Dict]
-	DictFilterSubTree  string = "SUBTREE"  // Иерархический справочник метода [Client.Dict]
+	DictFilterOneLevel string = "ONELEVEL" // Плоский справочник
+	DictFilterSubTree  string = "SUBTREE"  // Иерархический справочник
 )
 
 // Dict - структура данных справочника метода [Client.Dict].
@@ -39,7 +39,7 @@ type Dict struct {
 	Error       DictError                `json:"error"`       // Результат выполнения операции
 	FieldErrors []map[string]interface{} `json:"fieldErrors"` // Ошибки в полях запроса
 	Total       int                      `json:"total"`       // Общее количество найденных элементов
-	Items       []DictItem               `json:"items"`       // Найденные элементы справочника [количество]
+	Items       []DictItem               `json:"items"`       // Найденные элементы справочника
 }
 
 // DictError - результат выполнения операции из структуры [Dict].
