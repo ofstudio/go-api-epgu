@@ -41,3 +41,14 @@ type OrderInfoResponse struct {
 	MessageId string `json:"messageId"` // [Не документировано, GUID]
 	Order     string `json:"order"`     // В случае, если заявление уже создано на портале и отправлено в ведомство, параметр содержит строку в виде экранированного JSON-объекта
 }
+
+// DictRequest - запрос на получение справочника.
+//
+// Подробнее см. "Спецификация API ЕПГУ версия 1.12",
+// раздел "3. Получение справочных данных".
+type DictRequest struct {
+	TreeFiltering      string `json:"treeFiltering"`                // Тип справочника (плоский / иерархический)
+	ParentRefItemValue string `json:"parentRefItemValue,omitempty"` // Код родительского элемента
+	PageNum            int    `json:"pageNum,omitempty"`            // Номер необходимой страницы
+	PageSize           int    `json:"pageSize,omitempty"`           // Количество записей на странице
+}

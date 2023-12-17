@@ -19,6 +19,7 @@ var (
 	ErrOrderInfo          = errors.New("ошибка OrderInfo ")
 	ErrOrderCancel        = errors.New("ошибка OrderCancel")
 	ErrAttachmentDownload = errors.New("ошибка AttachmentDownload")
+	ErrDict               = errors.New("ошибка Dict")
 	ErrService            = errors.New("ошибка услуги")
 )
 

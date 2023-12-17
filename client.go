@@ -370,3 +370,42 @@ func attachmentURI(link string) (string, error) {
 	}
 	return fmt.Sprintf("/%s/%s/download?mnemonic=%s", matches[1], matches[3], matches[2]), nil
 }
+
+// Dict - получение справочных данных.
+//
+//	POST /api/nsi/v1/dictionary/{code}
+//
+// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// раздел "3. Получение справочных данных".
+//
+// Параметры:
+//
+//   - code - код справочника. Примеры: "EXTERNAL_BIC", "TO_PFR"
+//   - filter - тип справочника (плоский [DictFilterOneLevel] или иерархический [DictFilterSubTree])
+//   - parent - код родительского элемента (необязательный)
+//   - pageNum - номер необходимой страницы (необязательный)
+//   - pageSize - количество записей на странице (необязательный)
+//
+// Примечание: не все справочники поддерживают параметры parent, pageNum и pageSize.
+func (c *Client) Dict(code string, filter, parent string, pageNum, pageSize int) (*Dict, error) {
+	reqBody, _ := json.Marshal(&dto.DictRequest{
+		TreeFiltering:      filter,
+		ParentRefItemValue: parent,
+		PageNum:            pageNum,
+		PageSize:           pageSize,
+	})
+
+	dict := &Dict{}
+	if err := c.requestJSON(
+		http.MethodPost,
+		fmt.Sprintf("/api/nsi/v1/dictionary/%s", code),
+		"application/json; charset=utf-8",
+		"",
+		bytes.NewReader(reqBody),
+		dict,
+	); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrDict, err)
+	}
+
+	return dict, nil
+}
