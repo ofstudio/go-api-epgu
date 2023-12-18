@@ -23,15 +23,7 @@ type suiteTestClient struct {
 
 func (suite *suiteTestClient) TestOrderCreate() {
 
-	// Cases:
-	//	1. success
-	//	2. unexpected json response
-	//	3. malformed json response
-	//	4. bad request
-	//	5. forbidden
-	//	6. request error
-
-	suite.Run("success", func() {
+	suite.Run("200 success", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			suite.Equal("POST", r.Method)
@@ -53,7 +45,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		suite.Equal(123456, orderId)
 	})
 
-	suite.Run("unexpected json response", func() {
+	suite.Run("200 with unexpected json response", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -69,7 +61,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		suite.Equal(0, orderId)
 	})
 
-	suite.Run("malformed json response", func() {
+	suite.Run("200 with malformed json response", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -82,10 +74,11 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCreate)
 		suite.ErrorIs(err, ErrJSONUnmarshal)
+		suite.Equal("ошибка OrderCreate: ошибка чтения JSON: invalid character 'm' looking for beginning of value", err.Error())
 		suite.Equal(0, orderId)
 	})
 
-	suite.Run("bad request", func() {
+	suite.Run("400 with error field", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusBadRequest)
@@ -105,7 +98,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		suite.Equal(0, orderId)
 	})
 
-	suite.Run("forbidden", func() {
+	suite.Run("403 with access_denied_service", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusForbidden)
@@ -137,19 +130,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 
 func (suite *suiteTestClient) TestOrderPushChunked() {
 
-	// Cases:
-	//	1. success single chunk less than chunkSize
-	//	2. success single chunk equal to chunkSize
-	//	3. success multiple chunks
-	//	4. success but no orderId in response
-	//	5. success but wrong orderId in response
-	//	6. internal error with plain text response
-	//	7. request error
-	//  8. empty archive name
-	//  9. archive is nil
-	//  10. archive is zero length
-
-	suite.Run("success single chunk less than chunkSize", func() {
+	suite.Run("200 success single chunk less than chunkSize", func() {
 		reqCount := 0
 		dataSent := make([]byte, 100)
 		_, err := rand.Read(dataSent)
@@ -191,7 +172,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 		suite.Equal(1, reqCount)
 	})
 
-	suite.Run("success single chunk equal to chunkSize", func() {
+	suite.Run("200 success with single chunk equal to chunkSize", func() {
 		reqCount := 0
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			reqCount++
@@ -208,7 +189,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 		suite.Equal(1, reqCount)
 	})
 
-	suite.Run("success multiple chunks", func() {
+	suite.Run("200 success with multiple chunks", func() {
 		reqCount := 0
 		var dataReceived []byte
 		var chunkSizes []int
@@ -249,7 +230,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 		suite.Equal([]int{100, 100, 100, 1}, chunkSizes)
 	})
 
-	suite.Run("success but no orderId in response", func() {
+	suite.Run("200 success without orderId in response", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -265,7 +246,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 		suite.ErrorIs(err, ErrWrongOrderID)
 	})
 
-	suite.Run("success but wrong orderId in response", func() {
+	suite.Run("200 success with wrong orderId in response", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -281,7 +262,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 		suite.ErrorIs(err, ErrWrongOrderID)
 	})
 
-	suite.Run("internal error with plain text response", func() {
+	suite.Run("500 with unexpected plain text response", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("internal error"))
@@ -350,17 +331,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 func (suite *suiteTestClient) TestOrderPush() {
 
-	// Cases:
-	//	1. success
-	//	2. success but no orderId in response
-	//	3. 409 unable to handle request with code = service_not_found
-	//	4. 400 with malformed json response
-	//	5. request error
-	//  6. archive is nil
-	//  7. archive is zero length
-	//  8. empty archive name
-
-	suite.Run("success", func() {
+	suite.Run("200 success", func() {
 		dataSent := make([]byte, 100)
 		_, err := rand.Read(dataSent)
 		suite.Require().NoError(err)
@@ -398,7 +369,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 		suite.Equal(123456, orderId)
 	})
 
-	suite.Run("success but no orderId in response", func() {
+	suite.Run("200 success without orderId in response", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -415,7 +386,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 		suite.Equal(0, orderId)
 	})
 
-	suite.Run("409 unable to handle request with code = service_not_found", func() {
+	suite.Run("409 with service_not_found code", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(409)
@@ -509,18 +480,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 
 func (suite *suiteTestClient) TestOrderInfo() {
 
-	// Cases:
-	//	1. success
-	//	2. success but order is nil
-	//	3. malformed json response
-	//	4. malformed order field
-	//	5. 204 - order not found
-	//	6. request error
-	//	7. 401 - unauthorized
-	//	8. unexpected 4xx status
-	//	9. unknown code in error response
-
-	suite.Run("success", func() {
+	suite.Run("200 success", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			suite.Equal(http.MethodPost, r.Method)
 			suite.Equal("/api/gusmev/order/123456", r.URL.Path)
@@ -545,7 +505,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.JSONEq(orderInfoOrderWantJSON, string(orderJSON))
 	})
 
-	suite.Run("success but order is nil", func() {
+	suite.Run("200 success with null order field", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -563,7 +523,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.Nil(orderInfo.Order)
 	})
 
-	suite.Run("malformed json response", func() {
+	suite.Run("200 with malformed json response", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -579,7 +539,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.Nil(orderInfo)
 	})
 
-	suite.Run("malformed order field", func() {
+	suite.Run("2oo with malformed order field", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
@@ -595,7 +555,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.Nil(orderInfo)
 	})
 
-	suite.Run("204 - order not found", func() {
+	suite.Run("204 order not found", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNoContent)
 		}))
@@ -606,6 +566,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrStatusOrderNotFound)
+		suite.Equal("ошибка OrderInfo: HTTP 204 No Content: заявление не найдено", err.Error())
 		suite.Nil(orderInfo)
 	})
 
@@ -618,7 +579,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.Nil(orderInfo)
 	})
 
-	suite.Run("401 - unauthorized", func() {
+	suite.Run("401 unauthorized", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 		}))
@@ -629,6 +590,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrStatusUnauthorized)
+		suite.Equal("ошибка OrderInfo: HTTP 401 Unauthorized: отказ в доступе", err.Error())
 		suite.Nil(orderInfo)
 	})
 
@@ -645,14 +607,11 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrStatusUnexpected)
-		suite.Equal(
-			"ошибка OrderInfo : HTTP 406 Not Acceptable: неожиданный HTTP-статус: доступ запрещен для ВИС, отправляющей запрос [code='access_denied_system', message='Access Denied']",
-			err.Error(),
-		)
+		suite.Equal("ошибка OrderInfo: HTTP 406 Not Acceptable: неожиданный HTTP-статус", err.Error())
 		suite.Nil(orderInfo)
 	})
 
-	suite.Run("unknown code in error response", func() {
+	suite.Run("400 with unknown code", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(400)
@@ -667,11 +626,133 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.ErrorIs(err, ErrStatusBadRequest)
 		suite.ErrorIs(err, ErrCodeUnexpected)
 		suite.Equal(
-			"ошибка OrderInfo : HTTP 400 Bad Request: неверные параметры: неожиданный код ошибки [code='unknown_code', message='Unknown Code']",
+			"ошибка OrderInfo: HTTP 400 Bad Request: неверные параметры: неожиданный код ошибки [code='unknown_code', message='Unknown Code']",
 			err.Error(),
 		)
 		suite.Nil(orderInfo)
 	})
+}
+
+func (suite *suiteTestClient) TestOrderCancel() {
+
+	suite.Run("200 success", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodPost, r.Method)
+			suite.Equal("/api/gusmev/order/123456/cancel", r.URL.Path)
+			suite.Equal("Bearer test-token", r.Header.Get("Authorization"))
+
+			w.WriteHeader(http.StatusOK)
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		err := client.OrderCancel(testToken, 123456)
+		suite.NoError(err)
+	})
+
+	suite.Run("404 not found", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`Not Found`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		err := client.OrderCancel(testToken, 123456)
+		suite.Error(err)
+		suite.ErrorIs(err, ErrOrderCancel)
+		suite.ErrorIs(err, ErrStatusURLNotFound)
+		suite.Equal(
+			"ошибка OrderCancel: HTTP 404 Not Found: не найден URL запроса",
+			err.Error(),
+		)
+	})
+
+	suite.Run("HTTP 429 with code = limitation_exception", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusTooManyRequests)
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		err := client.OrderCancel(testToken, 123456)
+		suite.Error(err)
+		suite.ErrorIs(err, ErrOrderCancel)
+		suite.ErrorIs(err, ErrStatusTooManyRequests)
+		suite.Equal(
+			"ошибка OrderCancel: HTTP 429 Too Many Requests: слишком много запросов",
+			err.Error(),
+		)
+	})
+
+	suite.Run("502 with plain text response", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusBadGateway)
+			_, _ = w.Write([]byte("bad gateway"))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		err := client.OrderCancel(testToken, 123456)
+		suite.Error(err)
+		suite.ErrorIs(err, ErrOrderCancel)
+		suite.ErrorIs(err, ErrStatusBadGateway)
+		suite.Equal(
+			"ошибка OrderCancel: HTTP 502 Bad Gateway: некорректный шлюз",
+			err.Error(),
+		)
+	})
+
+	suite.Run("request error", func() {
+		client := NewClient("")
+		err := client.OrderCancel(testToken, 123456)
+		suite.Error(err)
+		suite.ErrorIs(err, ErrOrderCancel)
+		suite.ErrorIs(err, ErrRequest)
+	})
+
+	suite.Run("409 with cancel_not_allowed code", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusConflict)
+			_, _ = w.Write([]byte(`{"code":"cancel_not_allowed", "message":"Заявление не может быть отменено"}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		err := client.OrderCancel(testToken, 123456)
+		suite.Error(err)
+		suite.ErrorIs(err, ErrOrderCancel)
+		suite.ErrorIs(err, ErrStatusUnableToHandleRequest)
+		suite.ErrorIs(err, ErrCodeCancelNotAllowed)
+		suite.Equal(
+			"ошибка OrderCancel: HTTP 409 Conflict: невозможно обработать запрос: отмена заявления в текущем статусе невозможна [code='cancel_not_allowed', message='Заявление не может быть отменено']",
+			err.Error(),
+		)
+	})
+
+}
+
+func (suite *suiteTestClient) Test_attachmentURI() {
+	suite.Run("normal link", func() {
+		uri, err := attachmentURI("terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		suite.NoError(err)
+		suite.Equal("/12345678/2/download?mnemonic=req_some-guid-1234.xml", uri)
+	})
+
+	suite.Run("some prefix", func() {
+		uri, err := attachmentURI("terrabyte://00/some/more/12345678/req_some-guid-1234.xml/2")
+		suite.NoError(err)
+		suite.Equal("/12345678/2/download?mnemonic=req_some-guid-1234.xml", uri)
+	})
+
+	suite.Run("no mnemonic", func() {
+		uri, err := attachmentURI("terrabyte://00/12345678/2")
+		suite.ErrorIs(err, ErrInvalidFileLink)
+		suite.Equal("", uri)
+	})
+
 }
 
 var (

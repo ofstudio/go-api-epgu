@@ -131,18 +131,18 @@ func responseError(res *http.Response) error {
 		return nil
 	}
 
-	if res.StatusCode == 204 {
-		return fmt.Errorf("HTTP %s: %w", res.Status, ErrStatusOrderNotFound)
+	switch res.StatusCode {
+	case 400, 403, 409, 500:
+		return fmt.Errorf("HTTP %s: %w: %w", res.Status, httpStatusError(res.StatusCode), bodyError(res))
+	default:
+		return fmt.Errorf("HTTP %s: %w", res.Status, httpStatusError(res.StatusCode))
 	}
-
-	return fmt.Errorf(
-		"HTTP %s: %w: %w",
-		res.Status, httpStatusError(res.StatusCode), bodyError(res),
-	)
 }
 
 func httpStatusError(statusCode int) error {
 	switch statusCode {
+	case 204:
+		return ErrStatusOrderNotFound
 	case 400:
 		return ErrStatusBadRequest
 	case 401:
