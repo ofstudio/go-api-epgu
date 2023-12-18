@@ -301,7 +301,7 @@ func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 //		 "message":"Required request parameter 'reason' for method parameter type String is not present"
 //	 }
 //
-// При этом, параметр reason не описан в спецификации API ЕПГУ версия 1.12.
+// При этом, параметр reason не описан в спецификации.
 // На данный момент ни одна из доступных услуг API ЕПГУ не предусматривает
 // возможность отмены. Вероятно, спецификация метода будет изменена в будущем.
 func (c *Client) OrderCancel(token string, orderId int) error {
