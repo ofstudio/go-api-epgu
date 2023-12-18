@@ -305,12 +305,11 @@ func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 // На данный момент ни одна из доступных услуг API ЕПГУ не предусматривает
 // возможность отмены. Вероятно, спецификация метода будет изменена в будущем.
 func (c *Client) OrderCancel(token string, orderId int) error {
-	if err := c.requestJSON(
+	if _, err := c.requestBody(
 		http.MethodPost,
 		fmt.Sprintf("/api/gusmev/order/%d/cancel", orderId),
 		"application/json; charset=utf-8",
 		token,
-		nil,
 		nil,
 	); err != nil {
 		return fmt.Errorf("%w: %w", ErrOrderCancel, err)
