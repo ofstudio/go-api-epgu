@@ -488,7 +488,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(orderInfoResponseJSON))
+			_, _ = w.Write([]byte(orderInfoSuccessResponse))
 		}))
 		defer server.Close()
 
@@ -502,7 +502,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		suite.NotNil(orderInfo.Order)
 		orderJSON, err := json.Marshal(orderInfo.Order)
 		suite.NoError(err)
-		suite.JSONEq(orderInfoOrderWantJSON, string(orderJSON))
+		suite.JSONEq(orderInfoSuccessWant, string(orderJSON))
 	})
 
 	suite.Run("200 success with null order field", func() {
@@ -851,10 +851,168 @@ func (suite *suiteTestClient) Test_attachmentURI() {
 
 }
 
+func (suite *suiteTestClient) TestDict() {
+
+	suite.Run("200 success with simple dict", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodPost, r.Method)
+			suite.Equal("/api/nsi/v1/dictionary/TEST_DICT", r.URL.Path)
+			body, err := io.ReadAll(r.Body)
+			suite.NoError(err)
+			suite.JSONEq(`{"treeFiltering":"SUBTREE"}`, string(body))
+
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(dictSuccessSimpleResponse))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		suite.NoError(err)
+		suite.Equal(5004, n)
+		suite.Len(items, 2)
+		itemsJSON, err := json.Marshal(items)
+		suite.NoError(err)
+		suite.JSONEq(dictSuccessSimpleWant, string(itemsJSON))
+	})
+
+	suite.Run("200 success with pagination and complex dict", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodPost, r.Method)
+			suite.Equal("/api/nsi/v1/dictionary/TEST_DICT", r.URL.Path)
+			body, err := io.ReadAll(r.Body)
+			suite.NoError(err)
+			suite.JSONEq(`{"pageNum":10, "pageSize":20, "parentRefItemValue":"test_parent", "treeFiltering":"ONELEVEL"}`, string(body))
+
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(dictSuccessComplexResponse))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		items, n, err := client.Dict("TEST_DICT", DictFilterOneLevel, "test_parent", 10, 20)
+		suite.NoError(err)
+		suite.Equal(1000, n)
+		suite.Len(items, 2)
+		itemsJSON, err := json.Marshal(items)
+		suite.NoError(err)
+		suite.JSONEq(dictSuccessComplexWant, string(itemsJSON))
+	})
+
+	suite.Run("200 with empty result", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodPost, r.Method)
+			suite.Equal("/api/nsi/v1/dictionary/TEST_DICT", r.URL.Path)
+
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(dictSuccessEmptyResponse))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		items, n, err := client.Dict("TEST_DICT", "", DictFilterSubTree, 0, 0)
+		suite.NoError(err)
+		suite.Equal(5004, n)
+		suite.Len(items, 0)
+	})
+
+	suite.Run("200 with error code", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodPost, r.Method)
+			suite.Equal("/api/nsi/v1/dictionary/TEST_DICT", r.URL.Path)
+
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(dictErrorResponse))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		suite.Error(err)
+		suite.ErrorIs(err, ErrDict)
+		suite.ErrorIs(err, ErrDictResponse)
+		suite.Equal(
+			"ошибка Dict: ошибка получения справочных данных [code='7', message='Entity not found']",
+			err.Error(),
+		)
+		suite.Equal(0, n)
+		suite.Len(items, 0)
+	})
+
+	suite.Run("200 with malformed json", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodPost, r.Method)
+			suite.Equal("/api/nsi/v1/dictionary/TEST_DICT", r.URL.Path)
+
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`malformed json{}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		suite.Error(err)
+		suite.ErrorIs(err, ErrDict)
+		suite.ErrorIs(err, ErrJSONUnmarshal)
+		suite.Equal(
+			"ошибка Dict: ошибка чтения JSON: invalid character 'm' looking for beginning of value",
+			err.Error(),
+		)
+		suite.Equal(0, n)
+		suite.Len(items, 0)
+	})
+
+	suite.Run("504 with no content", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodPost, r.Method)
+			suite.Equal("/api/nsi/v1/dictionary/TEST_DICT", r.URL.Path)
+
+			w.WriteHeader(http.StatusGatewayTimeout)
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		suite.Error(err)
+		suite.ErrorIs(err, ErrDict)
+		suite.ErrorIs(err, ErrStatusGatewayTimeout)
+		suite.Equal("ошибка Dict: HTTP 504 Gateway Timeout: шлюз не отвечает", err.Error())
+		suite.Equal(0, n)
+		suite.Len(items, 0)
+	})
+
+	suite.Run("request error", func() {
+		client := NewClient("")
+		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		suite.Error(err)
+		suite.ErrorIs(err, ErrDict)
+		suite.ErrorIs(err, ErrRequest)
+		suite.Equal(0, n)
+		suite.Len(items, 0)
+	})
+
+}
+
 var (
 	testToken = "test-token"
 	testMeta  = OrderMeta{Region: "test-region", ServiceCode: "test-service", TargetCode: "test-target"}
 )
 
-const orderInfoResponseJSON = `{"code":"OK","message":"test","messageId":"test-GUID","order":"{\"orderType\":\"ORDER\",\"hasNewStatus\":true,\"smevTx\":\"14329ae4-875b-40d3-9367-e2ef1b135189\",\"stateOrgId\":266,\"hasEmpowerment2021\":false,\"smevMessageId\":\"WAIT_RESPONSE\",\"hasChildren\":false,\"stateStructureName\":\"СФР\",\"formVersion\":\"1\",\"possibleServices\":{},\"orderAttributeEvents\":[],\"ownerId\":1000571421,\"eserviceId\":\"10000000109\",\"currentStatusHistoryId\":15000910007,\"hasTimestamp\":false,\"orderStatusName\":\"Заявление получено ведомством\",\"paymentRequired\":false,\"paymentStatusEvents\":[],\"payback\":false,\"readyToPush\":false,\"admLevelCode\":\"FEDERAL\",\"id\":3500308079,\"signCnt\":0,\"allFileSign\":false,\"noPaidPaymentCount\":-1,\"childrenSigned\":false,\"elk\":false,\"creationMode\":\"api\",\"steps\":[],\"orderStatusId\":2,\"withCustomResult\":false,\"statuses\":[{\"date\":\"2023-12-13T14:23:02.845+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"edit\",\"title\":\"Черновик заявления\",\"sendMessageAllowed\":false,\"statusId\":0,\"editAllowed\":false,\"id\":15000906353},{\"date\":\"2023-12-13T14:23:03.170+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"in_progress\",\"title\":\"Зарегистрировано на портале\",\"sendMessageAllowed\":false,\"statusId\":17,\"editAllowed\":false,\"sender\":\"Фонд пенсионного и социального страхования Российской Федерации\",\"id\":15000910006},{\"date\":\"2023-12-13T14:23:03.810+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"in_progress\",\"title\":\"Заявление отправлено в ведомство\",\"sendMessageAllowed\":false,\"statusId\":21,\"editAllowed\":false,\"sender\":\"Фонд пенсионного и социального страхования Российской Федерации\",\"id\":15000900969},{\"date\":\"2023-12-13T14:23:11.429+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"in_progress\",\"title\":\"Заявление получено ведомством\",\"sendMessageAllowed\":false,\"statusId\":2,\"editAllowed\":false,\"sender\":\"Фонд пенсионного и социального страхования Российской Федерации\",\"comment\":\"Сообщение доставлено\",\"id\":15000910007}],\"orderDate\":\"2023-12-13T14:23:02.000+0300\",\"updated\":\"2023-12-13T14:23:11.434+0300\",\"hasNoPaidPayment\":false,\"servicePassportId\":\"600109\",\"checkQueue\":false,\"withDelivery\":false,\"gisdo\":false,\"userSelectedRegion\":\"00000000000\",\"sourceSystem\":\"774216\",\"eQueueEvents\":[],\"hasActiveInviteToEqueue\":false,\"multRegion\":true,\"serviceEpguId\":\"1\",\"extSystem\":false,\"useAsTemplate\":false,\"edsStatus\":\"EDS_NOT_SUPPORTED\",\"allowToDelete\":false,\"qrlink\":{\"hasAltMimeType\":false,\"fileSize\":0,\"canSentToMFC\":false,\"hasDigitalSignature\":false,\"canPrintMFC\":false},\"requestDate\":\"2023-12-13T14:23:03.175+0300\",\"hasPreviewPdf\":false,\"stateOrgCode\":\"pfr\",\"testUser\":false,\"personType\":\"PERSON\",\"textMessages\":[],\"serviceTargetId\":\"-10000000109\",\"orderPayments\":[],\"unreadMessageCnt\":0,\"orderResponseFiles\":[],\"hasResult\":false,\"serviceName\":\"Доставка пенсии и социальных выплат СФР\",\"deprecatedService\":false,\"hubForm\":false,\"userId\":1000571421,\"allowToEdit\":false,\"orderAttachmentFiles\":[{\"fileName\":\"req_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml\",\"fileSize\":4875,\"link\":\"terrabyte://00/3500308079/req_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml/2\",\"id\":\"3500308079/files/cmVxXzMwZWY5MzYyLTc2ZjAtNGE3Yi05YTBmLWYzYmE0M2MzNTRkNi54bWw\",\"mimeType\":\"application/xml\",\"hasDigitalSignature\":false,\"type\":\"REQUEST\"},{\"fileName\":\"trans_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml\",\"fileSize\":604,\"link\":\"terrabyte://00/3500308079/trans_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml/2\",\"id\":\"3500308079/files/dHJhbnNfMzBlZjkzNjItNzZmMC00YTdiLTlhMGYtZjNiYTQzYzM1NGQ2LnhtbA\",\"mimeType\":\"application/xml\",\"hasDigitalSignature\":false,\"type\":\"ATTACHMENT\"}],\"closed\":false,\"online\":false,\"readyToSign\":false,\"currentStatusHistory\":{\"date\":\"2023-12-13T14:23:11.429+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"in_progress\",\"title\":\"Заявление получено ведомством\",\"sendMessageAllowed\":false,\"statusId\":2,\"editAllowed\":false,\"sender\":\"Фонд пенсионного и социального страхования Российской Федерации\",\"comment\":\"Сообщение доставлено\",\"id\":15000910007},\"infoMessages\":[],\"location\":\"92000000000\",\"paymentCount\":0,\"draftHidden\":false,\"stateStructureId\":\"10000002796\"}"}`
-const orderInfoOrderWantJSON = `{"orderType":"ORDER","hasNewStatus":true,"smevTx":"14329ae4-875b-40d3-9367-e2ef1b135189","stateOrgId":266,"hasEmpowerment2021":false,"smevMessageId":"WAIT_RESPONSE","hasChildren":false,"stateStructureName":"СФР","formVersion":"1","possibleServices":{},"orderAttributeEvents":[],"ownerId":1000571421,"eserviceId":"10000000109","currentStatusHistoryId":15000910007,"hasTimestamp":false,"orderStatusName":"Заявление получено ведомством","paymentRequired":false,"paymentStatusEvents":[],"payback":false,"readyToPush":false,"admLevelCode":"FEDERAL","id":3500308079,"signCnt":0,"allFileSign":false,"noPaidPaymentCount":-1,"childrenSigned":false,"elk":false,"creationMode":"api","steps":[],"orderStatusId":2,"withCustomResult":false,"statuses":[{"date":"2023-12-13T14:23:02.845+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"edit","title":"Черновик заявления","sendMessageAllowed":false,"statusId":0,"editAllowed":false,"id":15000906353},{"date":"2023-12-13T14:23:03.170+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"in_progress","title":"Зарегистрировано на портале","sendMessageAllowed":false,"statusId":17,"editAllowed":false,"sender":"Фонд пенсионного и социального страхования Российской Федерации","id":15000910006},{"date":"2023-12-13T14:23:03.810+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"in_progress","title":"Заявление отправлено в ведомство","sendMessageAllowed":false,"statusId":21,"editAllowed":false,"sender":"Фонд пенсионного и социального страхования Российской Федерации","id":15000900969},{"date":"2023-12-13T14:23:11.429+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"in_progress","title":"Заявление получено ведомством","sendMessageAllowed":false,"statusId":2,"editAllowed":false,"sender":"Фонд пенсионного и социального страхования Российской Федерации","comment":"Сообщение доставлено","id":15000910007}],"orderDate":"2023-12-13T14:23:02.000+0300","updated":"2023-12-13T14:23:11.434+0300","hasNoPaidPayment":false,"servicePassportId":"600109","checkQueue":false,"withDelivery":false,"gisdo":false,"userSelectedRegion":"00000000000","sourceSystem":"774216","eQueueEvents":[],"hasActiveInviteToEqueue":false,"multRegion":true,"serviceEpguId":"1","extSystem":false,"useAsTemplate":false,"edsStatus":"EDS_NOT_SUPPORTED","allowToDelete":false,"qrlink":{"hasAltMimeType":false,"fileSize":0,"canSentToMFC":false,"hasDigitalSignature":false,"canPrintMFC":false},"requestDate":"2023-12-13T14:23:03.175+0300","hasPreviewPdf":false,"stateOrgCode":"pfr","testUser":false,"personType":"PERSON","textMessages":[],"serviceTargetId":"-10000000109","orderPayments":[],"unreadMessageCnt":0,"orderResponseFiles":[],"hasResult":false,"serviceName":"Доставка пенсии и социальных выплат СФР","deprecatedService":false,"hubForm":false,"userId":1000571421,"allowToEdit":false,"orderAttachmentFiles":[{"fileName":"req_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml","fileSize":4875,"link":"terrabyte://00/3500308079/req_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml/2","id":"3500308079/files/cmVxXzMwZWY5MzYyLTc2ZjAtNGE3Yi05YTBmLWYzYmE0M2MzNTRkNi54bWw","mimeType":"application/xml","hasDigitalSignature":false,"type":"REQUEST"},{"fileName":"trans_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml","fileSize":604,"link":"terrabyte://00/3500308079/trans_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml/2","id":"3500308079/files/dHJhbnNfMzBlZjkzNjItNzZmMC00YTdiLTlhMGYtZjNiYTQzYzM1NGQ2LnhtbA","mimeType":"application/xml","hasDigitalSignature":false,"type":"ATTACHMENT"}],"closed":false,"online":false,"readyToSign":false,"currentStatusHistory":{"date":"2023-12-13T14:23:11.429+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"in_progress","title":"Заявление получено ведомством","sendMessageAllowed":false,"statusId":2,"editAllowed":false,"sender":"Фонд пенсионного и социального страхования Российской Федерации","comment":"Сообщение доставлено","id":15000910007},"infoMessages":[],"location":"92000000000","paymentCount":0,"draftHidden":false,"stateStructureId":"10000002796"}`
+const (
+	orderInfoSuccessResponse = `{"code":"OK","message":"test","messageId":"test-GUID","order":"{\"orderType\":\"ORDER\",\"hasNewStatus\":true,\"smevTx\":\"14329ae4-875b-40d3-9367-e2ef1b135189\",\"stateOrgId\":266,\"hasEmpowerment2021\":false,\"smevMessageId\":\"WAIT_RESPONSE\",\"hasChildren\":false,\"stateStructureName\":\"СФР\",\"formVersion\":\"1\",\"possibleServices\":{},\"orderAttributeEvents\":[],\"ownerId\":1000571421,\"eserviceId\":\"10000000109\",\"currentStatusHistoryId\":15000910007,\"hasTimestamp\":false,\"orderStatusName\":\"Заявление получено ведомством\",\"paymentRequired\":false,\"paymentStatusEvents\":[],\"payback\":false,\"readyToPush\":false,\"admLevelCode\":\"FEDERAL\",\"id\":3500308079,\"signCnt\":0,\"allFileSign\":false,\"noPaidPaymentCount\":-1,\"childrenSigned\":false,\"elk\":false,\"creationMode\":\"api\",\"steps\":[],\"orderStatusId\":2,\"withCustomResult\":false,\"statuses\":[{\"date\":\"2023-12-13T14:23:02.845+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"edit\",\"title\":\"Черновик заявления\",\"sendMessageAllowed\":false,\"statusId\":0,\"editAllowed\":false,\"id\":15000906353},{\"date\":\"2023-12-13T14:23:03.170+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"in_progress\",\"title\":\"Зарегистрировано на портале\",\"sendMessageAllowed\":false,\"statusId\":17,\"editAllowed\":false,\"sender\":\"Фонд пенсионного и социального страхования Российской Федерации\",\"id\":15000910006},{\"date\":\"2023-12-13T14:23:03.810+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"in_progress\",\"title\":\"Заявление отправлено в ведомство\",\"sendMessageAllowed\":false,\"statusId\":21,\"editAllowed\":false,\"sender\":\"Фонд пенсионного и социального страхования Российской Федерации\",\"id\":15000900969},{\"date\":\"2023-12-13T14:23:11.429+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"in_progress\",\"title\":\"Заявление получено ведомством\",\"sendMessageAllowed\":false,\"statusId\":2,\"editAllowed\":false,\"sender\":\"Фонд пенсионного и социального страхования Российской Федерации\",\"comment\":\"Сообщение доставлено\",\"id\":15000910007}],\"orderDate\":\"2023-12-13T14:23:02.000+0300\",\"updated\":\"2023-12-13T14:23:11.434+0300\",\"hasNoPaidPayment\":false,\"servicePassportId\":\"600109\",\"checkQueue\":false,\"withDelivery\":false,\"gisdo\":false,\"userSelectedRegion\":\"00000000000\",\"sourceSystem\":\"774216\",\"eQueueEvents\":[],\"hasActiveInviteToEqueue\":false,\"multRegion\":true,\"serviceEpguId\":\"1\",\"extSystem\":false,\"useAsTemplate\":false,\"edsStatus\":\"EDS_NOT_SUPPORTED\",\"allowToDelete\":false,\"qrlink\":{\"hasAltMimeType\":false,\"fileSize\":0,\"canSentToMFC\":false,\"hasDigitalSignature\":false,\"canPrintMFC\":false},\"requestDate\":\"2023-12-13T14:23:03.175+0300\",\"hasPreviewPdf\":false,\"stateOrgCode\":\"pfr\",\"testUser\":false,\"personType\":\"PERSON\",\"textMessages\":[],\"serviceTargetId\":\"-10000000109\",\"orderPayments\":[],\"unreadMessageCnt\":0,\"orderResponseFiles\":[],\"hasResult\":false,\"serviceName\":\"Доставка пенсии и социальных выплат СФР\",\"deprecatedService\":false,\"hubForm\":false,\"userId\":1000571421,\"allowToEdit\":false,\"orderAttachmentFiles\":[{\"fileName\":\"req_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml\",\"fileSize\":4875,\"link\":\"terrabyte://00/3500308079/req_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml/2\",\"id\":\"3500308079/files/cmVxXzMwZWY5MzYyLTc2ZjAtNGE3Yi05YTBmLWYzYmE0M2MzNTRkNi54bWw\",\"mimeType\":\"application/xml\",\"hasDigitalSignature\":false,\"type\":\"REQUEST\"},{\"fileName\":\"trans_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml\",\"fileSize\":604,\"link\":\"terrabyte://00/3500308079/trans_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml/2\",\"id\":\"3500308079/files/dHJhbnNfMzBlZjkzNjItNzZmMC00YTdiLTlhMGYtZjNiYTQzYzM1NGQ2LnhtbA\",\"mimeType\":\"application/xml\",\"hasDigitalSignature\":false,\"type\":\"ATTACHMENT\"}],\"closed\":false,\"online\":false,\"readyToSign\":false,\"currentStatusHistory\":{\"date\":\"2023-12-13T14:23:11.429+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":3500308079,\"hasResult\":\"N\",\"statusColorCode\":\"in_progress\",\"title\":\"Заявление получено ведомством\",\"sendMessageAllowed\":false,\"statusId\":2,\"editAllowed\":false,\"sender\":\"Фонд пенсионного и социального страхования Российской Федерации\",\"comment\":\"Сообщение доставлено\",\"id\":15000910007},\"infoMessages\":[],\"location\":\"92000000000\",\"paymentCount\":0,\"draftHidden\":false,\"stateStructureId\":\"10000002796\"}"}`
+	orderInfoSuccessWant     = `{"orderType":"ORDER","hasNewStatus":true,"smevTx":"14329ae4-875b-40d3-9367-e2ef1b135189","stateOrgId":266,"hasEmpowerment2021":false,"smevMessageId":"WAIT_RESPONSE","hasChildren":false,"stateStructureName":"СФР","formVersion":"1","possibleServices":{},"orderAttributeEvents":[],"ownerId":1000571421,"eserviceId":"10000000109","currentStatusHistoryId":15000910007,"hasTimestamp":false,"orderStatusName":"Заявление получено ведомством","paymentRequired":false,"paymentStatusEvents":[],"payback":false,"readyToPush":false,"admLevelCode":"FEDERAL","id":3500308079,"signCnt":0,"allFileSign":false,"noPaidPaymentCount":-1,"childrenSigned":false,"elk":false,"creationMode":"api","steps":[],"orderStatusId":2,"withCustomResult":false,"statuses":[{"date":"2023-12-13T14:23:02.845+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"edit","title":"Черновик заявления","sendMessageAllowed":false,"statusId":0,"editAllowed":false,"id":15000906353},{"date":"2023-12-13T14:23:03.170+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"in_progress","title":"Зарегистрировано на портале","sendMessageAllowed":false,"statusId":17,"editAllowed":false,"sender":"Фонд пенсионного и социального страхования Российской Федерации","id":15000910006},{"date":"2023-12-13T14:23:03.810+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"in_progress","title":"Заявление отправлено в ведомство","sendMessageAllowed":false,"statusId":21,"editAllowed":false,"sender":"Фонд пенсионного и социального страхования Российской Федерации","id":15000900969},{"date":"2023-12-13T14:23:11.429+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"in_progress","title":"Заявление получено ведомством","sendMessageAllowed":false,"statusId":2,"editAllowed":false,"sender":"Фонд пенсионного и социального страхования Российской Федерации","comment":"Сообщение доставлено","id":15000910007}],"orderDate":"2023-12-13T14:23:02.000+0300","updated":"2023-12-13T14:23:11.434+0300","hasNoPaidPayment":false,"servicePassportId":"600109","checkQueue":false,"withDelivery":false,"gisdo":false,"userSelectedRegion":"00000000000","sourceSystem":"774216","eQueueEvents":[],"hasActiveInviteToEqueue":false,"multRegion":true,"serviceEpguId":"1","extSystem":false,"useAsTemplate":false,"edsStatus":"EDS_NOT_SUPPORTED","allowToDelete":false,"qrlink":{"hasAltMimeType":false,"fileSize":0,"canSentToMFC":false,"hasDigitalSignature":false,"canPrintMFC":false},"requestDate":"2023-12-13T14:23:03.175+0300","hasPreviewPdf":false,"stateOrgCode":"pfr","testUser":false,"personType":"PERSON","textMessages":[],"serviceTargetId":"-10000000109","orderPayments":[],"unreadMessageCnt":0,"orderResponseFiles":[],"hasResult":false,"serviceName":"Доставка пенсии и социальных выплат СФР","deprecatedService":false,"hubForm":false,"userId":1000571421,"allowToEdit":false,"orderAttachmentFiles":[{"fileName":"req_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml","fileSize":4875,"link":"terrabyte://00/3500308079/req_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml/2","id":"3500308079/files/cmVxXzMwZWY5MzYyLTc2ZjAtNGE3Yi05YTBmLWYzYmE0M2MzNTRkNi54bWw","mimeType":"application/xml","hasDigitalSignature":false,"type":"REQUEST"},{"fileName":"trans_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml","fileSize":604,"link":"terrabyte://00/3500308079/trans_30ef9362-76f0-4a7b-9a0f-f3ba43c354d6.xml/2","id":"3500308079/files/dHJhbnNfMzBlZjkzNjItNzZmMC00YTdiLTlhMGYtZjNiYTQzYzM1NGQ2LnhtbA","mimeType":"application/xml","hasDigitalSignature":false,"type":"ATTACHMENT"}],"closed":false,"online":false,"readyToSign":false,"currentStatusHistory":{"date":"2023-12-13T14:23:11.429+0300","cancelAllowed":false,"unreadEvent":true,"deliveryCancelAllowed":false,"finalStatus":false,"orderId":3500308079,"hasResult":"N","statusColorCode":"in_progress","title":"Заявление получено ведомством","sendMessageAllowed":false,"statusId":2,"editAllowed":false,"sender":"Фонд пенсионного и социального страхования Российской Федерации","comment":"Сообщение доставлено","id":15000910007},"infoMessages":[],"location":"92000000000","paymentCount":0,"draftHidden":false,"stateStructureId":"10000002796"}`
+)
+
+const (
+	dictSuccessSimpleResponse  = `{"error":{"code":0,"message":"operation completed"},"fieldErrors":[],"total":5004,"items":[{"value":"0550041","title":"1.Клиентская служба (на правах отдела) в Белозерском районе","isLeaf":true,"children":[],"attributes":[],"attributeValues":{}},{"value":"0550091","title":"1. Клиентская служба (на правах  отдела) в Лебяжьевском районе","isLeaf":true,"children":[],"attributes":[],"attributeValues":{}}]}`
+	dictSuccessSimpleWant      = `[{"value":"0550041","title":"1.Клиентская служба (на правах отдела) в Белозерском районе","isLeaf":true,"children":[],"attributes":[],"attributeValues":{}},{"value":"0550091","title":"1. Клиентская служба (на правах  отдела) в Лебяжьевском районе","isLeaf":true,"children":[],"attributes":[],"attributeValues":{}}]`
+	dictSuccessComplexResponse = `{"error":{"code":0,"message":"operation completed"},"fieldErrors":[],"total":1000,"items":[ {"value": "049514608", "title": "049514608 - АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан", "isLeaf": true, "children": [], "attributes": [ { "name": "ID", "type": "STRING", "value": { "asString": "049514608", "typeOfValue": "STRING", "value": "049514608" }, "valueAsOfType": "049514608" }, { "name": "NAME", "type": "STRING", "value": { "asString": "АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан", "typeOfValue": "STRING", "value": "АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан" }, "valueAsOfType": "АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан" }, { "name": "BIC", "type": "STRING", "value": { "asString": "049514608", "typeOfValue": "STRING", "value": "049514608" }, "valueAsOfType": "049514608" }, { "name": "CORR_ACCOUNT", "type": "STRING", "value": { "asString": "30101810500000000608", "typeOfValue": "STRING", "value": "30101810500000000608" }, "valueAsOfType": "30101810500000000608" } ], "attributeValues": { "ID": "049514608", "CORR_ACCOUNT": "30101810500000000608", "BIC": "049514608", "NAME": "АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан" } }, { "value": "041012765", "title": "041012765 - \"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск", "isLeaf": true, "children": [], "attributes": [ { "name": "ID", "type": "STRING", "value": { "asString": "041012765", "typeOfValue": "STRING", "value": "041012765" }, "valueAsOfType": "041012765" }, { "name": "NAME", "type": "STRING", "value": { "asString": "\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск", "typeOfValue": "STRING", "value": "\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск" }, "valueAsOfType": "\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск" }, { "name": "BIC", "type": "STRING", "value": { "asString": "041012765", "typeOfValue": "STRING", "value": "041012765" }, "valueAsOfType": "041012765" }, { "name": "CORR_ACCOUNT", "type": "STRING", "value": { "asString": "30101810300000000765", "typeOfValue": "STRING", "value": "30101810300000000765" }, "valueAsOfType": "30101810300000000765" } ], "attributeValues": { "ID": "041012765", "CORR_ACCOUNT": "30101810300000000765", "BIC": "041012765", "NAME": "\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск" } }]}`
+	dictSuccessComplexWant     = `[{"value":"049514608","title":"049514608 - АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан","isLeaf":true,"children":[],"attributes":[{"name":"ID","type":"STRING","value":{"asString":"049514608","typeOfValue":"STRING","value":"049514608"},"valueAsOfType":"049514608"},{"name":"NAME","type":"STRING","value":{"asString":"АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан","typeOfValue":"STRING","value":"АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан"},"valueAsOfType":"АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан"},{"name":"BIC","type":"STRING","value":{"asString":"049514608","typeOfValue":"STRING","value":"049514608"},"valueAsOfType":"049514608"},{"name":"CORR_ACCOUNT","type":"STRING","value":{"asString":"30101810500000000608","typeOfValue":"STRING","value":"30101810500000000608"},"valueAsOfType":"30101810500000000608"}],"attributeValues":{"ID":"049514608","CORR_ACCOUNT":"30101810500000000608","BIC":"049514608","NAME":"АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан"}},{"value":"041012765","title":"041012765 - \"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск","isLeaf":true,"children":[],"attributes":[{"name":"ID","type":"STRING","value":{"asString":"041012765","typeOfValue":"STRING","value":"041012765"},"valueAsOfType":"041012765"},{"name":"NAME","type":"STRING","value":{"asString":"\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск","typeOfValue":"STRING","value":"\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск"},"valueAsOfType":"\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск"},{"name":"BIC","type":"STRING","value":{"asString":"041012765","typeOfValue":"STRING","value":"041012765"},"valueAsOfType":"041012765"},{"name":"CORR_ACCOUNT","type":"STRING","value":{"asString":"30101810300000000765","typeOfValue":"STRING","value":"30101810300000000765"},"valueAsOfType":"30101810300000000765"}],"attributeValues":{"ID":"041012765","CORR_ACCOUNT":"30101810300000000765","BIC":"041012765","NAME":"\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск"}}]`
+	dictSuccessEmptyResponse   = `{"error":{"code":0,"message":"operation completed"},"fieldErrors":[],"total":5004,"items":[]}`
+	dictErrorResponse          = `{"error":{"code":7,"message":"Entity not found"},"fieldErrors":[],"total":0,"items":[]}`
+)
