@@ -224,16 +224,5 @@ func jsonError(body []byte) error {
 		err = ErrCodeUnexpected
 	}
 
-	var fields []string
-	if errResponse.Code != "" {
-		fields = append(fields, fmt.Sprintf("code='%s'", errResponse.Code))
-	}
-	if errResponse.Message != "" {
-		fields = append(fields, fmt.Sprintf("message='%s'", errResponse.Message))
-	}
-	if errResponse.Error != "" {
-		fields = append(fields, fmt.Sprintf("error='%s'", errResponse.Error))
-	}
-
-	return fmt.Errorf("%w [%s]", err, strings.Join(fields, ", "))
+	return fmt.Errorf("%w [code='%s', message='%s']", err, errResponse.Code, errResponse.Message)
 }

@@ -14,7 +14,6 @@ package dto
 type ErrorResponse struct {
 	Code    string `json:"code"`    // Код ошибки
 	Message string `json:"message"` // Сообщение об ошибке
-	Error   string `json:"error"`   // Сообщение об ошибке (может возникать, если ошибка не от API ЕПГУ, а от промежуточного сервера)
 }
 
 // OrderIdResponse - ответ API ЕПГУ с номером созданного заявления.

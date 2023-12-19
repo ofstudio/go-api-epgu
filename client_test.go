@@ -78,11 +78,11 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		suite.Equal(0, orderId)
 	})
 
-	suite.Run("400 with error field", func() {
+	suite.Run("400 with no code", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.WriteHeader(http.StatusBadRequest)
-			_, _ = w.Write([]byte(`{"error":"Ошибка валидации запроса по схеме"}`))
+			_, _ = w.Write([]byte(`{"message":"Пользователь не дал согласие"}`))
 		}))
 		defer server.Close()
 
@@ -92,7 +92,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		suite.ErrorIs(err, ErrOrderCreate)
 		suite.ErrorIs(err, ErrStatusBadRequest)
 		suite.Equal(
-			"ошибка OrderCreate: HTTP 400 Bad Request: неверные параметры: код ошибки не указан [error='Ошибка валидации запроса по схеме']",
+			"ошибка OrderCreate: HTTP 400 Bad Request: неверные параметры: код ошибки не указан [code='', message='Пользователь не дал согласие']",
 			err.Error(),
 		)
 		suite.Equal(0, orderId)
@@ -669,7 +669,7 @@ func (suite *suiteTestClient) TestOrderCancel() {
 		)
 	})
 
-	suite.Run("HTTP 429 with code = limitation_exception", func() {
+	suite.Run("429 too many requests", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusTooManyRequests)
 		}))
