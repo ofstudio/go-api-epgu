@@ -2,7 +2,8 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/ofstudio/go-api-epgu.svg)](https://pkg.go.dev/github.com/ofstudio/go-api-epgu)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ofstudio/go-api-epgu)](https://goreportcard.com/report/github.com/ofstudio/go-api-epgu)
 
-REST-клиент для работы с [API Госуслуг (ЕПГУ)](https://partners.gosuslugi.ru/catalog/api_for_gu) 
+REST-клиент для работы с [API Госуслуг (ЕПГУ)](https://partners.gosuslugi.ru/catalog/api_for_gu).
+Разработан в соответствии с документом [«Спецификация API ЕПГУ, версия 1.12»](/doc)
 
 ## Методы
 
@@ -10,6 +11,9 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
  - [Client.OrderPushChunked](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunked) — загрузка архива по частям
  - [Client.OrderPush](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPush) — формирование заявления единым методом
  - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) — запрос детальной информации по отправленному заявлению
+ - [Client.OrderCancel](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCancel) — отмена заявления
+ - [Client.AttachmentDownload](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.AttachmentDownload) — скачивание файла вложения созданного заявления
+ - [Client.Dict](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.Dict) — получение справочных данных
 
 ## Запрос согласия и получение маркера доступа ЕСИА
 
