@@ -17,16 +17,17 @@ type DateTime struct {
 }
 
 func (d *DateTime) UnmarshalJSON(b []byte) (err error) {
-	s := strings.Trim(string(b), `"`)
+	s := string(b)
 	if s == "null" {
 		d.Time = time.Time{}
 		return
 	}
+	s = strings.Trim(string(b), `"`)
 	d.Time, err = time.Parse(apipguLayout, s)
 	return
 }
 
-func (d *DateTime) MarshalJSON() ([]byte, error) {
+func (d DateTime) MarshalJSON() ([]byte, error) {
 	if d.Time.IsZero() {
 		return []byte("null"), nil
 	}
