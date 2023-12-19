@@ -34,6 +34,7 @@ var (
 	ErrNilArchive            = errors.New("не передан архив")
 	ErrWrongOrderID          = errors.New("некорректный ID заявления")
 	ErrInvalidFileLink       = errors.New("некорректная ссылка на файл")
+	ErrDictResponse          = errors.New("ошибка получения справочных данных")
 )
 
 // HTTP-ошибки.
@@ -223,4 +224,11 @@ func jsonError(body []byte) error {
 	}
 
 	return fmt.Errorf("%w [code='%s', message='%s']", err, errResponse.Code, errResponse.Message)
+}
+
+func dictError(dictResponseError dtoDictResponseError) error {
+	if dictResponseError.Code == 0 {
+		return nil
+	}
+	return fmt.Errorf("%w [code='%d', message='%s']", ErrDictResponse, dictResponseError.Code, dictResponseError.Message)
 }

@@ -7,48 +7,10 @@ const (
 	DictFilterSubTree  string = "SUBTREE"  // Иерархический справочник
 )
 
-// Dict - структура данных справочника метода [Client.Dict].
+// DictItem - элемент справочника.
 //
 // Подробнее см. "Спецификация API ЕПГУ версия 1.12",
 // раздел "3. Получение справочных данных".
-//
-// Пример структуры успешного ответа:
-//
-//	{
-//	  "error": {
-//	    "code": 0,
-//	    "message": "operation completed"
-//	  },
-//	  "fieldErrors": [],
-//	  "total": 1011,
-//	  "items": [...элементы справочника...]
-//	}
-//
-// Пример структуры ответа в случае ошибки:
-//
-//	{
-//	  "error": {
-//	    "code": 7,
-//	    "message": "Entity not found"
-//	  },
-//	  "fieldErrors": [],
-//	  "total": 0,
-//	  "items": []
-//	}
-type Dict struct {
-	Error       DictError                `json:"error"`       // Результат выполнения операции
-	FieldErrors []map[string]interface{} `json:"fieldErrors"` // Ошибки в полях запроса
-	Total       int                      `json:"total"`       // Общее количество найденных элементов
-	Items       []DictItem               `json:"items"`       // Найденные элементы справочника
-}
-
-// DictError - результат выполнения операции из структуры [Dict].
-type DictError struct {
-	Code    int    `json:"code"`    // Код результата
-	Message string `json:"message"` // Сообщение
-}
-
-// DictItem - элемент справочника из структуры [Dict].
 //
 // Пример элемента справочника EXTERNAL_BIC:
 //

@@ -388,7 +388,16 @@ func attachmentURI(link string) (string, error) {
 //   - pageSize - количество записей на странице (необязательный)
 //
 // Примечание: не все справочники поддерживают параметры parent, pageNum и pageSize.
-func (c *Client) Dict(code string, filter, parent string, pageNum, pageSize int) (*Dict, error) {
+//
+// В случае успеха возвращает элементы справочника с учетом pageNum и pageSize,
+// а также общее количество найденных элементов.
+// В случае ошибки возвращает цепочку из [ErrDict] и следующих возможных ошибок:
+//   - [ErrRequest] - ошибка HTTP-запроса
+//   - [ErrJSONUnmarshal] - ошибка разбора ответа
+//   - [ErrDictResponse] - ошибка получения справочных данных c указанием code и message из ответа
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusBadRequest])
+//   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
+func (c *Client) Dict(code string, filter, parent string, pageNum, pageSize int) ([]DictItem, int, error) {
 	reqBody, _ := json.Marshal(&dtoDictRequest{
 		TreeFiltering:      filter,
 		ParentRefItemValue: parent,
@@ -396,17 +405,21 @@ func (c *Client) Dict(code string, filter, parent string, pageNum, pageSize int)
 		PageSize:           pageSize,
 	})
 
-	dict := &Dict{}
+	dictResponse := &dtoDictResponse{}
 	if err := c.requestJSON(
 		http.MethodPost,
 		fmt.Sprintf("/api/nsi/v1/dictionary/%s", code),
 		"application/json; charset=utf-8",
 		"",
 		bytes.NewReader(reqBody),
-		dict,
+		dictResponse,
 	); err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrDict, err)
+		return nil, 0, fmt.Errorf("%w: %w", ErrDict, err)
 	}
 
-	return dict, nil
+	if dictResponse.Error.Code != 0 && len(dictResponse.Items) == 0 {
+		return nil, 0, fmt.Errorf("%w: %w", ErrDict, dictError(dictResponse.Error))
+	}
+
+	return dictResponse.Items, dictResponse.Total, nil
 }

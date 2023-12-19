@@ -41,7 +41,7 @@ type dtoOrderInfoResponse struct {
 	Order     string `json:"order"`     // В случае, если заявление уже создано на портале и отправлено в ведомство, параметр содержит строку в виде экранированного JSON-объекта
 }
 
-// dtoDictRequest - запрос на получение справочника.
+// dtoDictRequest - запрос к API ЕПГУ на получение справочника.
 //
 // Подробнее см. "Спецификация API ЕПГУ версия 1.12",
 // раздел "3. Получение справочных данных".
@@ -50,4 +50,45 @@ type dtoDictRequest struct {
 	ParentRefItemValue string `json:"parentRefItemValue,omitempty"` // Код родительского элемента
 	PageNum            int    `json:"pageNum,omitempty"`            // Номер необходимой страницы
 	PageSize           int    `json:"pageSize,omitempty"`           // Количество записей на странице
+}
+
+// dtoDictResponse - ответ API ЕПГУ на запрос справочника.
+//
+// Подробнее см. "Спецификация API ЕПГУ версия 1.12",
+// раздел "3. Получение справочных данных".
+//
+// Пример структуры успешного ответа:
+//
+//	{
+//	  "error": {
+//	    "code": 0,
+//	    "message": "operation completed"
+//	  },
+//	  "fieldErrors": [],
+//	  "total": 1011,
+//	  "items": [...элементы справочника...]
+//	}
+//
+// Пример структуры ответа в случае ошибки:
+//
+//	{
+//	  "error": {
+//	    "code": 7,
+//	    "message": "Entity not found"
+//	  },
+//	  "fieldErrors": [],
+//	  "total": 0,
+//	  "items": []
+//	}
+type dtoDictResponse struct {
+	Error       dtoDictResponseError     `json:"error"`       // Результат выполнения операции
+	FieldErrors []map[string]interface{} `json:"fieldErrors"` // Ошибки в полях запроса
+	Total       int                      `json:"total"`       // Общее количество найденных элементов
+	Items       []DictItem               `json:"items"`       // Найденные элементы справочника с учётом заданных pageNum и pageSize
+}
+
+// dtoDictResponseError - структура поля dtoDictResponse.Error.
+type dtoDictResponseError struct {
+	Code    int    `json:"code"`    // Код результата
+	Message string `json:"message"` // Сообщение
 }
