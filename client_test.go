@@ -734,6 +734,102 @@ func (suite *suiteTestClient) TestOrderCancel() {
 
 }
 
+func (suite *suiteTestClient) TestAttachmentDownload() {
+
+	suite.Run("200 success", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodGet, r.Method)
+			suite.Equal("/api/storage/v2/files/12345678/2/download", r.URL.Path)
+			suite.Equal("Bearer test-token", r.Header.Get("Authorization"))
+
+			w.Header().Set("Content-Type", "application/octet-stream")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("test data"))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		suite.NoError(err)
+		suite.Equal("test data", string(data))
+	})
+
+	suite.Run("404 not found", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		suite.Error(err)
+		suite.ErrorIs(err, ErrAttachmentDownload)
+		suite.ErrorIs(err, ErrStatusURLNotFound)
+		suite.Equal(
+			"ошибка AttachmentDownload: HTTP 404 Not Found: не найден URL запроса",
+			err.Error(),
+		)
+		suite.Nil(data)
+	})
+
+	suite.Run("503 service unavailable", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		suite.Error(err)
+		suite.ErrorIs(err, ErrAttachmentDownload)
+		suite.ErrorIs(err, ErrStatusServiceUnavailable)
+		suite.Equal(
+			"ошибка AttachmentDownload: HTTP 503 Service Unavailable: сервис недоступен",
+			err.Error(),
+		)
+		suite.Nil(data)
+	})
+
+	suite.Run("403 with access_denied_user code", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusForbidden)
+			_, _ = w.Write([]byte(`{"code":"access_denied_user", "message":"Доступ запрещен"}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		suite.Error(err)
+		suite.ErrorIs(err, ErrAttachmentDownload)
+		suite.ErrorIs(err, ErrStatusForbidden)
+		suite.ErrorIs(err, ErrCodeAccessDeniedUser)
+		suite.Equal(
+			"ошибка AttachmentDownload: HTTP 403 Forbidden: доступ запрещен: доступ запрещен для данного типа пользователя [code='access_denied_user', message='Доступ запрещен']",
+			err.Error(),
+		)
+		suite.Nil(data)
+	})
+
+	suite.Run("invalid file link", func() {
+		client := NewClient("")
+		data, err := client.AttachmentDownload(testToken, "invalid link")
+		suite.Error(err)
+		suite.ErrorIs(err, ErrAttachmentDownload)
+		suite.ErrorIs(err, ErrInvalidFileLink)
+		suite.Nil(data)
+	})
+
+	suite.Run("request error", func() {
+		client := NewClient("")
+		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		suite.Error(err)
+		suite.ErrorIs(err, ErrAttachmentDownload)
+		suite.ErrorIs(err, ErrRequest)
+		suite.Nil(data)
+	})
+
+}
 func (suite *suiteTestClient) Test_attachmentURI() {
 	suite.Run("normal link", func() {
 		uri, err := attachmentURI("terrabyte://00/12345678/req_some-guid-1234.xml/2")

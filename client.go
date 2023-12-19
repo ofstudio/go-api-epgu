@@ -329,6 +329,8 @@ func (c *Client) OrderCancel(token string, orderId int) error {
 // В случае ошибки возвращает цепочку из [ErrAttachmentDownload] и следующих возможных ошибок:
 //   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrInvalidFileLink] - некорректный параметр link
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
+//   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeAccessDeniedSystem])
 func (c *Client) AttachmentDownload(token string, link string) ([]byte, error) {
 	uri, err := attachmentURI(link)
 	if err != nil {
