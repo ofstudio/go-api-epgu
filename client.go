@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/ofstudio/go-api-epgu/dto"
 	"github.com/ofstudio/go-api-epgu/utils"
 )
 
@@ -94,7 +93,7 @@ func (c *Client) WithChunkSize(n int) *Client {
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
-	orderIdResponse := &dto.OrderIdResponse{}
+	orderIdResponse := &dtoOrderIdResponse{}
 	if err := c.requestJSON(
 		http.MethodPost,
 		"/api/gusmev/order",
@@ -166,7 +165,7 @@ func (c *Client) OrderPushChunked(token string, orderId int, meta OrderMeta, arc
 		}
 
 		// make request
-		orderIdResponse := &dto.OrderIdResponse{}
+		orderIdResponse := &dtoOrderIdResponse{}
 		if err := c.requestJSON(
 			http.MethodPost,
 			"/api/gusmev/push/chunked",
@@ -219,7 +218,7 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 		return 0, fmt.Errorf("%w: %w", ErrPush, err)
 	}
 
-	orderIdResponse := &dto.OrderIdResponse{}
+	orderIdResponse := &dtoOrderIdResponse{}
 	if err := c.requestJSON(
 		http.MethodPost,
 		"/api/gusmev/push",
@@ -252,7 +251,7 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 
-	orderInfoResponse := &dto.OrderInfoResponse{}
+	orderInfoResponse := &dtoOrderInfoResponse{}
 	if err := c.requestJSON(
 		http.MethodPost,
 		fmt.Sprintf("/api/gusmev/order/%d", orderId),
@@ -390,7 +389,7 @@ func attachmentURI(link string) (string, error) {
 //
 // Примечание: не все справочники поддерживают параметры parent, pageNum и pageSize.
 func (c *Client) Dict(code string, filter, parent string, pageNum, pageSize int) (*Dict, error) {
-	reqBody, _ := json.Marshal(&dto.DictRequest{
+	reqBody, _ := json.Marshal(&dtoDictRequest{
 		TreeFiltering:      filter,
 		ParentRefItemValue: parent,
 		PageNum:            pageNum,

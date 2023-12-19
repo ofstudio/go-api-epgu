@@ -1,4 +1,4 @@
-package dto
+package apipgu
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ const apipguLayout = "2006-01-02T15:04:05.000-0700"
 
 // DateTime - дата и время в формате API ЕПГУ.
 //
-//	2006-01-02T15:04:05.000-0700
+//	2023-11-02T07:27:22.586+0300
 type DateTime struct {
 	time.Time
 }

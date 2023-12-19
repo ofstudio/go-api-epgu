@@ -7,8 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/ofstudio/go-api-epgu/dto"
 )
 
 // Ошибки первого уровня.
@@ -181,7 +179,7 @@ func bodyError(res *http.Response) error {
 }
 
 func jsonError(body []byte) error {
-	errResponse := &dto.ErrorResponse{}
+	errResponse := &dtoErrorResponse{}
 	err := json.Unmarshal(body, errResponse)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrJSONUnmarshal, err)

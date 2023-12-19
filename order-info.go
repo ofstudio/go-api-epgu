@@ -1,7 +1,5 @@
 package apipgu
 
-import "github.com/ofstudio/go-api-epgu/dto"
-
 // OrderInfo - детальная информация по отправленному заявлению метода [Client.OrderInfo].
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.12",
@@ -242,7 +240,7 @@ type OrderDetails struct {
 	OrderStatusId        int                   `json:"orderStatusId"`        // Код статуса заявления
 	Statuses             []OrderStatus         `json:"statuses"`             // Статусы заявления
 	CurrentStatusHistory OrderStatusHistory    `json:"currentStatusHistory"` // История статуса
-	Updated              dto.DateTime          `json:"updated"`              // Дата и время обновления статуса заявления
+	Updated              DateTime              `json:"updated"`              // Дата и время обновления статуса заявления
 	Closed               bool                  `json:"closed"`               // Флаг наличия финального статуса
 	HasResult            bool                  `json:"hasResult"`            // Флаг передачи файла в ответ на заявление
 	OrderAttachmentFiles []OrderAttachmentFile `json:"orderAttachmentFiles"` // Файлы заявления, отправленные пользователем
@@ -290,8 +288,8 @@ type OrderDetails struct {
 	PortalName        string         `json:"portalName,omitempty"`     // Наименование портала
 	PossibleServices  map[string]any `json:"possibleServices"`         // [Не документировано]
 
-	OrderDate               dto.DateTime          `json:"orderDate"`               // Дата и время создания заявления
-	RequestDate             dto.DateTime          `json:"requestDate"`             // Метка даты и времени запроса
+	OrderDate               DateTime              `json:"orderDate"`               // Дата и время создания заявления
+	RequestDate             DateTime              `json:"requestDate"`             // Метка даты и времени запроса
 	OrderAttributeEvents    []OrderAttributeEvent `json:"orderAttributeEvents"`    // Атрибуты событий для заявления
 	Online                  bool                  `json:"online"`                  // Признак, онлайн услуга или нет
 	HasTimestamp            bool                  `json:"hasTimestamp"`            // Флаг timestamp
@@ -347,18 +345,18 @@ type OrderStatus struct {
 
 	// Основные аттрибуты
 
-	Id                  int          `json:"id"`                            // Идентификатор статуса
-	StatusId            int          `json:"statusId"`                      // Код статуса
-	Title               string       `json:"title"`                         // Наименование статуса
-	Date                dto.DateTime `json:"date"`                          // Дата и время смены статуса
-	OrderId             int          `json:"orderId"`                       // Номер заявления
-	FinalStatus         bool         `json:"finalStatus"`                   // Флаг финального статуса
-	HasResult           string       `json:"hasResult"`                     // Флаг передачи файла в ответ на заявление
-	CancelAllowed       bool         `json:"cancelAllowed"`                 // Флаг возможности отменить заявление
-	Sender              string       `json:"sender,omitempty"`              // Отправитель СМЭВ-сообщения о смене статуса
-	Comment             string       `json:"comment,omitempty"`             // Комментарий к статусу
-	StateOrgStatusCode  string       `json:"stateOrgStatusCode,omitempty"`  // Код ведомственного статуса
-	StateOrgStatusDescr string       `json:"stateOrgStatusDescr,omitempty"` // Наименование ведомственного статуса
+	Id                  int      `json:"id"`                            // Идентификатор статуса
+	StatusId            int      `json:"statusId"`                      // Код статуса
+	Title               string   `json:"title"`                         // Наименование статуса
+	Date                DateTime `json:"date"`                          // Дата и время смены статуса
+	OrderId             int      `json:"orderId"`                       // Номер заявления
+	FinalStatus         bool     `json:"finalStatus"`                   // Флаг финального статуса
+	HasResult           string   `json:"hasResult"`                     // Флаг передачи файла в ответ на заявление
+	CancelAllowed       bool     `json:"cancelAllowed"`                 // Флаг возможности отменить заявление
+	Sender              string   `json:"sender,omitempty"`              // Отправитель СМЭВ-сообщения о смене статуса
+	Comment             string   `json:"comment,omitempty"`             // Комментарий к статусу
+	StateOrgStatusCode  string   `json:"stateOrgStatusCode,omitempty"`  // Код ведомственного статуса
+	StateOrgStatusDescr string   `json:"stateOrgStatusDescr,omitempty"` // Наименование ведомственного статуса
 
 	// Дополнительные аттрибуты
 
@@ -378,19 +376,19 @@ type OrderStatusHistory struct {
 
 	// Основные аттрибуты
 
-	Id                  int          `json:"id"`                            // Идентификатор статуса
-	StatusId            int          `json:"statusId"`                      // Код статуса
-	Title               string       `json:"title"`                         // Наименование статуса
-	Date                dto.DateTime `json:"date"`                          // Дата и время смены статуса
-	OrderId             int          `json:"orderId"`                       // Номер заявления
-	FinalStatus         bool         `json:"finalStatus"`                   // Флаг финального статуса
-	HasResult           string       `json:"hasResult"`                     // Флаг передачи файла в ответ на заявление
-	CancelAllowed       bool         `json:"cancelAllowed"`                 // Флаг наличия отмены
-	Sender              string       `json:"sender,omitempty"`              // Наименование ведомства
-	Comment             string       `json:"comment,omitempty"`             // Комментарий
-	StateOrgStatusCode  string       `json:"stateOrgStatusCode,omitempty"`  // Код ведомственного статуса
-	StateOrgStatusDescr string       `json:"stateOrgStatusDescr,omitempty"` // Наименование ведомственного статуса
-	StatusColorCode     string       `json:"statusColorCode"`               // [Не документировано]
+	Id                  int      `json:"id"`                            // Идентификатор статуса
+	StatusId            int      `json:"statusId"`                      // Код статуса
+	Title               string   `json:"title"`                         // Наименование статуса
+	Date                DateTime `json:"date"`                          // Дата и время смены статуса
+	OrderId             int      `json:"orderId"`                       // Номер заявления
+	FinalStatus         bool     `json:"finalStatus"`                   // Флаг финального статуса
+	HasResult           string   `json:"hasResult"`                     // Флаг передачи файла в ответ на заявление
+	CancelAllowed       bool     `json:"cancelAllowed"`                 // Флаг наличия отмены
+	Sender              string   `json:"sender,omitempty"`              // Наименование ведомства
+	Comment             string   `json:"comment,omitempty"`             // Комментарий
+	StateOrgStatusCode  string   `json:"stateOrgStatusCode,omitempty"`  // Код ведомственного статуса
+	StateOrgStatusDescr string   `json:"stateOrgStatusDescr,omitempty"` // Наименование ведомственного статуса
+	StatusColorCode     string   `json:"statusColorCode"`               // [Не документировано]
 
 	// Дополнительные аттрибуты
 
