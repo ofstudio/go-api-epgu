@@ -127,7 +127,7 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 //   - [ErrWrongOrderID] - в ответе не передан или передан некорректный ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
-func (c *Client) OrderPushChunked(token string, orderId int, meta OrderMeta, archive *Archive) error {
+func (c *Client) OrderPushChunked(token string, orderId int, archive *Archive) error {
 	if archive == nil || len(archive.Data) == 0 {
 		return fmt.Errorf("%w: %w", ErrPushChunked, ErrNilArchive)
 	}
@@ -155,12 +155,13 @@ func (c *Client) OrderPushChunked(token string, orderId int, meta OrderMeta, arc
 		// prepare multipart body
 		body := &bytes.Buffer{}
 		w := multipart.NewWriter(body)
-		if err := newMultipartBuilder(w).
+		builder := newMultipartBuilder(w).
 			withOrderId(orderId).
-			withMeta(meta).
-			withFile(filename+extension, chunk).
-			withChunkNum(current, total).
-			build(); err != nil {
+			withFile(filename+extension, chunk)
+		if total > 1 {
+			builder = builder.withChunkNum(current, total)
+		}
+		if err := builder.build(); err != nil {
 			return fmt.Errorf("%w: %w", ErrPushChunked, err)
 		}
 

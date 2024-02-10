@@ -68,7 +68,7 @@ func main() {
 
 	// === ШАГ 4 ===
 	// Загружаем архив с заявлением: POST /api/gusmev/push/chunked
-	if err = apiClient.OrderPushChunked(accessToken, orderId, srv.Meta(), archive); err != nil {
+	if err = apiClient.OrderPushChunked(accessToken, orderId, archive); err != nil {
 		log.Fatal(err)
 	}
 	log.Print("Архив с вложениями успешно загружен на ЕПГУ в заявление с номером ", orderId)

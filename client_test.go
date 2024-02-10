@@ -144,10 +144,11 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 			suite.Contains(r.Header.Get("Content-Type"), "multipart/form-data; boundary=")
 
 			suite.NoError(r.ParseMultipartForm(0))
-			suite.Equal("0", r.FormValue("chunk"))
-			suite.Equal("1", r.FormValue("chunks"))
+			_, found := r.Form["chunk"]
+			suite.False(found)
+			_, found = r.Form["chunks"]
+			suite.False(found)
 			suite.Equal("123456", r.FormValue("orderId"))
-			suite.JSONEq(`{"region":"test-region","serviceCode":"test-service","targetCode":"test-target"}`, r.FormValue("meta"))
 			suite.Len(r.MultipartForm.File["file"], 1)
 			fh := r.MultipartForm.File["file"][0]
 			suite.Equal("test-archive.zip", fh.Filename)
@@ -168,7 +169,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: dataSent}
-		suite.NoError(client.OrderPushChunked(testToken, 123456, testMeta, testArchive))
+		suite.NoError(client.OrderPushChunked(testToken, 123456, testArchive))
 		suite.Equal(1, reqCount)
 	})
 
@@ -184,7 +185,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testMeta, testArchive)
+		err := client.OrderPushChunked(testToken, 123456, testArchive)
 		suite.NoError(err)
 		suite.Equal(1, reqCount)
 	})
@@ -200,8 +201,9 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			reqCount++
 			suite.NoError(r.ParseMultipartForm(0))
+			suite.Equal(fmt.Sprintf("%d", reqCount-1), r.FormValue("chunk"))
+			suite.Equal("4", r.FormValue("chunks"))
 			suite.Equal("123456", r.FormValue("orderId"))
-			suite.JSONEq(`{"region":"test-region","serviceCode":"test-service","targetCode":"test-target"}`, r.FormValue("meta"))
 			suite.Len(r.MultipartForm.File["file"], 1)
 			fh := r.MultipartForm.File["file"][0]
 			suite.Equal(fmt.Sprintf("test-archive.z%03d", reqCount), fh.Filename)
@@ -223,7 +225,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: dataSent}
-		suite.NoError(client.OrderPushChunked(testToken, 123456, testMeta, testArchive))
+		suite.NoError(client.OrderPushChunked(testToken, 123456, testArchive))
 		suite.NoError(err)
 		suite.Equal(4, reqCount)
 		suite.Equal(testArchive.Data, dataReceived)
@@ -240,7 +242,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testMeta, testArchive)
+		err := client.OrderPushChunked(testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrWrongOrderID)
@@ -256,7 +258,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testMeta, testArchive)
+		err := client.OrderPushChunked(testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrWrongOrderID)
@@ -271,7 +273,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testMeta, testArchive)
+		err := client.OrderPushChunked(testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrStatusInternalError)
@@ -285,7 +287,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 	suite.Run("request error", func() {
 		client := NewClient("").WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testMeta, testArchive)
+		err := client.OrderPushChunked(testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrRequest)
@@ -305,14 +307,14 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testMeta, testArchive)
+		err := client.OrderPushChunked(testToken, 123456, testArchive)
 		suite.NoError(err)
 	})
 
 	suite.Run("archive is nil", func() {
 		client := NewClient("").WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: nil}
-		err := client.OrderPushChunked(testToken, 123456, testMeta, testArchive)
+		err := client.OrderPushChunked(testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrNilArchive)
@@ -321,7 +323,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 	suite.Run("archive is zero length", func() {
 		client := NewClient("").WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: []byte{}}
-		err := client.OrderPushChunked(testToken, 123456, testMeta, testArchive)
+		err := client.OrderPushChunked(testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrNilArchive)
