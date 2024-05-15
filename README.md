@@ -70,13 +70,31 @@ go get -u github.com/ofstudio/go-api-epgu
 - Тестовая среда (SVCDEV): https://esia-portal1.test.gosuslugi.ru/console/tech
 - Продуктовая среда: https://esia.gosuslugi.ru/console/tech/
 
-### Портал Госуслуг
-- Тестовая среда (SVCDEV): https://svcdev-beta.test.gosuslugi.ru
-- Продуктовая среда: https://lk.gosuslugi.ru
-
 ### Список согласий предоставленных пользователем
 - Тестовая среда (SVCDEV): https://svcdev-betalk.test.gosuslugi.ru/settings/third-party/agreements/acting
 - Продуктовая среда: https://lk.gosuslugi.ru/settings/third-party/agreements/acting
+
+### Подключение 
+
+#### Подключение через TLS
+Прямое подключение к API ЕПГУ через TLS-соединение.
+Подробнее см "Спецификация API ЕПГУ версия 1.12.1", раздел "1.2. Реализация подключения по ГОСТ TLS"
+
+- Тестовая среда (SVCDEV): https://svcdev-beta.test.gosuslugi.ru
+- Продуктовая среда: https://lk.gosuslugi.ru
+
+#### Подключение через СМЭВ4 (ПОДД)
+Подключение через регламентированный запрос типа REST-сервис в среде СМЭВ4.
+Подробнее см "Спецификация API ЕПГУ версия 1.12.1", раздел "1.3. Подключение через СМЭВ4".
+
+- Тестовая среда (SVCDEV): https://lkuv.gosuslugi.ru/paip-portal/#/podd/open-api/specifications/card/e28f1ae0-0fdc-431a-9adb-17173564d1db
+- Продуктовая среда: _на 16 мая 2024 "Спецификация API ЕПГУ" не опубликована в промышленной среде СМЭВ 4._
+
+### СМЭВ4
+- [Документы СМЭВ 4 (ПОДД)](https://info.gosuslugi.ru/docs/section/СМЭВ_4_%28ПОДД%29/): регламенты подключения, руководство администратора, дистрибутив Агента ПОДД
+- [Коротко о СМЭВ 4 (ПОДД)](https://info.gosuslugi.ru/articles/Коротко_о_СМЭВ_4_(ПОДД)/)
+- [Обмен в СМЭВ4 c использованием REST-сервиса](https://info.gosuslugi.ru/articles/Обмен_в_СМЭВ4_c_использованием_REST-сервиса/)
+- [Материалы по теме "СМЭВ 4 (ПОДД)"](https://info.gosuslugi.ru/sections/СМЭВ_4_(ПОДД)/)
 
 ## Лицензия
 Распространяется по лицензии MIT. Более подробная информация в файле LICENSE.
