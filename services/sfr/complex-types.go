@@ -2,15 +2,16 @@ package sfr
 
 // AddressRus - российский адрес
 type AddressRus struct {
-	ZipCode  *string `xml:"УТ:Индекс"`
-	Region   *string `xml:"УТ:РоссийскийАдрес>УТ:Регион>УТ:Название"`
-	District *string `xml:"УТ:РоссийскийАдрес>УТ:Район>УТ:Название"`
-	City     *string `xml:"УТ:РоссийскийАдрес>УТ:Город>УТ:Название"`
-	Street   *string `xml:"УТ:РоссийскийАдрес>УТ:Улица>УТ:Название"`
-	House    *string `xml:"УТ:РоссийскийАдрес>УТ:Дом>УТ:Номер"`
-	Housing  *string `xml:"УТ:РоссийскийАдрес>УТ:Корпус>УТ:Номер"`
-	Building *string `xml:"УТ:РоссийскийАдрес>УТ:Строение>УТ:Номер"`
-	Flat     *string `xml:"УТ:РоссийскийАдрес>УТ:Квартира>УТ:Номер"`
+	ZipCode    *string `xml:"УТ:Индекс"`
+	Region     *string `xml:"УТ:РоссийскийАдрес>УТ:Регион>УТ:Название"`
+	District   *string `xml:"УТ:РоссийскийАдрес>УТ:Район>УТ:Название"`
+	City       *string `xml:"УТ:РоссийскийАдрес>УТ:Город>УТ:Название"`
+	Settlement *string `xml:"УТ:РоссийскийАдрес>УТ:НаселенныйПункт>УТ:Название"`
+	Street     *string `xml:"УТ:РоссийскийАдрес>УТ:Улица>УТ:Название"`
+	House      *string `xml:"УТ:РоссийскийАдрес>УТ:Дом>УТ:Номер"`
+	Housing    *string `xml:"УТ:РоссийскийАдрес>УТ:Корпус>УТ:Номер"`
+	Building   *string `xml:"УТ:РоссийскийАдрес>УТ:Строение>УТ:Номер"`
+	Flat       *string `xml:"УТ:РоссийскийАдрес>УТ:Квартира>УТ:Номер"`
 }
 
 // NewAddressRus - конструктор [AddressRus]
@@ -39,6 +40,12 @@ func (a *AddressRus) WithDistrict(district string) *AddressRus {
 // WithCity - УТ:Город
 func (a *AddressRus) WithCity(city string) *AddressRus {
 	a.City = &city
+	return a
+}
+
+// Settlement - УТ:НаселенныйПункт
+func (a *AddressRus) WithSettlement(settlement string) *AddressRus {
+	a.Settlement = &settlement
 	return a
 }
 
