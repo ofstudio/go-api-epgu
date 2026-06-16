@@ -169,7 +169,7 @@ func main() {
 		// === ШАГ 4 ===
 		// Обмен авторизационного кода на маркер доступа (/oauth2/v3/te)
 		message += "\n=== Обмен авторизационного кода на маркер доступа ===\n\n"
-		res, err := oauthClient.TokenExchange(code, "openid", redirectURI)
+		res, err := oauthClient.TokenExchange(r.Context(), code, "openid", redirectURI)
 		if err != nil {
 			log.Print(err)
 			http.Error(w, message+err.Error(), http.StatusInternalServerError)

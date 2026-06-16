@@ -37,6 +37,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/ofstudio/go-api-epgu/esia/aas"
@@ -117,7 +118,7 @@ func main() {
 		WithDebug(log.Default()) // Опция включает полное логирование запросов и ответов к ЕСИА
 
 	// Обновляем маркер доступа
-	tokenRes, err := oauthClient.TokenUpdate(userOid, redirectURI)
+	tokenRes, err := oauthClient.TokenUpdate(context.Background(), userOid, redirectURI)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,6 +1,7 @@
 package aas
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,13 +10,14 @@ import (
 )
 
 func (c *Client) request(
+	ctx context.Context,
 	method,
 	endpoint,
 	contentType string,
 	body io.Reader,
 	result any,
 ) error {
-	req, err := http.NewRequest(method, c.baseURI+endpoint, body)
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURI+endpoint, body)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrRequest, err)
 	}

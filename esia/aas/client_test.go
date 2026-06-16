@@ -1,6 +1,7 @@
 package aas
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"net/http"
@@ -316,7 +317,7 @@ func (suite *suiteTestClient) TestSignedData() {
 
 		signer := newSpySigner()
 		client := NewClient(server.URL, "test-client", signer)
-		_, err := client.TokenExchange("test-code", "test-scope", "test-redirect")
+		_, err := client.TokenExchange(context.Background(), "test-code", "test-scope", "test-redirect")
 		suite.NoError(err)
 
 		suite.Equal([]string{"test-client" + "test-scope" + timestamp + state + "test-redirect" + "test-code"}, signer.data)
@@ -336,7 +337,7 @@ func (suite *suiteTestClient) TestSignedData() {
 
 		signer := newSpySigner()
 		client := NewClient(server.URL, "test-client", signer)
-		_, err := client.TokenExchangePKCS7("test-code", "test-scope", "test-redirect")
+		_, err := client.TokenExchangePKCS7(context.Background(), "test-code", "test-scope", "test-redirect")
 		suite.NoError(err)
 
 		suite.Equal([]string{"test-scope" + timestamp + "test-client" + state}, signer.data)
@@ -356,7 +357,7 @@ func (suite *suiteTestClient) TestSignedData() {
 
 		signer := newSpySigner()
 		client := NewClient(server.URL, "test-client", signer)
-		_, err := client.TokenUpdate("test-oid", "test-redirect")
+		_, err := client.TokenUpdate(context.Background(), "test-oid", "test-redirect")
 		suite.NoError(err)
 
 		suite.Equal([]string{"test-client" + "prm_chg?oid=test-oid" + timestamp + state + "test-redirect"}, signer.data)
@@ -376,7 +377,7 @@ func (suite *suiteTestClient) TestSignedData() {
 
 		signer := newSpySigner()
 		client := NewClient(server.URL, "test-client", signer)
-		_, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		_, err := client.TokenUpdatePKCS7(context.Background(), "test-oid", "test-redirect")
 		suite.NoError(err)
 
 		suite.Equal([]string{"prm_chg?oid=test-oid" + timestamp + "test-client" + state}, signer.data)
@@ -407,7 +408,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchange("test-code", "test-scope", "test-uri")
+		token, err := client.TokenExchange(context.Background(), "test-code", "test-scope", "test-uri")
 		suite.NoError(err)
 		suite.Require().NotNil(token)
 		suite.Equal("test", token.AccessToken)
@@ -422,7 +423,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchange("test", "test", "test")
+		token, err := client.TokenExchange(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrUnexpectedContentType)
 		suite.Equal(
@@ -441,7 +442,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchange("test", "test", "test")
+		token, err := client.TokenExchange(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrESIA_007004)
 		suite.Equal(
@@ -460,7 +461,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchange("test", "test", "test")
+		token, err := client.TokenExchange(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrJSONUnmarshal)
 		suite.Equal(
@@ -479,7 +480,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchange("test", "test", "test")
+		token, err := client.TokenExchange(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrStateMismatch)
 		suite.Nil(token)
@@ -494,7 +495,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchange("test", "test", "test")
+		token, err := client.TokenExchange(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrJSONUnmarshal)
 		suite.Equal(
@@ -510,7 +511,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 		}
 
 		client := NewClient("", "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchange("test", "test", "test")
+		token, err := client.TokenExchange(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrGUID)
 		suite.Nil(token)
@@ -518,7 +519,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 
 	suite.Run("error request call", func() {
 		client := NewClient("", "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchange("test", "test", "test")
+		token, err := client.TokenExchange(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrRequest)
 		suite.Nil(token)
@@ -526,7 +527,7 @@ func (suite *suiteTestClient) TestTokenExchange() {
 
 	suite.Run("error sign", func() {
 		client := NewClient("", "test", newTestSigner("", ""))
-		token, err := client.TokenExchange("test", "test", "test")
+		token, err := client.TokenExchange(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrSign)
 		suite.Nil(token)
@@ -534,9 +535,50 @@ func (suite *suiteTestClient) TestTokenExchange() {
 
 	suite.Run("error signer is nil", func() {
 		client := NewClient("", "test", nil)
-		token, err := client.TokenExchange("test", "test", "test")
+		token, err := client.TokenExchange(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrSign)
+		suite.Nil(token)
+	})
+}
+
+func (suite *suiteTestClient) TestTokenContextCanceled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	suite.Run("TokenExchange", func() {
+		client := NewClient("http://127.0.0.1", "test", newTestSigner(testSignature, testCertHash))
+		token, err := client.TokenExchange(ctx, "test", "test", "test")
+		suite.ErrorIs(err, ErrTokenExchange)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Nil(token)
+	})
+
+	suite.Run("TokenExchangePKCS7", func() {
+		client := NewClient("http://127.0.0.1", "test", newTestSigner(testSignature, testCertHash))
+		token, err := client.TokenExchangePKCS7(ctx, "test", "test", "test")
+		suite.ErrorIs(err, ErrTokenExchange)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Nil(token)
+	})
+
+	suite.Run("TokenUpdate", func() {
+		client := NewClient("http://127.0.0.1", "test", newTestSigner(testSignature, testCertHash))
+		token, err := client.TokenUpdate(ctx, "test", "test")
+		suite.ErrorIs(err, ErrTokenUpdate)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Nil(token)
+	})
+
+	suite.Run("TokenUpdatePKCS7", func() {
+		client := NewClient("http://127.0.0.1", "test", newTestSigner(testSignature, testCertHash))
+		token, err := client.TokenUpdatePKCS7(ctx, "test", "test")
+		suite.ErrorIs(err, ErrTokenUpdate)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
 		suite.Nil(token)
 	})
 }
@@ -565,7 +607,7 @@ func (suite *suiteTestClient) TestTokenExchangePKCS7() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchangePKCS7("test-code", "test-scope", "test-uri")
+		token, err := client.TokenExchangePKCS7(context.Background(), "test-code", "test-scope", "test-uri")
 		suite.NoError(err)
 		suite.Require().NotNil(token)
 		suite.Equal("test", token.AccessToken)
@@ -577,7 +619,7 @@ func (suite *suiteTestClient) TestTokenExchangePKCS7() {
 		}
 
 		client := NewClient("", "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchangePKCS7("test", "test", "test")
+		token, err := client.TokenExchangePKCS7(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrGUID)
 		suite.Nil(token)
@@ -585,7 +627,7 @@ func (suite *suiteTestClient) TestTokenExchangePKCS7() {
 
 	suite.Run("error sign", func() {
 		client := NewClient("", "test", newTestSigner("", ""))
-		token, err := client.TokenExchangePKCS7("test", "test", "test")
+		token, err := client.TokenExchangePKCS7(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrSign)
 		suite.Nil(token)
@@ -600,7 +642,7 @@ func (suite *suiteTestClient) TestTokenExchangePKCS7() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenExchangePKCS7("test", "test", "test")
+		token, err := client.TokenExchangePKCS7(context.Background(), "test", "test", "test")
 		suite.ErrorIs(err, ErrTokenExchange)
 		suite.ErrorIs(err, ErrStateMismatch)
 		suite.Nil(token)
@@ -631,7 +673,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test-client", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdate("test-oid", "test-redirect")
+		token, err := client.TokenUpdate(context.Background(), "test-oid", "test-redirect")
 		suite.NoError(err)
 		suite.Require().NotNil(token)
 		suite.Equal("test", token.AccessToken)
@@ -646,7 +688,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdate("test", "test")
+		token, err := client.TokenUpdate(context.Background(), "test", "test")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrUnexpectedContentType)
 		suite.Nil(token)
@@ -661,7 +703,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test-client", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdate("test-oid", "test-redirect")
+		token, err := client.TokenUpdate(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrESIA_007004)
 		suite.Equal(
@@ -680,7 +722,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test-client", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdate("test-oid", "test-redirect")
+		token, err := client.TokenUpdate(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrJSONUnmarshal)
 		suite.Equal(
@@ -699,7 +741,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test-client", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdate("test-oid", "test-redirect")
+		token, err := client.TokenUpdate(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrStateMismatch)
 		suite.Nil(token)
@@ -711,7 +753,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 		}
 
 		client := NewClient("", "test-client", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdate("test-oid", "test-redirect")
+		token, err := client.TokenUpdate(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrGUID)
 		suite.Nil(token)
@@ -719,7 +761,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 
 	suite.Run("error request call", func() {
 		client := NewClient("", "test-client", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdate("test-oid", "test-redirect")
+		token, err := client.TokenUpdate(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrRequest)
 		suite.Nil(token)
@@ -727,7 +769,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 
 	suite.Run("error sign", func() {
 		client := NewClient("", "test-client", newTestSigner("", ""))
-		token, err := client.TokenUpdate("test-oid", "test-redirect")
+		token, err := client.TokenUpdate(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrSign)
 		suite.Nil(token)
@@ -735,7 +777,7 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 
 	suite.Run("error signer is nil", func() {
 		client := NewClient("", "test-client", nil)
-		token, err := client.TokenUpdate("test-oid", "test-redirect")
+		token, err := client.TokenUpdate(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrSign)
 		suite.Nil(token)
@@ -765,7 +807,7 @@ func (suite *suiteTestClient) TestTokenUpdatePKCS7() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test-client", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		token, err := client.TokenUpdatePKCS7(context.Background(), "test-oid", "test-redirect")
 		suite.NoError(err)
 		suite.Require().NotNil(token)
 		suite.Equal("test", token.AccessToken)
@@ -777,7 +819,7 @@ func (suite *suiteTestClient) TestTokenUpdatePKCS7() {
 		}
 
 		client := NewClient("", "test-client", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		token, err := client.TokenUpdatePKCS7(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrGUID)
 		suite.Nil(token)
@@ -785,7 +827,7 @@ func (suite *suiteTestClient) TestTokenUpdatePKCS7() {
 
 	suite.Run("error sign", func() {
 		client := NewClient("", "test-client", newTestSigner("", ""))
-		token, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		token, err := client.TokenUpdatePKCS7(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrSign)
 		suite.Nil(token)
@@ -800,7 +842,7 @@ func (suite *suiteTestClient) TestTokenUpdatePKCS7() {
 		defer server.Close()
 
 		client := NewClient(server.URL, "test-client", newTestSigner(testSignature, testCertHash))
-		token, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		token, err := client.TokenUpdatePKCS7(context.Background(), "test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrStateMismatch)
 		suite.Nil(token)

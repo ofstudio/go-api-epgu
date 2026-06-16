@@ -1,6 +1,7 @@
 package aas
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"net/http"
@@ -213,7 +214,7 @@ func (c *Client) ParseCallback(query url.Values, expectedState ...string) (strin
 // Пример сообщения об ошибке:
 //
 //	HTTP 400 Bad request: ESIA-007014: Запрос не содержит обязательного параметра [error='invalid_request', error_description='ESIA-007014: The request does not contain the mandatory parameter' state='48d1a8dc-0b7d-418a-b4ef-2c7797f77dc9']'
-func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeResponse, error) {
+func (c *Client) TokenExchange(ctx context.Context, code, scope, redirectURI string) (*TokenExchangeResponse, error) {
 	timestamp := time.Now().UTC().Format(tsLayout)
 	state, err := guid()
 	if err != nil {
@@ -239,6 +240,7 @@ func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeR
 	result := &TokenExchangeResponse{}
 
 	if err = c.request(
+		ctx,
 		http.MethodPost,
 		TokenEndpoint,
 		"application/x-www-form-urlencoded",
@@ -273,7 +275,7 @@ func (c *Client) TokenExchange(code, scope, redirectURI string) (*TokenExchangeR
 // Пример сообщения об ошибке:
 //
 //	HTTP 400 Bad request: ESIA-007014: Запрос не содержит обязательного параметра [error='invalid_request', error_description='ESIA-007014: The request does not contain the mandatory parameter' state='48d1a8dc-0b7d-418a-b4ef-2c7797f77dc9']'
-func (c *Client) TokenExchangePKCS7(code, scope, redirectURI string) (*TokenExchangeResponse, error) {
+func (c *Client) TokenExchangePKCS7(ctx context.Context, code, scope, redirectURI string) (*TokenExchangeResponse, error) {
 	timestamp := time.Now().UTC().Format(tsLayout)
 	state, err := guid()
 	if err != nil {
@@ -299,6 +301,7 @@ func (c *Client) TokenExchangePKCS7(code, scope, redirectURI string) (*TokenExch
 	result := &TokenExchangeResponse{}
 
 	if err = c.request(
+		ctx,
 		http.MethodPost,
 		TokenEndpointPKCS7,
 		"application/x-www-form-urlencoded",
@@ -323,7 +326,7 @@ func (c *Client) TokenExchangePKCS7(code, scope, redirectURI string) (*TokenExch
 //
 // Возвращает ответ от ЕСИА [TokenExchangeResponse] либо цепочку ошибок из [ErrTokenUpdate] и
 // ошибок аналогичных TokenExchange. State в ответе ЕСИА должен совпадать со state запроса.
-func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, error) {
+func (c *Client) TokenUpdate(ctx context.Context, oid, redirectURI string) (*TokenExchangeResponse, error) {
 	timestamp := time.Now().UTC().Format(tsLayout)
 	scope := "prm_chg?oid=" + oid
 	state, err := guid()
@@ -348,6 +351,7 @@ func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, e
 
 	result := &TokenExchangeResponse{}
 	if err = c.request(
+		ctx,
 		http.MethodPost,
 		TokenEndpoint,
 		"application/x-www-form-urlencoded",
@@ -371,7 +375,7 @@ func (c *Client) TokenUpdate(oid, redirectURI string) (*TokenExchangeResponse, e
 //
 // Возвращает ответ от ЕСИА [TokenExchangeResponse] либо цепочку ошибок из [ErrTokenUpdate] и
 // ошибок аналогичных TokenExchangePKCS7. State в ответе ЕСИА должен совпадать со state запроса.
-func (c *Client) TokenUpdatePKCS7(oid, redirectURI string) (*TokenExchangeResponse, error) {
+func (c *Client) TokenUpdatePKCS7(ctx context.Context, oid, redirectURI string) (*TokenExchangeResponse, error) {
 	timestamp := time.Now().UTC().Format(tsLayout)
 	scope := "prm_chg?oid=" + oid
 	state, err := guid()
@@ -396,6 +400,7 @@ func (c *Client) TokenUpdatePKCS7(oid, redirectURI string) (*TokenExchangeRespon
 
 	result := &TokenExchangeResponse{}
 	if err = c.request(
+		ctx,
 		http.MethodPost,
 		TokenEndpointPKCS7,
 		"application/x-www-form-urlencoded",
