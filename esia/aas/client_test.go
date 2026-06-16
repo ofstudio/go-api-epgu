@@ -23,6 +23,25 @@ type suiteTestClient struct {
 	suite.Suite
 }
 
+type spySigner struct {
+	signature string
+	certHash  string
+	data      []string
+}
+
+func newSpySigner() *spySigner {
+	return &spySigner{signature: testSignature, certHash: testCertHash}
+}
+
+func (s *spySigner) Sign(data []byte) ([]byte, error) {
+	s.data = append(s.data, string(data))
+	return []byte(s.signature), nil
+}
+
+func (s *spySigner) CertHash() string {
+	return s.certHash
+}
+
 func TestClient(t *testing.T) {
 	suite.Run(t, new(suiteTestClient))
 }
@@ -31,31 +50,34 @@ func (suite *suiteTestClient) TearDownSubTest() {
 	guid = utils.GUID
 }
 
-func (suite *suiteTestClient) TestAuthURI() {
+func testPermissions() Permissions {
+	return Permissions{
+		{
+			ResponsibleObject: "test",
+			Sysname:           "test",
+			Expire:            1,
+			Actions:           []PermissionAction{{Sysname: "test"}},
+			Purposes:          []PermissionPurpose{{Sysname: "test"}},
+			Scopes:            []PermissionScope{{Sysname: "test"}},
+		},
+	}
+}
 
+func (suite *suiteTestClient) TestAuthURI() {
 	suite.Run("success", func() {
 		guid = func() (string, error) {
 			return "test-state", nil
 		}
 
+		permissions := testPermissions()
 		client := NewClient("", "test-client", signature.NewNop(testSignature, testCertHash))
-		var permissions = Permissions{
-			{
-				ResponsibleObject: "test",
-				Sysname:           "test",
-				Expire:            1,
-				Actions:           []PermissionAction{{Sysname: "test"}},
-				Purposes:          []PermissionPurpose{{Sysname: "test"}},
-				Scopes:            []PermissionScope{{Sysname: "test"}},
-			},
-		}
-
-		uriStr, err := client.AuthURI("test-scope", "test-redirect", permissions)
+		uriStr, state, err := client.AuthURI("test-scope", "test-redirect", permissions)
 		suite.NoError(err)
 		u, err := url.Parse(uriStr)
 		suite.NoError(err)
 
 		q := u.Query()
+		suite.Equal("test-state", state)
 		suite.Equal(UserEndpoint, u.Path)
 		suite.Equal("test-client", q.Get("client_id"))
 		suite.Equal("test-scope", q.Get("scope"))
@@ -64,7 +86,7 @@ func (suite *suiteTestClient) TestAuthURI() {
 		suite.Equal("code", q.Get("response_type"))
 		suite.Equal(permissions.Base64String(), q.Get("permissions"))
 		suite.Equal(testCertHash, q.Get("client_certificate_hash"))
-		suite.Regexp(`^\d{4}.\d{2}.\d{2} \d{2}:\d{2}:\d{2} [\+-]\d{4}$`, q.Get("timestamp")) // timestamp
+		suite.Regexp(`^\d{4}.\d{2}.\d{2} \d{2}:\d{2}:\d{2} [\+-]\d{4}$`, q.Get("timestamp"))
 
 		sign, err := base64.URLEncoding.DecodeString(q.Get("client_secret"))
 		suite.NoError(err)
@@ -77,28 +99,92 @@ func (suite *suiteTestClient) TestAuthURI() {
 		guid = func() (string, error) {
 			return "", ErrGUID
 		}
-		uriStr, err := client.AuthURI("test-scope", "test-redirect", Permissions{})
+		uriStr, state, err := client.AuthURI("test-scope", "test-redirect", Permissions{})
 		suite.ErrorIs(err, ErrAuthURI)
 		suite.ErrorIs(err, ErrGUID)
 		suite.Empty(uriStr)
+		suite.Empty(state)
 	})
 
 	suite.Run("error sign", func() {
 		client := NewClient("", "test", signature.NewNop("", ""))
-		uriStr, err := client.AuthURI("openid", "test", Permissions{})
+		uriStr, state, err := client.AuthURI("openid", "test", Permissions{})
 		suite.ErrorIs(err, ErrAuthURI)
 		suite.ErrorIs(err, ErrSign)
 		suite.Empty(uriStr)
+		suite.Empty(state)
 	})
 
 	suite.Run("error signer is nil", func() {
 		client := NewClient("", "test", nil)
-		uriStr, err := client.AuthURI("openid", "test", Permissions{})
+		uriStr, state, err := client.AuthURI("openid", "test", Permissions{})
 		suite.ErrorIs(err, ErrAuthURI)
 		suite.ErrorIs(err, ErrSign)
 		suite.Empty(uriStr)
+		suite.Empty(state)
+	})
+}
+
+func (suite *suiteTestClient) TestAuthURIPKCS7() {
+	suite.Run("success", func() {
+		guid = func() (string, error) {
+			return "test-state", nil
+		}
+
+		permissions := testPermissions()
+		client := NewClient("", "test-client", signature.NewNop(testSignature, testCertHash))
+		uriStr, state, err := client.AuthURIPKCS7("test-scope", "test-redirect", permissions)
+		suite.NoError(err)
+		u, err := url.Parse(uriStr)
+		suite.NoError(err)
+
+		q := u.Query()
+		suite.Equal("test-state", state)
+		suite.Equal(UserEndpointPKCS7, u.Path)
+		suite.Equal("test-client", q.Get("client_id"))
+		suite.Equal("test-scope", q.Get("scope"))
+		suite.Equal("test-state", q.Get("state"))
+		suite.Equal("test-redirect", q.Get("redirect_uri"))
+		suite.Equal("code", q.Get("response_type"))
+		suite.Equal(permissions.Base64String(), q.Get("permissions"))
+		suite.Empty(q.Get("client_certificate_hash"))
+		suite.Regexp(`^\d{4}.\d{2}.\d{2} \d{2}:\d{2}:\d{2} [\+-]\d{4}$`, q.Get("timestamp"))
+
+		sign, err := base64.URLEncoding.DecodeString(q.Get("client_secret"))
+		suite.NoError(err)
+		suite.Equal(testSignature, string(sign))
+		suite.Equal("online", q.Get("access_type"))
 	})
 
+	suite.Run("error guid", func() {
+		client := NewClient("", "test-client", signature.NewNop(testSignature, testCertHash))
+		guid = func() (string, error) {
+			return "", ErrGUID
+		}
+		uriStr, state, err := client.AuthURIPKCS7("test-scope", "test-redirect", Permissions{})
+		suite.ErrorIs(err, ErrAuthURI)
+		suite.ErrorIs(err, ErrGUID)
+		suite.Empty(uriStr)
+		suite.Empty(state)
+	})
+
+	suite.Run("error sign", func() {
+		client := NewClient("", "test", signature.NewNop("", ""))
+		uriStr, state, err := client.AuthURIPKCS7("openid", "test", Permissions{})
+		suite.ErrorIs(err, ErrAuthURI)
+		suite.ErrorIs(err, ErrSign)
+		suite.Empty(uriStr)
+		suite.Empty(state)
+	})
+
+	suite.Run("error signer is nil", func() {
+		client := NewClient("", "test", nil)
+		uriStr, state, err := client.AuthURIPKCS7("openid", "test", Permissions{})
+		suite.ErrorIs(err, ErrAuthURI)
+		suite.ErrorIs(err, ErrSign)
+		suite.Empty(uriStr)
+		suite.Empty(state)
+	})
 }
 
 func (suite *suiteTestClient) TestParseCallback() {
@@ -107,10 +193,22 @@ func (suite *suiteTestClient) TestParseCallback() {
 		code, state, err := client.ParseCallback(url.Values{
 			"code":  []string{"test-code"},
 			"state": []string{"test-state"},
-		})
+		}, "test-state")
 		suite.NoError(err)
 		suite.Equal("test-code", code)
 		suite.Equal("test-state", state)
+	})
+
+	suite.Run("error state mismatch", func() {
+		client := NewClient("", "test", signature.NewNop(testSignature, testCertHash))
+		code, state, err := client.ParseCallback(url.Values{
+			"code":  []string{"test-code"},
+			"state": []string{"actual-state"},
+		}, "expected-state")
+		suite.ErrorIs(err, ErrParseCallback)
+		suite.ErrorIs(err, ErrStateMismatch)
+		suite.Empty(code)
+		suite.Equal("actual-state", state)
 	})
 
 	suite.Run("error no state", func() {
@@ -161,6 +259,124 @@ func (suite *suiteTestClient) TestParseCallback() {
 	})
 }
 
+func (suite *suiteTestClient) TestSignedData() {
+	permissions := testPermissions()
+
+	suite.Run("AuthURI", func() {
+		guid = func() (string, error) {
+			return "test-state", nil
+		}
+		signer := newSpySigner()
+		client := NewClient("", "test-client", signer)
+
+		uriStr, state, err := client.AuthURI("test-scope", "test-redirect", permissions)
+		suite.NoError(err)
+		u, err := url.Parse(uriStr)
+		suite.NoError(err)
+		timestamp := u.Query().Get("timestamp")
+
+		suite.Equal("test-state", state)
+		suite.Equal([]string{"test-client" + "test-scope" + timestamp + "test-state" + "test-redirect"}, signer.data)
+	})
+
+	suite.Run("AuthURIPKCS7", func() {
+		guid = func() (string, error) {
+			return "test-state", nil
+		}
+		signer := newSpySigner()
+		client := NewClient("", "test-client", signer)
+
+		uriStr, state, err := client.AuthURIPKCS7("test-scope", "test-redirect", permissions)
+		suite.NoError(err)
+		u, err := url.Parse(uriStr)
+		suite.NoError(err)
+		timestamp := u.Query().Get("timestamp")
+
+		suite.Equal("test-state", state)
+		suite.Equal([]string{"test-scope" + timestamp + "test-client" + "test-state"}, signer.data)
+	})
+
+	suite.Run("TokenExchange", func() {
+		var timestamp string
+		var state string
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			timestamp = r.FormValue("timestamp")
+			state = r.FormValue("state")
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"` + state + `","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		signer := newSpySigner()
+		client := NewClient(server.URL, "test-client", signer)
+		_, err := client.TokenExchange("test-code", "test-scope", "test-redirect")
+		suite.NoError(err)
+
+		suite.Equal([]string{"test-client" + "test-scope" + timestamp + state + "test-redirect" + "test-code"}, signer.data)
+	})
+
+	suite.Run("TokenExchangePKCS7", func() {
+		var timestamp string
+		var state string
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			timestamp = r.FormValue("timestamp")
+			state = r.FormValue("state")
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"` + state + `","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		signer := newSpySigner()
+		client := NewClient(server.URL, "test-client", signer)
+		_, err := client.TokenExchangePKCS7("test-code", "test-scope", "test-redirect")
+		suite.NoError(err)
+
+		suite.Equal([]string{"test-scope" + timestamp + "test-client" + state}, signer.data)
+	})
+
+	suite.Run("TokenUpdate", func() {
+		var timestamp string
+		var state string
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			timestamp = r.FormValue("timestamp")
+			state = r.FormValue("state")
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"` + state + `","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		signer := newSpySigner()
+		client := NewClient(server.URL, "test-client", signer)
+		_, err := client.TokenUpdate("test-oid", "test-redirect")
+		suite.NoError(err)
+
+		suite.Equal([]string{"test-client" + "prm_chg?oid=test-oid" + timestamp + state + "test-redirect"}, signer.data)
+	})
+
+	suite.Run("TokenUpdatePKCS7", func() {
+		var timestamp string
+		var state string
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			timestamp = r.FormValue("timestamp")
+			state = r.FormValue("state")
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"` + state + `","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		signer := newSpySigner()
+		client := NewClient(server.URL, "test-client", signer)
+		_, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		suite.NoError(err)
+
+		suite.Equal([]string{"prm_chg?oid=test-oid" + timestamp + "test-client" + state}, signer.data)
+	})
+}
+
 func (suite *suiteTestClient) TestTokenExchange() {
 	suite.Run("success", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -178,8 +394,9 @@ func (suite *suiteTestClient) TestTokenExchange() {
 			suite.Regexp(`^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`, r.FormValue("state")) // guid
 			suite.Regexp(`^\d{4}.\d{2}.\d{2} \d{2}:\d{2}:\d{2} [\+-]\d{4}$`, r.FormValue("timestamp"))                 // timestamp
 
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"test","token_type":"Bearer","expires_in":0}`))
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"` + r.FormValue("state") + `","token_type":"Bearer","expires_in":0}`))
 		}))
 		defer server.Close()
 
@@ -247,6 +464,21 @@ func (suite *suiteTestClient) TestTokenExchange() {
 		suite.Nil(token)
 	})
 
+	suite.Run("error state mismatch", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"wrong-state","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL, "test", signature.NewNop(testSignature, testCertHash))
+		token, err := client.TokenExchange("test", "test", "test")
+		suite.ErrorIs(err, ErrTokenExchange)
+		suite.ErrorIs(err, ErrStateMismatch)
+		suite.Nil(token)
+	})
+
 	suite.Run("error 400 malformed json", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -303,6 +535,72 @@ func (suite *suiteTestClient) TestTokenExchange() {
 	})
 }
 
+func (suite *suiteTestClient) TestTokenExchangePKCS7() {
+	suite.Run("success", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodPost, r.Method)
+			suite.Equal("/aas/oauth2/te", r.URL.Path)
+			suite.Equal("application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
+			suite.Equal("test", r.FormValue("client_id"))
+			suite.Equal(base64.URLEncoding.EncodeToString([]byte(testSignature)), r.FormValue("client_secret"))
+			suite.Equal("test-code", r.FormValue("code"))
+			suite.Equal("test-scope", r.FormValue("scope"))
+			suite.Equal(testCertHash, r.FormValue("client_certificate_hash"))
+			suite.Equal("test-uri", r.FormValue("redirect_uri"))
+			suite.Equal("authorization_code", r.FormValue("grant_type"))
+			suite.Equal("Bearer", r.FormValue("token_type"))
+			suite.Regexp(`^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`, r.FormValue("state")) // guid
+			suite.Regexp(`^\d{4}.\d{2}.\d{2} \d{2}:\d{2}:\d{2} [\+-]\d{4}$`, r.FormValue("timestamp"))                 // timestamp
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"` + r.FormValue("state") + `","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL, "test", signature.NewNop(testSignature, testCertHash))
+		token, err := client.TokenExchangePKCS7("test-code", "test-scope", "test-uri")
+		suite.NoError(err)
+		suite.Require().NotNil(token)
+		suite.Equal("test", token.AccessToken)
+	})
+
+	suite.Run("error guid", func() {
+		guid = func() (string, error) {
+			return "", errors.New("test")
+		}
+
+		client := NewClient("", "test", signature.NewNop(testSignature, testCertHash))
+		token, err := client.TokenExchangePKCS7("test", "test", "test")
+		suite.ErrorIs(err, ErrTokenExchange)
+		suite.ErrorIs(err, ErrGUID)
+		suite.Nil(token)
+	})
+
+	suite.Run("error sign", func() {
+		client := NewClient("", "test", signature.NewNop("", ""))
+		token, err := client.TokenExchangePKCS7("test", "test", "test")
+		suite.ErrorIs(err, ErrTokenExchange)
+		suite.ErrorIs(err, ErrSign)
+		suite.Nil(token)
+	})
+
+	suite.Run("error state mismatch", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"wrong-state","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL, "test", signature.NewNop(testSignature, testCertHash))
+		token, err := client.TokenExchangePKCS7("test", "test", "test")
+		suite.ErrorIs(err, ErrTokenExchange)
+		suite.ErrorIs(err, ErrStateMismatch)
+		suite.Nil(token)
+	})
+}
+
 func (suite *suiteTestClient) TestTokenUpdate() {
 
 	suite.Run("success", func() {
@@ -320,8 +618,9 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 			suite.Regexp(`^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`, r.FormValue("state")) // guid
 			suite.Regexp(`^\d{4}.\d{2}.\d{2} \d{2}:\d{2}:\d{2} [\+-]\d{4}$`, r.FormValue("timestamp"))                 // timestamp
 
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"test","token_type":"Bearer","expires_in":0}`))
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"` + r.FormValue("state") + `","token_type":"Bearer","expires_in":0}`))
 		}))
 		defer server.Close()
 
@@ -385,6 +684,21 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 		suite.Nil(token)
 	})
 
+	suite.Run("error state mismatch", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"wrong-state","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL, "test-client", signature.NewNop(testSignature, testCertHash))
+		token, err := client.TokenUpdate("test-oid", "test-redirect")
+		suite.ErrorIs(err, ErrTokenUpdate)
+		suite.ErrorIs(err, ErrStateMismatch)
+		suite.Nil(token)
+	})
+
 	suite.Run("error guid", func() {
 		guid = func() (string, error) {
 			return "", errors.New("test")
@@ -418,6 +732,71 @@ func (suite *suiteTestClient) TestTokenUpdate() {
 		token, err := client.TokenUpdate("test-oid", "test-redirect")
 		suite.ErrorIs(err, ErrTokenUpdate)
 		suite.ErrorIs(err, ErrSign)
+		suite.Nil(token)
+	})
+}
+
+func (suite *suiteTestClient) TestTokenUpdatePKCS7() {
+	suite.Run("success", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodPost, r.Method)
+			suite.Equal("/aas/oauth2/te", r.URL.Path)
+			suite.Equal("application/x-www-form-urlencoded", r.Header.Get("Content-Type"))
+			suite.Equal("test-client", r.FormValue("client_id"))
+			suite.Equal(base64.URLEncoding.EncodeToString([]byte(testSignature)), r.FormValue("client_secret"))
+			suite.Equal("prm_chg?oid=test-oid", r.FormValue("scope"))
+			suite.Equal(testCertHash, r.FormValue("client_certificate_hash"))
+			suite.Equal("test-redirect", r.FormValue("redirect_uri"))
+			suite.Equal("client_credentials", r.FormValue("grant_type"))
+			suite.Equal("Bearer", r.FormValue("token_type"))
+			suite.Regexp(`^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$`, r.FormValue("state")) // guid
+			suite.Regexp(`^\d{4}.\d{2}.\d{2} \d{2}:\d{2}:\d{2} [\+-]\d{4}$`, r.FormValue("timestamp"))                 // timestamp
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"` + r.FormValue("state") + `","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL, "test-client", signature.NewNop(testSignature, testCertHash))
+		token, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		suite.NoError(err)
+		suite.Require().NotNil(token)
+		suite.Equal("test", token.AccessToken)
+	})
+
+	suite.Run("error guid", func() {
+		guid = func() (string, error) {
+			return "", errors.New("test")
+		}
+
+		client := NewClient("", "test-client", signature.NewNop(testSignature, testCertHash))
+		token, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		suite.ErrorIs(err, ErrTokenUpdate)
+		suite.ErrorIs(err, ErrGUID)
+		suite.Nil(token)
+	})
+
+	suite.Run("error sign", func() {
+		client := NewClient("", "test-client", signature.NewNop("", ""))
+		token, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		suite.ErrorIs(err, ErrTokenUpdate)
+		suite.ErrorIs(err, ErrSign)
+		suite.Nil(token)
+	})
+
+	suite.Run("error state mismatch", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"access_token":"test","id_token":"test","state":"wrong-state","token_type":"Bearer","expires_in":0}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL, "test-client", signature.NewNop(testSignature, testCertHash))
+		token, err := client.TokenUpdatePKCS7("test-oid", "test-redirect")
+		suite.ErrorIs(err, ErrTokenUpdate)
+		suite.ErrorIs(err, ErrStateMismatch)
 		suite.Nil(token)
 	})
 }

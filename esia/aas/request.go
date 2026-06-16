@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 )
 
@@ -33,11 +34,14 @@ func (c *Client) request(
 	c.logRes(res)
 
 	if res.StatusCode >= 400 {
-		return responseError(res)
+		return c.responseError(res)
 	}
 
 	//goland:noinspection ALL
 	defer res.Body.Close()
+	if !isJSONContentType(res.Header.Get("Content-Type")) {
+		return fmt.Errorf("%w: '%s'", ErrUnexpectedContentType, res.Header.Get("Content-Type"))
+	}
 	resBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrRequest, err)
@@ -47,4 +51,12 @@ func (c *Client) request(
 	}
 
 	return nil
+}
+
+func isJSONContentType(contentType string) bool {
+	mediaType, _, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		return false
+	}
+	return mediaType == "application/json"
 }

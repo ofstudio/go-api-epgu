@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 // Ошибки первого уровня.
@@ -22,6 +21,7 @@ var (
 var (
 	ErrNoState               = errors.New("отсутствует поле state")
 	ErrGUID                  = errors.New("не удалось сгенерировать GUID")
+	ErrStateMismatch         = errors.New("state не совпадает с ожидаемым значением")
 	ErrSign                  = errors.New("ошибка подписания")
 	ErrRequest               = errors.New("ошибка HTTP-запроса")
 	ErrJSONUnmarshal         = errors.New("ошибка чтения JSON")
@@ -108,14 +108,14 @@ func callbackError(query url.Values) error {
 // Пример сообщения об ошибке:
 //
 //	HTTP 400 Bad request: ESIA-007014: Запрос не содержит обязательного параметра [error='invalid_request', error_description='ESIA-007014: The request does not contain the mandatory parameter' state='48d1a8dc-0b7d-418a-b4ef-2c7797f77dc9']'
-func responseError(res *http.Response) error {
+func (c *Client) responseError(res *http.Response) error {
 	if res == nil || res.StatusCode < 400 {
 		return nil
 	}
-	return fmt.Errorf("HTTP %s: %w", res.Status, bodyError(res))
+	return fmt.Errorf("HTTP %s: %w", res.Status, c.bodyError(res))
 }
 
-func bodyError(res *http.Response) error {
+func (c *Client) bodyError(res *http.Response) error {
 	//goland:noinspection ALL
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
@@ -123,7 +123,7 @@ func bodyError(res *http.Response) error {
 		return fmt.Errorf("%w: %w", ErrRequest, err)
 	}
 	ct := res.Header.Get("Content-Type")
-	if strings.HasPrefix(ct, "application/json") {
+	if isJSONContentType(ct) {
 		return jsonError(body)
 	}
 	return fmt.Errorf("%w: '%s'", ErrUnexpectedContentType, ct)
