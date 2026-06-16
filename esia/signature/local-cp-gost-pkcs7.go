@@ -3,23 +3,23 @@ package signature
 import (
 	"fmt"
 	"os"
-	"os/exec"
 )
 
-// LocalCryptoPro реализация [signature.Provider] с использованием
+// LocalCryptoProPKCS7 реализация [signature.Provider] с использованием
 // утилиты csptest из локально установленного пакета КриптоПро CSP для рабочих станций версии 5 и выше.
-// Для подписания используется алгоритм ГОСТ Р 34.10-2012 (256 бит).
+// Для подписания используется отделенная PKCS#7-подпись с алгоритмом ГОСТ Р 34.10-2012 (256 бит).
 //
 // ВАЖНО: используйте эту реализацию только для отладки взаимодействия с ЕСИА,
 // тк КриптоПро CSP 5 для рабочих станций не может использоваться в качестве серверного решения.
-type LocalCryptoPro struct {
-	cspTestPath  string
-	cspContainer string
-	certHash     string
-	cmd          cmdInterface
+type LocalCryptoProPKCS7 struct {
+	cspTestPath    string
+	cspContainer   string
+	certHash       string
+	certThumbprint string
+	cmd            cmdInterface
 }
 
-// NewLocalCryptoPro - конструктор LocalCryptoPro.
+// NewLocalCryptoProPKCS7 - конструктор LocalCryptoProPKCS7.
 //
 // # cspTestPath
 //
@@ -32,6 +32,8 @@ type LocalCryptoPro struct {
 // Имя контейнера сертификата.
 // Сертификат ИС (6 файлов .key), используемый для подписи запросов к ЕСИА,
 // должен быть записан на съемный носитель (флешку).
+// При PKCS#7-подписании сертификат выбирается по certThumbprint, но имя контейнера
+// сохраняется в параметрах для единообразия с [LocalCryptoPro].
 // Для получения имени контейнера, подключите съемный носитель с сертификатом
 // и запустите утилиту csptest (csptest.exe для Windows) из пакета КриптоПро CSP:
 //
@@ -46,7 +48,6 @@ type LocalCryptoPro struct {
 // # certHash
 //
 // Хеш сертификата.
-// Для raw-методов ЕСИА использует это значение как client_certificate_hash.
 // Сертификат может храниться и загружаться в карточку ИС на ЕСИА в PEM- или
 // DER-представлении. Хеш client_certificate_hash должен быть вычислен от
 // DER-представления сертификата. Если вычислить хеш от PEM-файла целиком,
@@ -67,22 +68,36 @@ type LocalCryptoPro struct {
 // Команда выведет хеш сертификата:
 //
 //	1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF0
-func NewLocalCryptoPro(cspTestPath, cspContainer, certHash string) *LocalCryptoPro {
-	return &LocalCryptoPro{
-		cspTestPath:  cspTestPath,
-		cspContainer: cspContainer,
-		certHash:     certHash,
-		cmd:          osExec{},
+//
+// # certThumbprint
+//
+// Отпечаток сертификата SHA-1, по которому csptest выбирает сертификат для
+// PKCS#7-подписи. Для получения отпечатка установите сертификат в хранилище
+// пользователя и выполните:
+//
+//	certmgr -list -store uMy
+//
+// Команда выведет SHA1 Thumbprint сертификата:
+//
+//	1234567890abcdef1234567890abcdef12345678
+func NewLocalCryptoProPKCS7(cspTestPath, cspContainer, certHash, certThumbprint string) *LocalCryptoProPKCS7 {
+	return &LocalCryptoProPKCS7{
+		cspTestPath:    cspTestPath,
+		cspContainer:   cspContainer,
+		certHash:       certHash,
+		certThumbprint: certThumbprint,
+		cmd:            osExec{},
 	}
 }
 
 // CertHash возвращает хэш сертификата
-func (p *LocalCryptoPro) CertHash() string {
+func (p *LocalCryptoProPKCS7) CertHash() string {
 	return p.certHash
 }
 
-// Sign - возвращает raw-подпись для данных c использованием алгоритма ГОСТ Р 34.10-2012 (256 бит).
-func (p *LocalCryptoPro) Sign(data []byte) ([]byte, error) {
+// Sign - возвращает отделенную PKCS#7-подпись для данных c использованием
+// алгоритма ГОСТ Р 34.10-2012 (256 бит).
+func (p *LocalCryptoProPKCS7) Sign(data []byte) ([]byte, error) {
 	// создаем временный файл для подписываемых данных
 	dataTempFile, err := os.CreateTemp("", "data")
 	if err != nil {
@@ -115,38 +130,20 @@ func (p *LocalCryptoPro) Sign(data []byte) ([]byte, error) {
 	// и записывает подпись во временный файл
 
 	out, err := p.cmd.Run(p.cspTestPath,
-		"-keys",
-		"-sign", "GOST12_256",
-		"-cont", p.cspContainer,
-		"-keytype", "exchange",
+		"-sfsign", "-sign", "-detached", "-add",
+		"-alg", "GOST12_256",
 		"-in", dataTempFile.Name(),
 		"-out", signTempFile.Name(),
+		"-my", p.certThumbprint,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w: %s", ErrCPTestExec, err, string(out))
 	}
 
-	// читаем подпись из временного файла
 	signBytes, err := os.ReadFile(signTempFile.Name())
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrTempFileRead, err)
 	}
 
-	// реверсируем байты подписи, тк это в данном случае требуется
-	// http://www.gogost.cypherpunks.ru/FAQ.html
-	for i, j := 0, len(signBytes)-1; i < j; i, j = i+1, j-1 {
-		signBytes[i], signBytes[j] = signBytes[j], signBytes[i]
-	}
-
 	return signBytes, nil
-}
-
-type cmdInterface interface {
-	Run(path string, args ...string) ([]byte, error)
-}
-
-type osExec struct{}
-
-func (o osExec) Run(path string, args ...string) ([]byte, error) {
-	return exec.Command(path, args...).CombinedOutput()
 }

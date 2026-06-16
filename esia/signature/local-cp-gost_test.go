@@ -33,6 +33,7 @@ func (suite *suiteLocalCryptoPro) TestSign() {
 	suite.Run("error", func() {
 		signature, err := suite.signer.Sign([]byte{})
 		suite.ErrorIs(err, ErrCPTestExec)
+		suite.ErrorContains(err, "csptest output")
 		suite.Nil(signature)
 	})
 }
@@ -55,7 +56,7 @@ func newTestCmd(t *testing.T) *testCmd {
 	return &testCmd{t: t}
 }
 
-func (c *testCmd) Run(name string, args ...string) error {
+func (c *testCmd) Run(name string, args ...string) ([]byte, error) {
 
 	require.Equal(c.t, 11, len(args))
 	require.Equal(c.t, "-keys", args[0])
@@ -79,7 +80,7 @@ func (c *testCmd) Run(name string, args ...string) error {
 
 	// если входные данные пустые, то возвращаем ошибку
 	if len(inBytes) == 0 {
-		return errors.New("some error")
+		return []byte("csptest output"), errors.New("some error")
 	}
 
 	require.Equal(c.t, testDataToSign, string(inBytes))
@@ -89,8 +90,8 @@ func (c *testCmd) Run(name string, args ...string) error {
 	require.NoError(c.t, err)
 
 	if len(inBytes) == 0 {
-		return errors.New("test error")
+		return []byte("csptest output"), errors.New("test error")
 	}
 
-	return nil
+	return nil, nil
 }
