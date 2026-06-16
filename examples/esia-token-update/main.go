@@ -12,7 +12,7 @@
 //
 // # Требования
 //  1. Информационная система должна быть зарегистрирована на
-//     Технологическом портале ЕСИА: продуктовом или тестовом (SVCDEV)
+//     Технологическом портале ЕСИА: продуктовом или тестовом (ТЕСИА)
 //  2. Для ИС должен быть выпущен необходимый сертификат
 //  3. Публичная часть сертификата должна быть загружена на Технологический портал ЕСИА
 //  4. Выполнены все необходимые шаги регламента подключения ИС к тестовой
@@ -24,7 +24,7 @@
 //     для работы с КриптоПро CSP
 //
 // # Адреса Технологического портала ЕСИА
-//   - Тестовая среда (SVCDEV): https://esia-portal1.test.gosuslugi.ru/console/tech
+//   - Тестовая среда (ТЕСИА): https://esia-portal1.test.gosuslugi.ru/console/tech
 //   - Продуктовая среда: https://esia.gosuslugi.ru/console/tech/
 //
 // # Адреса Портала Госуслуг
@@ -73,7 +73,7 @@ const (
 const (
 	// cspTestPath - полный путь к утилите csptest из пакета КриптоПро CSP:
 	//	- Mac: "/opt/cprocsp/bin/csptest"
-	//	- Win: "C:\Program Files\Crypto Pro\CSP\сsptest.exe"
+	//	- Win: "C:\Program Files\Crypto Pro\CSP\csptest.exe"
 	cspTestPath = "<< полный путь к утилите csptest >>"
 
 	// cspContainer - имя контейнера сертификата.
@@ -91,9 +91,17 @@ const (
 
 	// certHash - хеш сертификата.
 	//
-	// Подключите съемный носитель с сертификатом
-	// и запустите утилиту cpverify (cpverify.exe для Windows) из пакета КриптоПро CSP:
-	//		cpverify -mk <path/to/cert.cer> -alg GR3411_2012_256
+	// Сертификат может быть в PEM- или DER-представлении, но хеш должен быть
+	// вычислен от DER-представления. Если вычислить хеш от PEM-файла целиком,
+	// ЕСИА вернет ошибку ESIA-007053: OAuthErrorEnum.clientSecretWrong.
+	//
+	// Windows:
+	//		openssl x509 -in "C:\path\to\cert.cer" -outform der | "C:\Program Files\Crypto Pro\CSP\cpverify.exe" -mk -stdin -alg GR3411_2012_256
+	// Linux:
+	//		openssl x509 -in "/path/to/cert.cer" -outform der | /opt/cprocsp/bin/amd64/cpverify -mk -stdin -alg GR3411_2012_256
+	// macOS:
+	//		openssl x509 -in "/path/to/cert.cer" -outform der | /opt/cprocsp/bin/cpverify -mk -stdin -alg GR3411_2012_256
+	//
 	// Команда выведет хеш сертификата:
 	//		1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF0
 	certHash = "<< хеш сертификата >>"
