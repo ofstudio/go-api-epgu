@@ -46,7 +46,7 @@ go get -u github.com/ofstudio/go-api-epgu
 
 ## Регламентные требования
 1. Информационная система должна быть зарегистрирована на Технологическом портале ЕСИА:
-   продуктовом или тестовом (SVCDEV)
+   продуктовом или тестовом (ТЕСИА)
 2. Для ИС должен быть выпущен необходимый сертификат
 3. Публичная часть сертификата должна быть загружена на Технологический портал ЕСИА
 4. Выполнены все необходимые шаги регламента и согласованы заявки на подключения ИС к тестовым
@@ -55,19 +55,21 @@ go get -u github.com/ofstudio/go-api-epgu
 ## Руководящие документы
 1. [Портал API Госуслуг](https://partners.gosuslugi.ru/catalog/api_for_gu): 
    регламенты подключения, руководства, спецификация API ЕПГУ и отдельных услуг
-2. [Методические рекомендации по интеграции с REST API Цифрового профиля](https://digital.gov.ru/ru/documents/7166/)
-3. [Методические рекомендации по использованию ЕСИА](https://digital.gov.ru/ru/documents/6186/)
-4. [Руководство пользователя ЕСИА](https://digital.gov.ru/ru/documents/6182/)
-5. [Руководство пользователя технологического портала ЕСИА](https://digital.gov.ru/ru/documents/6190/)
+2. [Методические рекомендации по использованию ЕСИА](https://digital.gov.ru/documents/metodicheskie-rekomendaczii-po-ispolzovaniyu-esia)
+3. [Методические рекомендации по интеграции с REST API Цифрового профиля](https://digital.gov.ru/documents/metodicheskie-rekomendaczii-po-integraczii-s-rest-api-czifrovogo-profilya)
+4. [Сценарии использования инфраструктуры цифрового профиля физического лица](https://digital.gov.ru/documents/sczenarii-ispolzovaniya-infrastruktury-czifrovogo-profilya-fizicheskogo-licza)
+5. [Регламент информационного взаимодействия ЕСИА](https://digital.gov.ru/documents/reglament-informaczionnogo-vzaimodejstviya-esia)
+6. [Руководство пользователя технологического портала ЕСИА](https://digital.gov.ru/documents/rukovodstvo-polzovatelya-tehnologicheskogo-portala-esia)
+7. [Руководство пользователя ЕСИА](https://digital.gov.ru/documents/rukovodstvo-polzovatelya-esia)
 
 ## Ссылки
 
 ### ЕСИА
-- Тестовая среда (SVCDEV): https://esia-portal1.test.gosuslugi.ru
+- Тестовая среда (ТЕСИА): https://esia-portal1.test.gosuslugi.ru
 - Продуктовая среда: https://esia.gosuslugi.ru
 
 ### Технологический портал ЕСИА
-- Тестовая среда (SVCDEV): https://esia-portal1.test.gosuslugi.ru/console/tech
+- Тестовая среда (ТЕСИА): https://esia-portal1.test.gosuslugi.ru/console/tech
 - Продуктовая среда: https://esia.gosuslugi.ru/console/tech/
 
 ### Список согласий предоставленных пользователем
@@ -83,18 +85,18 @@ go get -u github.com/ofstudio/go-api-epgu
 - Тестовая среда (SVCDEV): https://svcdev-beta.test.gosuslugi.ru
 - Продуктовая среда: https://lk.gosuslugi.ru
 
-#### Подключение через СМЭВ4 (ПОДД)
+#### Подключение через СМЭВ4 (Агент ПОДД)
 Подключение через регламентированный запрос типа REST-сервис в среде СМЭВ4.
-Подробнее см "Спецификация API ЕПГУ версия 1.12.1", раздел "1.3. Подключение через СМЭВ4".
+Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "1.3. Подключение через СМЭВ 4".
 
-- Тестовая среда (SVCDEV): https://lkuv.gosuslugi.ru/paip-portal/#/podd/open-api/specifications/card/e28f1ae0-0fdc-431a-9adb-17173564d1db
-- Продуктовая среда: _на 16 мая 2024 "Спецификация API ЕПГУ" не опубликована в промышленной среде СМЭВ 4._
+- Тестовая среда (SVCDEV): https://nsud.gosuslugi.ru/pud/paip-portal/#/podd/open-api/specifications/card/e28f1ae0-0fdc-431a-9adb-17173564d1db
+- Продуктовая среда: https://nsud.gosuslugi.ru/pud/paip-portal/#/podd/open-api/specifications/card/936fbb29-07bb-4206-8374-395eb2bd36b0
 
 ### СМЭВ4
-- [Документы СМЭВ 4 (ПОДД)](https://info.gosuslugi.ru/docs/section/СМЭВ_4_%28ПОДД%29/): регламенты подключения, руководство администратора, дистрибутив Агента ПОДД
-- [Коротко о СМЭВ 4 (ПОДД)](https://info.gosuslugi.ru/articles/Коротко_о_СМЭВ_4_(ПОДД)/)
+- [Документы: Межведомственное электронное взаимодействие)](https://info.gosuslugi.ru/docs/section/СМЭВ/)
+- [Документы: СМЭВ4](https://info.gosuslugi.ru/docs/section/СМЭВ/Методические_документы/СМЭВ4/): регламенты подключения, руководство администратора, дистрибутив Агента ПОДД
+- [Документы: ПО для Участников СМЭВ)](https://info.gosuslugi.ru/docs/section/ПО_для_СМЭВ/)
 - [Обмен в СМЭВ4 c использованием REST-сервиса](https://info.gosuslugi.ru/articles/Обмен_в_СМЭВ4_c_использованием_REST-сервиса/)
-- [Материалы по теме "СМЭВ 4 (ПОДД)"](https://info.gosuslugi.ru/sections/СМЭВ_4_(ПОДД)/)
 
 ## Лицензия
 Распространяется по лицензии MIT. Более подробная информация в файле LICENSE.

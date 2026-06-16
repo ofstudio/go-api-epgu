@@ -31,11 +31,13 @@
 //
 // # Руководящие документы
 //
-//  1. Спецификация API, основные руководящие документы и регламенты подключения опубликованы на Портале API Госуслуг: https://partners.gosuslugi.ru/catalog/api_for_gu
-//  2. Методические рекомендации по интеграции с REST API Цифрового профиля: https://digital.gov.ru/ru/documents/7166/
-//  3. Методические рекомендации по использованию ЕСИА: https://digital.gov.ru/ru/documents/6186/
-//  4. Руководство пользователя ЕСИА: https://digital.gov.ru/ru/documents/6182/
-//  5. Руководство пользователя технологического портала ЕСИА: https://digital.gov.ru/ru/documents/6190/
+//  1. Портал API Госуслуг — регламенты подключения, руководства, спецификация API ЕПГУ и отдельных услуг: https://partners.gosuslugi.ru/catalog/api_for_gu
+//  2. Методические рекомендации по использованию ЕСИА: https://digital.gov.ru/documents/metodicheskie-rekomendaczii-po-ispolzovaniyu-esia
+//  3. Методические рекомендации по интеграции с REST API Цифрового профиля: https://digital.gov.ru/documents/metodicheskie-rekomendaczii-po-integraczii-s-rest-api-czifrovogo-profilya
+//  4. Сценарии использования инфраструктуры цифрового профиля физического лица: https://digital.gov.ru/documents/sczenarii-ispolzovaniya-infrastruktury-czifrovogo-profilya-fizicheskogo-licza
+//  5. Регламент информационного взаимодействия ЕСИА: https://digital.gov.ru/documents/reglament-informaczionnogo-vzaimodejstviya-esia
+//  6. Руководство пользователя технологического портала ЕСИА: https://digital.gov.ru/documents/rukovodstvo-polzovatelya-tehnologicheskogo-portala-esia
+//  7. Руководство пользователя ЕСИА: https://digital.gov.ru/documents/rukovodstvo-polzovatelya-esia
 //
 // # Адреса Портала Госуслуг
 //   - Тестовая среда (SVCDEV): https://svcdev-beta.test.gosuslugi.ru
