@@ -22,6 +22,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/ofstudio/go-api-epgu"
@@ -54,7 +55,7 @@ func main() {
 
 	// === ШАГ 2 ===
 	// Создаем заявление: POST /api/gusmev/order
-	orderId, err := apiClient.OrderCreate(accessToken, srv.Meta())
+	orderId, err := apiClient.OrderCreate(context.Background(), accessToken, srv.Meta())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,7 +70,7 @@ func main() {
 
 	// === ШАГ 4 ===
 	// Загружаем архив с заявлением: POST /api/gusmev/push/chunked
-	if err = apiClient.OrderPushChunked(accessToken, orderId, archive); err != nil {
+	if err = apiClient.OrderPushChunked(context.Background(), accessToken, orderId, archive); err != nil {
 		log.Fatal(err)
 	}
 	log.Print("Архив с вложениями успешно загружен на ЕПГУ в заявление с номером ", orderId)

@@ -1,6 +1,7 @@
 package apipgu
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,6 +9,7 @@ import (
 )
 
 func (c *Client) requestJSON(
+	ctx context.Context,
 	method,
 	endpoint,
 	contentType,
@@ -15,7 +17,7 @@ func (c *Client) requestJSON(
 	body io.Reader,
 	result any,
 ) error {
-	resBody, err := c.requestBody(method, endpoint, contentType, accessToken, body)
+	resBody, err := c.requestBody(ctx, method, endpoint, contentType, accessToken, body)
 	if err != nil {
 		return err
 	}
@@ -27,13 +29,14 @@ func (c *Client) requestJSON(
 }
 
 func (c *Client) requestBody(
+	ctx context.Context,
 	method,
 	endpoint,
 	contentType,
 	accessToken string,
 	body io.Reader,
 ) ([]byte, error) {
-	req, err := http.NewRequest(method, c.baseURI+endpoint, body)
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURI+endpoint, body)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrRequest, err)
 	}

@@ -14,6 +14,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/ofstudio/go-api-epgu"
@@ -38,7 +39,7 @@ func main() {
 		WithDebug(log.Default()) // Включаем отладку
 
 	// Запрашиваем детальную информацию по заявлению
-	orderInfo, err := apiClient.OrderInfo(accessToken, orderId)
+	orderInfo, err := apiClient.OrderInfo(context.Background(), accessToken, orderId)
 	if err != nil {
 		log.Fatal(err)
 	}

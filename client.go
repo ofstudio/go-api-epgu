@@ -2,6 +2,7 @@ package apipgu
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"mime/multipart"
@@ -92,9 +93,10 @@ func (c *Client) WithChunkSize(n int) *Client {
 //   - [ErrWrongOrderID] - в ответе не передан ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
-func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
+func (c *Client) OrderCreate(ctx context.Context, token string, meta OrderMeta) (int, error) {
 	orderIdResponse := &dtoOrderIdResponse{}
 	if err := c.requestJSON(
+		ctx,
 		http.MethodPost,
 		"/api/gusmev/order",
 		"application/json; charset=utf-8",
@@ -127,7 +129,7 @@ func (c *Client) OrderCreate(token string, meta OrderMeta) (int, error) {
 //   - [ErrWrongOrderID] - в ответе не передан или передан некорректный ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
-func (c *Client) OrderPushChunked(token string, orderId int, archive *Archive) error {
+func (c *Client) OrderPushChunked(ctx context.Context, token string, orderId int, archive *Archive) error {
 	if archive == nil || len(archive.Data) == 0 {
 		return fmt.Errorf("%w: %w", ErrPushChunked, ErrNilArchive)
 	}
@@ -168,6 +170,7 @@ func (c *Client) OrderPushChunked(token string, orderId int, archive *Archive) e
 		// make request
 		orderIdResponse := &dtoOrderIdResponse{}
 		if err := c.requestJSON(
+			ctx,
 			http.MethodPost,
 			"/api/gusmev/push/chunked",
 			"multipart/form-data; boundary="+w.Boundary(),
@@ -200,7 +203,7 @@ func (c *Client) OrderPushChunked(token string, orderId int, archive *Archive) e
 //   - [ErrWrongOrderID] - в ответе не передан ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
-func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int, error) {
+func (c *Client) OrderPush(ctx context.Context, token string, meta OrderMeta, archive *Archive) (int, error) {
 	if archive == nil || len(archive.Data) == 0 {
 		return 0, fmt.Errorf("%w: %w", ErrPush, ErrNilArchive)
 	}
@@ -221,6 +224,7 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 
 	orderIdResponse := &dtoOrderIdResponse{}
 	if err := c.requestJSON(
+		ctx,
 		http.MethodPost,
 		"/api/gusmev/push",
 		"multipart/form-data; boundary="+w.Boundary(),
@@ -250,10 +254,11 @@ func (c *Client) OrderPush(token string, meta OrderMeta, archive *Archive) (int,
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
-func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
+func (c *Client) OrderInfo(ctx context.Context, token string, orderId int) (*OrderInfo, error) {
 
 	orderInfoResponse := &dtoOrderInfoResponse{}
 	if err := c.requestJSON(
+		ctx,
 		http.MethodPost,
 		fmt.Sprintf("/api/gusmev/order/%d", orderId),
 		"",
@@ -304,8 +309,9 @@ func (c *Client) OrderInfo(token string, orderId int) (*OrderInfo, error) {
 // При этом, параметр reason не описан в спецификации.
 // На данный момент ни одна из доступных услуг API ЕПГУ не предусматривает
 // возможность отмены. Вероятно, спецификация метода будет изменена в будущем.
-func (c *Client) OrderCancel(token string, orderId int) error {
+func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) error {
 	if _, err := c.requestBody(
+		ctx,
 		http.MethodPost,
 		fmt.Sprintf("/api/gusmev/order/%d/cancel", orderId),
 		"application/json; charset=utf-8",
@@ -331,13 +337,14 @@ func (c *Client) OrderCancel(token string, orderId int) error {
 //   - [ErrInvalidFileLink] - некорректный параметр link
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeAccessDeniedSystem])
-func (c *Client) AttachmentDownload(token string, link string) ([]byte, error) {
+func (c *Client) AttachmentDownload(ctx context.Context, token string, link string) ([]byte, error) {
 	uri, err := attachmentURI(link)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrAttachmentDownload, err)
 	}
 
 	resBody, err := c.requestBody(
+		ctx,
 		http.MethodGet,
 		"/api/storage/v2/files"+uri,
 		"",
@@ -398,7 +405,7 @@ func attachmentURI(link string) (string, error) {
 //   - [ErrDictResponse] - ошибка получения справочных данных c указанием code и message из ответа
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusBadRequest])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
-func (c *Client) Dict(code string, filter, parent string, pageNum, pageSize int) ([]DictItem, int, error) {
+func (c *Client) Dict(ctx context.Context, code string, filter, parent string, pageNum, pageSize int) ([]DictItem, int, error) {
 	reqBody, _ := json.Marshal(&dtoDictRequest{
 		TreeFiltering:      filter,
 		ParentRefItemValue: parent,
@@ -408,6 +415,7 @@ func (c *Client) Dict(code string, filter, parent string, pageNum, pageSize int)
 
 	dictResponse := &dtoDictResponse{}
 	if err := c.requestJSON(
+		ctx,
 		http.MethodPost,
 		fmt.Sprintf("/api/nsi/v1/dictionary/%s", code),
 		"application/json; charset=utf-8",

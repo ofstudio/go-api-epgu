@@ -2,6 +2,7 @@ package apipgu
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
@@ -40,7 +41,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderId, err := client.OrderCreate(testToken, testMeta)
+		orderId, err := client.OrderCreate(context.Background(), testToken, testMeta)
 		suite.NoError(err)
 		suite.Equal(123456, orderId)
 	})
@@ -54,7 +55,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderId, err := client.OrderCreate(testToken, testMeta)
+		orderId, err := client.OrderCreate(context.Background(), testToken, testMeta)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCreate)
 		suite.ErrorIs(err, ErrWrongOrderID)
@@ -70,7 +71,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderId, err := client.OrderCreate(testToken, testMeta)
+		orderId, err := client.OrderCreate(context.Background(), testToken, testMeta)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCreate)
 		suite.ErrorIs(err, ErrJSONUnmarshal)
@@ -87,7 +88,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderId, err := client.OrderCreate(testToken, testMeta)
+		orderId, err := client.OrderCreate(context.Background(), testToken, testMeta)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCreate)
 		suite.ErrorIs(err, ErrStatusBadRequest)
@@ -107,7 +108,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderId, err := client.OrderCreate(testToken, testMeta)
+		orderId, err := client.OrderCreate(context.Background(), testToken, testMeta)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCreate)
 		suite.ErrorIs(err, ErrStatusForbidden)
@@ -120,7 +121,7 @@ func (suite *suiteTestClient) TestOrderCreate() {
 
 	suite.Run("request error", func() {
 		client := NewClient("")
-		orderId, err := client.OrderCreate(testToken, testMeta)
+		orderId, err := client.OrderCreate(context.Background(), testToken, testMeta)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCreate)
 		suite.ErrorIs(err, ErrRequest)
@@ -169,7 +170,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: dataSent}
-		suite.NoError(client.OrderPushChunked(testToken, 123456, testArchive))
+		suite.NoError(client.OrderPushChunked(context.Background(), testToken, 123456, testArchive))
 		suite.Equal(1, reqCount)
 	})
 
@@ -185,7 +186,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testArchive)
+		err := client.OrderPushChunked(context.Background(), testToken, 123456, testArchive)
 		suite.NoError(err)
 		suite.Equal(1, reqCount)
 	})
@@ -225,7 +226,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: dataSent}
-		suite.NoError(client.OrderPushChunked(testToken, 123456, testArchive))
+		suite.NoError(client.OrderPushChunked(context.Background(), testToken, 123456, testArchive))
 		suite.NoError(err)
 		suite.Equal(4, reqCount)
 		suite.Equal(testArchive.Data, dataReceived)
@@ -242,7 +243,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testArchive)
+		err := client.OrderPushChunked(context.Background(), testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrWrongOrderID)
@@ -258,7 +259,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testArchive)
+		err := client.OrderPushChunked(context.Background(), testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrWrongOrderID)
@@ -273,7 +274,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testArchive)
+		err := client.OrderPushChunked(context.Background(), testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrStatusInternalError)
@@ -287,7 +288,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 	suite.Run("request error", func() {
 		client := NewClient("").WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testArchive)
+		err := client.OrderPushChunked(context.Background(), testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrRequest)
@@ -307,14 +308,14 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 
 		client := NewClient(server.URL).WithChunkSize(100)
 		testArchive := &Archive{Name: "", Data: bytes.Repeat([]byte("a"), 100)}
-		err := client.OrderPushChunked(testToken, 123456, testArchive)
+		err := client.OrderPushChunked(context.Background(), testToken, 123456, testArchive)
 		suite.NoError(err)
 	})
 
 	suite.Run("archive is nil", func() {
 		client := NewClient("").WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: nil}
-		err := client.OrderPushChunked(testToken, 123456, testArchive)
+		err := client.OrderPushChunked(context.Background(), testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrNilArchive)
@@ -323,7 +324,7 @@ func (suite *suiteTestClient) TestOrderPushChunked() {
 	suite.Run("archive is zero length", func() {
 		client := NewClient("").WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: []byte{}}
-		err := client.OrderPushChunked(testToken, 123456, testArchive)
+		err := client.OrderPushChunked(context.Background(), testToken, 123456, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPushChunked)
 		suite.ErrorIs(err, ErrNilArchive)
@@ -366,7 +367,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 
 		client := NewClient(server.URL)
 		testArchive := &Archive{Name: "test-archive", Data: dataSent}
-		orderId, err := client.OrderPush(testToken, testMeta, testArchive)
+		orderId, err := client.OrderPush(context.Background(), testToken, testMeta, testArchive)
 		suite.NoError(err)
 		suite.Equal(123456, orderId)
 	})
@@ -381,7 +382,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 
 		client := NewClient(server.URL)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		orderId, err := client.OrderPush(testToken, testMeta, testArchive)
+		orderId, err := client.OrderPush(context.Background(), testToken, testMeta, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPush)
 		suite.ErrorIs(err, ErrWrongOrderID)
@@ -398,7 +399,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 
 		client := NewClient(server.URL)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		orderId, err := client.OrderPush(testToken, testMeta, testArchive)
+		orderId, err := client.OrderPush(context.Background(), testToken, testMeta, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPush)
 		suite.ErrorIs(err, ErrStatusUnableToHandleRequest)
@@ -420,7 +421,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 
 		client := NewClient(server.URL)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		orderId, err := client.OrderPush(testToken, testMeta, testArchive)
+		orderId, err := client.OrderPush(context.Background(), testToken, testMeta, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPush)
 		suite.ErrorIs(err, ErrStatusBadRequest)
@@ -435,7 +436,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 	suite.Run("request error", func() {
 		client := NewClient("").WithChunkSize(100)
 		testArchive := &Archive{Name: "test-archive", Data: bytes.Repeat([]byte("a"), 100)}
-		orderId, err := client.OrderPush(testToken, testMeta, testArchive)
+		orderId, err := client.OrderPush(context.Background(), testToken, testMeta, testArchive)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPush)
 		suite.ErrorIs(err, ErrRequest)
@@ -444,7 +445,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 
 	suite.Run("archive is nil", func() {
 		client := NewClient("")
-		orderId, err := client.OrderPush(testToken, testMeta, nil)
+		orderId, err := client.OrderPush(context.Background(), testToken, testMeta, nil)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPush)
 		suite.ErrorIs(err, ErrNilArchive)
@@ -453,7 +454,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 
 	suite.Run("archive is zero length", func() {
 		client := NewClient("")
-		orderId, err := client.OrderPush(testToken, testMeta, &Archive{})
+		orderId, err := client.OrderPush(context.Background(), testToken, testMeta, &Archive{})
 		suite.Error(err)
 		suite.ErrorIs(err, ErrPush)
 		suite.ErrorIs(err, ErrNilArchive)
@@ -474,7 +475,7 @@ func (suite *suiteTestClient) TestOrderPush() {
 
 		client := NewClient(server.URL)
 		testArchive := &Archive{Name: "", Data: bytes.Repeat([]byte("a"), 100)}
-		orderId, err := client.OrderPush(testToken, testMeta, testArchive)
+		orderId, err := client.OrderPush(context.Background(), testToken, testMeta, testArchive)
 		suite.NoError(err)
 		suite.Equal(123456, orderId)
 	})
@@ -495,7 +496,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderInfo, err := client.OrderInfo(testToken, 123456)
+		orderInfo, err := client.OrderInfo(context.Background(), testToken, 123456)
 		suite.NoError(err)
 		suite.NotNil(orderInfo)
 		suite.Equal("OK", orderInfo.Code)
@@ -516,7 +517,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderInfo, err := client.OrderInfo(testToken, 123456)
+		orderInfo, err := client.OrderInfo(context.Background(), testToken, 123456)
 		suite.NoError(err)
 		suite.NotNil(orderInfo)
 		suite.Equal("OK", orderInfo.Code)
@@ -534,7 +535,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderInfo, err := client.OrderInfo(testToken, 123456)
+		orderInfo, err := client.OrderInfo(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrJSONUnmarshal)
@@ -550,7 +551,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderInfo, err := client.OrderInfo(testToken, 123456)
+		orderInfo, err := client.OrderInfo(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrJSONUnmarshal)
@@ -564,7 +565,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderInfo, err := client.OrderInfo(testToken, 123456)
+		orderInfo, err := client.OrderInfo(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrStatusOrderNotFound)
@@ -574,7 +575,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 
 	suite.Run("request error", func() {
 		client := NewClient("")
-		orderInfo, err := client.OrderInfo(testToken, 123456)
+		orderInfo, err := client.OrderInfo(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrRequest)
@@ -588,7 +589,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderInfo, err := client.OrderInfo(testToken, 123456)
+		orderInfo, err := client.OrderInfo(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrStatusUnauthorized)
@@ -605,7 +606,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderInfo, err := client.OrderInfo(testToken, 123456)
+		orderInfo, err := client.OrderInfo(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrStatusUnexpected)
@@ -622,7 +623,7 @@ func (suite *suiteTestClient) TestOrderInfo() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		orderInfo, err := client.OrderInfo(testToken, 123456)
+		orderInfo, err := client.OrderInfo(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderInfo)
 		suite.ErrorIs(err, ErrStatusBadRequest)
@@ -648,7 +649,7 @@ func (suite *suiteTestClient) TestOrderCancel() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		err := client.OrderCancel(testToken, 123456)
+		err := client.OrderCancel(context.Background(), testToken, 123456)
 		suite.NoError(err)
 	})
 
@@ -661,7 +662,7 @@ func (suite *suiteTestClient) TestOrderCancel() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		err := client.OrderCancel(testToken, 123456)
+		err := client.OrderCancel(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCancel)
 		suite.ErrorIs(err, ErrStatusURLNotFound)
@@ -678,7 +679,7 @@ func (suite *suiteTestClient) TestOrderCancel() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		err := client.OrderCancel(testToken, 123456)
+		err := client.OrderCancel(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCancel)
 		suite.ErrorIs(err, ErrStatusTooManyRequests)
@@ -696,7 +697,7 @@ func (suite *suiteTestClient) TestOrderCancel() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		err := client.OrderCancel(testToken, 123456)
+		err := client.OrderCancel(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCancel)
 		suite.ErrorIs(err, ErrStatusBadGateway)
@@ -708,7 +709,7 @@ func (suite *suiteTestClient) TestOrderCancel() {
 
 	suite.Run("request error", func() {
 		client := NewClient("")
-		err := client.OrderCancel(testToken, 123456)
+		err := client.OrderCancel(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCancel)
 		suite.ErrorIs(err, ErrRequest)
@@ -723,7 +724,7 @@ func (suite *suiteTestClient) TestOrderCancel() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		err := client.OrderCancel(testToken, 123456)
+		err := client.OrderCancel(context.Background(), testToken, 123456)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrOrderCancel)
 		suite.ErrorIs(err, ErrStatusUnableToHandleRequest)
@@ -751,7 +752,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
 		suite.NoError(err)
 		suite.Equal("test data", string(data))
 	})
@@ -763,7 +764,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrStatusURLNotFound)
@@ -781,7 +782,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrStatusServiceUnavailable)
@@ -801,7 +802,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrStatusForbidden)
@@ -815,7 +816,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 
 	suite.Run("invalid file link", func() {
 		client := NewClient("")
-		data, err := client.AttachmentDownload(testToken, "invalid link")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "invalid link")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrInvalidFileLink)
@@ -824,7 +825,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 
 	suite.Run("request error", func() {
 		client := NewClient("")
-		data, err := client.AttachmentDownload(testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrRequest)
@@ -853,6 +854,74 @@ func (suite *suiteTestClient) Test_attachmentURI() {
 
 }
 
+func (suite *suiteTestClient) TestContextCanceled() {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	archive := &Archive{Name: "test-archive", Data: []byte("test")}
+
+	suite.Run("OrderCreate", func() {
+		client := NewClient("http://127.0.0.1")
+		orderId, err := client.OrderCreate(ctx, testToken, testMeta)
+		suite.ErrorIs(err, ErrOrderCreate)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Equal(0, orderId)
+	})
+
+	suite.Run("OrderPushChunked", func() {
+		client := NewClient("http://127.0.0.1")
+		err := client.OrderPushChunked(ctx, testToken, 123456, archive)
+		suite.ErrorIs(err, ErrPushChunked)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+	})
+
+	suite.Run("OrderPush", func() {
+		client := NewClient("http://127.0.0.1")
+		orderId, err := client.OrderPush(ctx, testToken, testMeta, archive)
+		suite.ErrorIs(err, ErrPush)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Equal(0, orderId)
+	})
+
+	suite.Run("OrderInfo", func() {
+		client := NewClient("http://127.0.0.1")
+		orderInfo, err := client.OrderInfo(ctx, testToken, 123456)
+		suite.ErrorIs(err, ErrOrderInfo)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Nil(orderInfo)
+	})
+
+	suite.Run("OrderCancel", func() {
+		client := NewClient("http://127.0.0.1")
+		err := client.OrderCancel(ctx, testToken, 123456)
+		suite.ErrorIs(err, ErrOrderCancel)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+	})
+
+	suite.Run("AttachmentDownload", func() {
+		client := NewClient("http://127.0.0.1")
+		data, err := client.AttachmentDownload(ctx, testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		suite.ErrorIs(err, ErrAttachmentDownload)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Nil(data)
+	})
+
+	suite.Run("Dict", func() {
+		client := NewClient("http://127.0.0.1")
+		items, n, err := client.Dict(ctx, "TEST_DICT", DictFilterSubTree, "", 0, 0)
+		suite.ErrorIs(err, ErrDict)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Equal(0, n)
+		suite.Nil(items)
+	})
+}
+
 func (suite *suiteTestClient) TestDict() {
 
 	suite.Run("200 success with simple dict", func() {
@@ -870,7 +939,7 @@ func (suite *suiteTestClient) TestDict() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		items, n, err := client.Dict(context.Background(), "TEST_DICT", DictFilterSubTree, "", 0, 0)
 		suite.NoError(err)
 		suite.Equal(5004, n)
 		suite.Len(items, 2)
@@ -894,7 +963,7 @@ func (suite *suiteTestClient) TestDict() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		items, n, err := client.Dict("TEST_DICT", DictFilterOneLevel, "test_parent", 10, 20)
+		items, n, err := client.Dict(context.Background(), "TEST_DICT", DictFilterOneLevel, "test_parent", 10, 20)
 		suite.NoError(err)
 		suite.Equal(1000, n)
 		suite.Len(items, 2)
@@ -915,7 +984,7 @@ func (suite *suiteTestClient) TestDict() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		items, n, err := client.Dict("TEST_DICT", "", DictFilterSubTree, 0, 0)
+		items, n, err := client.Dict(context.Background(), "TEST_DICT", "", DictFilterSubTree, 0, 0)
 		suite.NoError(err)
 		suite.Equal(5004, n)
 		suite.Len(items, 0)
@@ -933,7 +1002,7 @@ func (suite *suiteTestClient) TestDict() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		items, n, err := client.Dict(context.Background(), "TEST_DICT", DictFilterSubTree, "", 0, 0)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrDict)
 		suite.ErrorIs(err, ErrDictResponse)
@@ -957,7 +1026,7 @@ func (suite *suiteTestClient) TestDict() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		items, n, err := client.Dict(context.Background(), "TEST_DICT", DictFilterSubTree, "", 0, 0)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrDict)
 		suite.ErrorIs(err, ErrJSONUnmarshal)
@@ -979,7 +1048,7 @@ func (suite *suiteTestClient) TestDict() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		items, n, err := client.Dict(context.Background(), "TEST_DICT", DictFilterSubTree, "", 0, 0)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrDict)
 		suite.ErrorIs(err, ErrStatusGatewayTimeout)
@@ -990,7 +1059,7 @@ func (suite *suiteTestClient) TestDict() {
 
 	suite.Run("request error", func() {
 		client := NewClient("")
-		items, n, err := client.Dict("TEST_DICT", DictFilterSubTree, "", 0, 0)
+		items, n, err := client.Dict(context.Background(), "TEST_DICT", DictFilterSubTree, "", 0, 0)
 		suite.Error(err)
 		suite.ErrorIs(err, ErrDict)
 		suite.ErrorIs(err, ErrRequest)
