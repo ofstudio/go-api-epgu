@@ -81,12 +81,12 @@ code, _, err := client.ParseCallback(r.URL.Query(), state)
 
 ### Как вычислить хэш
 
-Windows: 
+Windows:
 ```cmd
 openssl x509 -in "C:\path\to\cert.cer" -outform der | "C:\Program Files\Crypto Pro\CSP\cpverify.exe" -mk -stdin -alg GR3411_2012_256
 ```
 
-Linux: 
+Linux:
 
 ```bash
 openssl x509 -in "/path/to/cert.cer" -outform der | /opt/cprocsp/bin/amd64/cpverify -mk -stdin -alg GR3411_2012_256
