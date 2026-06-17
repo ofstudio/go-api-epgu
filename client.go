@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"regexp"
 
 	"github.com/ofstudio/go-api-epgu/utils"
@@ -16,8 +17,8 @@ import (
 // Если размер архива вложения будет больше, то метод отправит архив несколькими запросами.
 // Значение можно изменить с помощью [Client.WithChunkSize].
 //
-// Подробнее см. "Спецификация API ЕПГУ версия 1.12",
-// раздел "2.1.3 Отправка заявления (загрузка архива по частям)".
+// Подробнее см. "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.1.3 Загрузка и отправка заявления после резервирования номера".
 const DefaultChunkSize = 5_000_000
 
 // DefaultArchiveName - имя архива по умолчанию для методов [Client.OrderPush] и [Client.OrderPushChunked].
@@ -70,8 +71,8 @@ func (c *Client) WithHTTPClient(httpClient *http.Client) *Client {
 // WithChunkSize устанавливает максимальный размер чанка для метода [Client.OrderPushChunked].
 // По умолчанию используется [DefaultChunkSize].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.12",
-// раздел "2.1.3 Отправка заявления (загрузка архива по частям)"
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.1.3 Загрузка и отправка заявления после резервирования номера"
 func (c *Client) WithChunkSize(n int) *Client {
 	if n > 0 {
 		c.chunkSize = n
@@ -79,12 +80,12 @@ func (c *Client) WithChunkSize(n int) *Client {
 	return c
 }
 
-// OrderCreate - создание заявления.
+// OrderCreate - резервирование номера заявления.
 //
 //	POST /api/gusmev/order
 //
-// Подробнее см. "Спецификация API ЕПГУ версия 1.12",
-// раздел "2.1.2 Создание заявления".
+// Подробнее см. "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.1.2 Резервирование номера заявления".
 //
 // В случае успеха возвращает номер созданного заявления.
 // В случае ошибки возвращает цепочку из [ErrOrderCreate] и следующих возможных ошибок:
@@ -112,12 +113,12 @@ func (c *Client) OrderCreate(ctx context.Context, token string, meta OrderMeta) 
 	return orderIdResponse.OrderId, nil
 }
 
-// OrderPushChunked - загрузка архива по частям.
+// OrderPushChunked - загрузка и отправка заявления после резервирования номера.
 //
 //	POST /api/gusmev/push/chunked
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.12",
-// раздел "2.1.3 Отправка заявления (загрузка архива по частям)"
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.1.3 Загрузка и отправка заявления после резервирования номера"
 //
 // Максимальный размер чанка по умолчанию: [DefaultChunkSize],
 // может быть изменен с помощью [Client.WithChunkSize].
@@ -188,12 +189,12 @@ func (c *Client) OrderPushChunked(ctx context.Context, token string, orderId int
 	return nil
 }
 
-// OrderPush - формирование заявления единым методом.
+// OrderPush - загрузка и отправка заявления одним запросом.
 //
 //	POST /api/gusmev/push
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.12",
-// раздел "2.1.4 Формирование заявления единым методом"
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.1.4 Загрузка и отправка заявления одним запросом"
 //
 // В случае успеха возвращает номер созданного заявления.
 // В случае ошибки возвращает цепочку из [ErrPush] и следующих возможных ошибок:
@@ -245,7 +246,7 @@ func (c *Client) OrderPush(ctx context.Context, token string, meta OrderMeta, ar
 //
 //	POST /api/gusmev/order/{orderId}
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
 // раздел "2.4. Получение деталей по заявлению".
 //
 // В случае успеха возвращает детальную информацию по заявлению.
@@ -290,7 +291,7 @@ func (c *Client) OrderInfo(ctx context.Context, token string, orderId int) (*Ord
 //
 //	POST /api/gusmev/order/{orderId}/cancel
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.12",
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
 // раздел "2.2. Отмена заявления".
 //
 // В случае ошибки возвращает цепочку из [ErrOrderCancel] и следующих возможных ошибок:
@@ -299,14 +300,6 @@ func (c *Client) OrderInfo(ctx context.Context, token string, orderId int) (*Ord
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeCancelNotAllowed])
 //
-// Примечание. В настоящий момент (декабрь 2023) вызов метода возвращает ошибку HTTP 400 Bad Request:
-//
-//	 {
-//		 "code":"bad_request",
-//		 "message":"Required request parameter 'reason' for method parameter type String is not present"
-//	 }
-//
-// При этом, параметр reason не описан в спецификации.
 // На данный момент ни одна из доступных услуг API ЕПГУ не предусматривает
 // возможность отмены. Вероятно, спецификация метода будет изменена в будущем.
 func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) error {
@@ -325,11 +318,12 @@ func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) err
 
 // AttachmentDownload - скачивание файла вложения созданного заявления.
 //
-//	GET /api/storage/v2/files/{objectId}/{objectType}/download?mnemonic={mnemonic}
+//	GET /api/gusmev/files/download/{objectId}/{objectType}?mnemonic={mnemonic}&eserviceCode={eserviceCode}
 //
 // Параметр link - значение поля [OrderAttachmentFile].Link из ответа метода [Client.OrderInfo].
-// Подробнее см "Спецификация API ЕПГУ версия 1.12",
-// раздел "4. Скачивание файла".
+// Параметр eserviceCode - код услуги.
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.6. Скачивание файла".
 //
 // В случае успеха возвращает содержимое файла.
 // В случае ошибки возвращает цепочку из [ErrAttachmentDownload] и следующих возможных ошибок:
@@ -337,8 +331,8 @@ func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) err
 //   - [ErrInvalidFileLink] - некорректный параметр link
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeAccessDeniedSystem])
-func (c *Client) AttachmentDownload(ctx context.Context, token string, link string) ([]byte, error) {
-	uri, err := attachmentURI(link)
+func (c *Client) AttachmentDownload(ctx context.Context, token, link, eserviceCode string) ([]byte, error) {
+	endpoint, err := attachmentEndpoint(link, eserviceCode)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrAttachmentDownload, err)
 	}
@@ -346,7 +340,7 @@ func (c *Client) AttachmentDownload(ctx context.Context, token string, link stri
 	resBody, err := c.requestBody(
 		ctx,
 		http.MethodGet,
-		"/api/storage/v2/files"+uri,
+		endpoint,
 		"",
 		token,
 		nil,
@@ -365,27 +359,32 @@ func (c *Client) AttachmentDownload(ctx context.Context, token string, link stri
 // $3 - {objectType}
 var reAttachmentURI = regexp.MustCompile(`^terrabyte://.*/(.*)/(.*)/(.*)$`)
 
-// attachmentURI - формирует URI для скачивания файла вложения.
+// attachmentEndpoint - формирует endpoint для скачивания файла вложения.
 // Параметр link - значение поля [OrderAttachmentFile.Link].
-// Возвращает URI вида:
+// Возвращает endpoint вида:
 //
-//	/{objectId}/{objectType}/download?mnemonic={mnemonic}
+//	/api/gusmev/files/download/{objectId}/{objectType}?mnemonic={mnemonic}&eserviceCode={eserviceCode}
 //
 // либо ошибку [ErrInvalidFileLink], если передан некорректный параметр link.
-func attachmentURI(link string) (string, error) {
+func attachmentEndpoint(link, eserviceCode string) (string, error) {
 	matches := reAttachmentURI.FindStringSubmatch(link)
 	if len(matches) != 4 {
 		return "", ErrInvalidFileLink
 	}
-	return fmt.Sprintf("/%s/%s/download?mnemonic=%s", matches[1], matches[3], matches[2]), nil
+
+	query := url.Values{}
+	query.Set("mnemonic", matches[2])
+	query.Set("eserviceCode", eserviceCode)
+
+	return fmt.Sprintf("/api/gusmev/files/download/%s/%s?%s", matches[1], matches[3], query.Encode()), nil
 }
 
 // Dict - получение справочных данных.
 //
 //	POST /api/nsi/v1/dictionary/{code}
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.12",
-// раздел "3. Получение справочных данных".
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.5. Получение справочных данных".
 //
 // Параметры:
 //

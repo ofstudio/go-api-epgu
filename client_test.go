@@ -742,7 +742,9 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 	suite.Run("200 success", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			suite.Equal(http.MethodGet, r.Method)
-			suite.Equal("/api/storage/v2/files/12345678/2/download", r.URL.Path)
+			suite.Equal("/api/gusmev/files/download/12345678/2", r.URL.Path)
+			suite.Equal("req_some-guid-1234.xml", r.URL.Query().Get("mnemonic"))
+			suite.Equal("10000000109", r.URL.Query().Get("eserviceCode"))
 			suite.Equal("Bearer test-token", r.Header.Get("Authorization"))
 
 			w.Header().Set("Content-Type", "application/octet-stream")
@@ -752,7 +754,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2", "10000000109")
 		suite.NoError(err)
 		suite.Equal("test data", string(data))
 	})
@@ -764,7 +766,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2", "10000000109")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrStatusURLNotFound)
@@ -782,7 +784,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2", "10000000109")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrStatusServiceUnavailable)
@@ -802,7 +804,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2", "10000000109")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrStatusForbidden)
@@ -816,7 +818,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 
 	suite.Run("invalid file link", func() {
 		client := NewClient("")
-		data, err := client.AttachmentDownload(context.Background(), testToken, "invalid link")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "invalid link", "10000000109")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrInvalidFileLink)
@@ -825,7 +827,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 
 	suite.Run("request error", func() {
 		client := NewClient("")
-		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(context.Background(), testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2", "10000000109")
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrRequest)
@@ -833,21 +835,21 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 	})
 
 }
-func (suite *suiteTestClient) Test_attachmentURI() {
+func (suite *suiteTestClient) Test_attachmentEndpoint() {
 	suite.Run("normal link", func() {
-		uri, err := attachmentURI("terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		uri, err := attachmentEndpoint("terrabyte://00/12345678/req_some-guid-1234.xml/2", "10000000109")
 		suite.NoError(err)
-		suite.Equal("/12345678/2/download?mnemonic=req_some-guid-1234.xml", uri)
+		suite.Equal("/api/gusmev/files/download/12345678/2?eserviceCode=10000000109&mnemonic=req_some-guid-1234.xml", uri)
 	})
 
 	suite.Run("some prefix", func() {
-		uri, err := attachmentURI("terrabyte://00/some/more/12345678/req_some-guid-1234.xml/2")
+		uri, err := attachmentEndpoint("terrabyte://00/some/more/12345678/req_some-guid-1234.xml/2", "10000000109")
 		suite.NoError(err)
-		suite.Equal("/12345678/2/download?mnemonic=req_some-guid-1234.xml", uri)
+		suite.Equal("/api/gusmev/files/download/12345678/2?eserviceCode=10000000109&mnemonic=req_some-guid-1234.xml", uri)
 	})
 
 	suite.Run("no mnemonic", func() {
-		uri, err := attachmentURI("terrabyte://00/12345678/2")
+		uri, err := attachmentEndpoint("terrabyte://00/12345678/2", "10000000109")
 		suite.ErrorIs(err, ErrInvalidFileLink)
 		suite.Equal("", uri)
 	})
@@ -904,7 +906,7 @@ func (suite *suiteTestClient) TestContextCanceled() {
 
 	suite.Run("AttachmentDownload", func() {
 		client := NewClient("http://127.0.0.1")
-		data, err := client.AttachmentDownload(ctx, testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2")
+		data, err := client.AttachmentDownload(ctx, testToken, "terrabyte://00/12345678/req_some-guid-1234.xml/2", "10000000109")
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrRequest)
 		suite.ErrorIs(err, context.Canceled)
