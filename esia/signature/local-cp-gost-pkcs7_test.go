@@ -19,7 +19,7 @@ func TestLocalCryptoProPKCS7(t *testing.T) {
 }
 
 func (suite *suiteLocalCryptoProPKCS7) SetupTest() {
-	suite.signer = NewLocalCryptoProPKCS7("test", "test-container", "test_hash", "test_thumbprint")
+	suite.signer = NewLocalCryptoProPKCS7("test", "test_thumbprint")
 	suite.signer.cmd = newTestPKCS7Cmd(suite.T())
 }
 
@@ -39,7 +39,7 @@ func (suite *suiteLocalCryptoProPKCS7) TestSign() {
 }
 
 func (suite *suiteLocalCryptoProPKCS7) TestCertHash() {
-	suite.Equal("test_hash", suite.signer.CertHash())
+	suite.Equal("", suite.signer.CertHash())
 }
 
 type testPKCS7Cmd struct {

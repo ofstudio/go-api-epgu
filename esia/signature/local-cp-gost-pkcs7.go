@@ -13,8 +13,6 @@ import (
 // тк КриптоПро CSP 5 для рабочих станций не может использоваться в качестве серверного решения.
 type LocalCryptoProPKCS7 struct {
 	cspTestPath    string
-	cspContainer   string
-	certHash       string
 	certThumbprint string
 	cmd            cmdInterface
 }
@@ -27,48 +25,6 @@ type LocalCryptoProPKCS7 struct {
 //   - Mac: "/opt/cprocsp/bin/csptest"
 //   - Win: "C:\Program Files\Crypto Pro\CSP\csptest.exe"
 //
-// # cspContainer
-//
-// Имя контейнера сертификата.
-// Сертификат ИС (6 файлов .key), используемый для подписи запросов к ЕСИА,
-// должен быть записан на съемный носитель (флешку).
-// При PKCS#7-подписании сертификат выбирается по certThumbprint, но имя контейнера
-// сохраняется в параметрах для единообразия с [LocalCryptoPro].
-// Для получения имени контейнера, подключите съемный носитель с сертификатом
-// и запустите утилиту csptest (csptest.exe для Windows) из пакета КриптоПро CSP:
-//
-//	csptest -keyset
-//
-// Команда выведет имя контейнера:
-//
-//	...
-//	Container name: "X9X1XYZA9EZZWZ42"
-//	...
-//
-// # certHash
-//
-// Хеш сертификата.
-// Сертификат может храниться и загружаться в карточку ИС на ЕСИА в PEM- или
-// DER-представлении. Хеш client_certificate_hash должен быть вычислен от
-// DER-представления сертификата. Если вычислить хеш от PEM-файла целиком,
-// ЕСИА вернет ошибку ESIA-007053: OAuthErrorEnum.clientSecretWrong.
-//
-// Windows:
-//
-//	openssl x509 -in "C:\path\to\cert.cer" -outform der | "C:\Program Files\Crypto Pro\CSP\cpverify.exe" -mk -stdin -alg GR3411_2012_256
-//
-// Linux:
-//
-//	openssl x509 -in "/path/to/cert.cer" -outform der | /opt/cprocsp/bin/amd64/cpverify -mk -stdin -alg GR3411_2012_256
-//
-// macOS:
-//
-//	openssl x509 -in "/path/to/cert.cer" -outform der | /opt/cprocsp/bin/cpverify -mk -stdin -alg GR3411_2012_256
-//
-// Команда выведет хеш сертификата:
-//
-//	1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF0
-//
 // # certThumbprint
 //
 // Отпечаток сертификата SHA-1, по которому csptest выбирает сертификат для
@@ -80,19 +36,18 @@ type LocalCryptoProPKCS7 struct {
 // Команда выведет SHA1 Thumbprint сертификата:
 //
 //	1234567890abcdef1234567890abcdef12345678
-func NewLocalCryptoProPKCS7(cspTestPath, cspContainer, certHash, certThumbprint string) *LocalCryptoProPKCS7 {
+func NewLocalCryptoProPKCS7(cspTestPath, certThumbprint string) *LocalCryptoProPKCS7 {
 	return &LocalCryptoProPKCS7{
 		cspTestPath:    cspTestPath,
-		cspContainer:   cspContainer,
-		certHash:       certHash,
 		certThumbprint: certThumbprint,
 		cmd:            osExec{},
 	}
 }
 
-// CertHash возвращает хэш сертификата
+// CertHash - возвращает пустую строку, тк при подписании запроса PKCS#7-методами,
+// хэш сертификата не используется.
 func (p *LocalCryptoProPKCS7) CertHash() string {
-	return p.certHash
+	return ""
 }
 
 // Sign - возвращает отделенную PKCS#7-подпись для данных c использованием
