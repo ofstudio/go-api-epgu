@@ -208,7 +208,7 @@ func (c *Client) ParseCallback(query url.Values, expectedState ...string) (strin
 //   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - [ErrStateMismatch] - state в ответе ЕСИА не совпал со state запроса
-//   - [ErrUnexpectedContentType] - неожидаемый Content-Type ответа, в том числе успешного ответа
+//   - [ErrUnexpectedContentType] - неожиданный Content-Type ответа, в том числе успешного ответа
 //   - ошибок ЕСИА ErrESIA_xxxxxx ([ErrESIA_007004] и др.)
 //
 // Пример сообщения об ошибке:
@@ -269,7 +269,7 @@ func (c *Client) TokenExchange(ctx context.Context, code, scope, redirectURI str
 //   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrJSONUnmarshal] - ошибка разбора ответа
 //   - [ErrStateMismatch] - state в ответе ЕСИА не совпал со state запроса
-//   - [ErrUnexpectedContentType] - неожидаемый Content-Type ответа, в том числе успешного ответа
+//   - [ErrUnexpectedContentType] - неожиданный Content-Type ответа, в том числе успешного ответа
 //   - ошибок ЕСИА ErrESIA_xxxxxx ([ErrESIA_007004] и др.)
 //
 // Пример сообщения об ошибке:

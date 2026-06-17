@@ -22,7 +22,7 @@ func LogReq(req *http.Request, logger Logger) {
 	logger.Print(">>> Request to ", req.URL.String(), "\n", sanitize(string(dump)), "\n\n")
 }
 
-// LogRes логирует HTTP-запрос.
+// LogRes логирует HTTP-ответ.
 func LogRes(res *http.Response, logger Logger) {
 	if logger == nil {
 		return

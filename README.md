@@ -1,4 +1,5 @@
 # go-api-epgu
+
 [![Go Reference](https://pkg.go.dev/badge/github.com/ofstudio/go-api-epgu.svg)](https://pkg.go.dev/github.com/ofstudio/go-api-epgu)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ofstudio/go-api-epgu)](https://goreportcard.com/report/github.com/ofstudio/go-api-epgu)
 
@@ -24,8 +25,8 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
 
 - [services/sfr/zdp-10000000109](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/services/sfr/zdp-10000000109) — "Доставка пенсии и социальных выплат ПФР"
 
-
 ## Примеры
+
 - [Запрос согласия пользователя и получения маркера доступа](/examples/esia-token-request/main.go)
 - [Обновление маркера доступа](/examples/esia-token-update/main.go)
 - [Резервирование номера заявления и загрузка архива по частям](/examples/order-push-chunked/main.go)
@@ -36,15 +37,14 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
 ```
 go get -u github.com/ofstudio/go-api-epgu
 ```
+
 ## Системные требования
 
 - Go 1.21+
-- Для подписания запросов к ЕСИА с помощью
-  [LocalCryptoPro](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/signature#LocalCryptoPro) — 
-  КриптоПро CSP 5.0+ и сертификат для подписания запросов 
-     
+- Для подписания запросов к ЕСИА с помощью [LocalCryptoPro](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/signature#LocalCryptoPro) — КриптоПро CSP 5.0+, ключ и сертификат для подписания запросов
 
 ## Регламентные требования
+
 1. Информационная система должна быть зарегистрирована на Технологическом портале ЕСИА:
    продуктовом или тестовом (ТЕСИА)
 2. Для ИС должен быть выпущен необходимый сертификат
@@ -53,7 +53,8 @@ go get -u github.com/ofstudio/go-api-epgu
    или продуктовым средам ЕСИА и ЕПГУ
 
 ## Руководящие документы
-1. [Портал API Госуслуг](https://partners.gosuslugi.ru/catalog/api_for_gu): 
+
+1. [Портал API Госуслуг](https://partners.gosuslugi.ru/catalog/api_for_gu):
    регламенты подключения, руководства, спецификация API ЕПГУ и отдельных услуг
 2. [Методические рекомендации по использованию ЕСИА](https://digital.gov.ru/documents/metodicheskie-rekomendaczii-po-ispolzovaniyu-esia)
 3. [Методические рекомендации по интеграции с REST API Цифрового профиля](https://digital.gov.ru/documents/metodicheskie-rekomendaczii-po-integraczii-s-rest-api-czifrovogo-profilya)
@@ -65,20 +66,24 @@ go get -u github.com/ofstudio/go-api-epgu
 ## Ссылки
 
 ### ЕСИА
+
 - Тестовая среда (ТЕСИА): https://esia-portal1.test.gosuslugi.ru
 - Продуктовая среда: https://esia.gosuslugi.ru
 
 ### Технологический портал ЕСИА
+
 - Тестовая среда (ТЕСИА): https://esia-portal1.test.gosuslugi.ru/console/tech
 - Продуктовая среда: https://esia.gosuslugi.ru/console/tech/
 
 ### Список согласий предоставленных пользователем
+
 - Тестовая среда (SVCDEV): https://svcdev-betalk.test.gosuslugi.ru/settings/third-party/agreements/acting
 - Продуктовая среда: https://lk.gosuslugi.ru/settings/third-party/agreements/acting
 
-### Подключение 
+### Подключение
 
 #### Подключение через TLS
+
 Прямое подключение к API ЕПГУ через TLS-соединение.
 Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "1.2. Реализация подключения по ГОСТ TLS"
 
@@ -86,6 +91,7 @@ go get -u github.com/ofstudio/go-api-epgu
 - Продуктовая среда: https://lk.gosuslugi.ru
 
 #### Подключение через СМЭВ4 (Агент ПОДД)
+
 Подключение через регламентированный запрос типа REST-сервис в среде СМЭВ4.
 Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "1.3. Подключение через СМЭВ 4".
 
@@ -99,4 +105,5 @@ go get -u github.com/ofstudio/go-api-epgu
 - [Обмен в СМЭВ4 c использованием REST-сервиса](https://info.gosuslugi.ru/articles/Обмен_в_СМЭВ4_c_использованием_REST-сервиса/)
 
 ## Лицензия
+
 Распространяется по лицензии MIT. Более подробная информация в файле LICENSE.

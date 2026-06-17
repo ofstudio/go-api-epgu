@@ -28,11 +28,11 @@ type OrderInfo struct {
 // в спецификации, однако могут приходить в ответе.
 //
 // Пример для заявления "Доставка пенсии и социальных выплат СФР" (10000000109).
-// Обратите внимание, что структура в примере содержит не все все поля, упомянутые в спецификации.
+// Обратите внимание, что структура в примере содержит не все поля, упомянутые в спецификации.
 //
 //	{
 //	 ////
-//	 // Основные аттрибуты
+//	 // Основные атрибуты
 //	 ////
 //
 //	 "id": 1230254874,         // Номер заявления
@@ -224,7 +224,7 @@ type OrderInfo struct {
 //	 "unreadMessageCnt": 0,    // unreadMessageCnt
 //
 //	 "qrlink": { // [Не документировано]
-//	   "hasAltMimeType": false,        // Связанно с alternativeMimeTypes из сервиса тербайта
+//	   "hasAltMimeType": false,        // Связанно с alternativeMimeTypes из сервиса terrabyte
 //	   "fileSize": 0,                  // Размер файла
 //	   "hasDigitalSignature": false,   // Флаг наличия ЭП
 //	   "canSentToMFC": false,          // Флаг отправки в МФЦ
@@ -449,7 +449,7 @@ type OrderAttributeEvent struct {
 //
 // Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "2.4. Получение деталей по заявлению".
 type OrderQrlink struct {
-	HasAltMimeType      bool `json:"hasAltMimeType"`      // Связанно с alternativeMimeTypes из сервиса тербайта
+	HasAltMimeType      bool `json:"hasAltMimeType"`      // Связано с alternativeMimeTypes из сервиса terrabyte
 	FileSize            int  `json:"fileSize"`            // Размер файла
 	HasDigitalSignature bool `json:"hasDigitalSignature"` // Флаг наличия ЭП
 	CanSentToMFC        bool `json:"canSentToMFC"`        // Флаг отправки в МФЦ
