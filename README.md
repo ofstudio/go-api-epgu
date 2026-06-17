@@ -62,6 +62,11 @@ go get -u github.com/ofstudio/go-api-epgu
 5. [Регламент информационного взаимодействия ЕСИА](https://digital.gov.ru/documents/reglament-informaczionnogo-vzaimodejstviya-esia)
 6. [Руководство пользователя технологического портала ЕСИА](https://digital.gov.ru/documents/rukovodstvo-polzovatelya-tehnologicheskogo-portala-esia)
 7. [Руководство пользователя ЕСИА](https://digital.gov.ru/documents/rukovodstvo-polzovatelya-esia)
+8. [Документы: Межведомственное электронное взаимодействие](https://info.gosuslugi.ru/docs/section/СМЭВ/)
+9. [Документы: СМЭВ4](https://info.gosuslugi.ru/docs/section/СМЭВ/Методические_документы/СМЭВ4/):
+   регламенты, руководство администратора, дистрибутив Агента ПОДД
+10. [Документы: ПО для Участников СМЭВ](https://info.gosuslugi.ru/docs/section/ПО_для_СМЭВ/)
+11. [Обмен в СМЭВ4 c использованием REST-сервиса](https://info.gosuslugi.ru/articles/Обмен_в_СМЭВ4_c_использованием_REST-сервиса/)
 
 ## Ссылки
 
@@ -97,12 +102,6 @@ go get -u github.com/ofstudio/go-api-epgu
 
 - Тестовая среда (SVCDEV): https://nsud.gosuslugi.ru/pud/paip-portal/#/podd/open-api/specifications/card/e28f1ae0-0fdc-431a-9adb-17173564d1db
 - Продуктовая среда: https://nsud.gosuslugi.ru/pud/paip-portal/#/podd/open-api/specifications/card/936fbb29-07bb-4206-8374-395eb2bd36b0
-
-### СМЭВ4
-- [Документы: Межведомственное электронное взаимодействие)](https://info.gosuslugi.ru/docs/section/СМЭВ/)
-- [Документы: СМЭВ4](https://info.gosuslugi.ru/docs/section/СМЭВ/Методические_документы/СМЭВ4/): регламенты подключения, руководство администратора, дистрибутив Агента ПОДД
-- [Документы: ПО для Участников СМЭВ)](https://info.gosuslugi.ru/docs/section/ПО_для_СМЭВ/)
-- [Обмен в СМЭВ4 c использованием REST-сервиса](https://info.gosuslugi.ru/articles/Обмен_в_СМЭВ4_c_использованием_REST-сервиса/)
 
 ## Лицензия
 
