@@ -130,6 +130,10 @@ func (c *Client) OrderCreate(ctx context.Context, token string, meta OrderMeta) 
 //   - [ErrWrongOrderID] - в ответе не передан или передан некорректный ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
+//
+// Примечание: согласно спецификации поле meta является обязательным
+// для запроса /api/gusmev/push/chunked. Но это, вероятнее всего,
+// опечатка в спецификации. Данный метод не отправляет поле meta.
 func (c *Client) OrderPushChunked(ctx context.Context, token string, orderId int, archive *Archive) error {
 	if archive == nil || len(archive.Data) == 0 {
 		return fmt.Errorf("%w: %w", ErrPushChunked, ErrNilArchive)
