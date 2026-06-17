@@ -332,37 +332,13 @@ func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) err
 // Подробнее см "Спецификация API ЕПГУ версия 1.14",
 // раздел "2.6. Скачивание файла".
 //
-// В случае успеха возвращает содержимое файла.
+// В случае успеха записывает содержимое файла в dst.
 // В случае ошибки возвращает цепочку из [ErrAttachmentDownload] и следующих возможных ошибок:
 //   - [ErrRequest] - ошибка HTTP-запроса
 //   - [ErrInvalidFileLink] - некорректный параметр link
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeAccessDeniedSystem])
-func (c *Client) AttachmentDownload(ctx context.Context, token string, currentStatusHistoryId int, link, eserviceCode string) ([]byte, error) {
-	body := &bytes.Buffer{}
-	if err := c.AttachmentDownloadTo(ctx, token, currentStatusHistoryId, link, eserviceCode, body); err != nil {
-		return nil, err
-	}
-	return body.Bytes(), nil
-}
-
-// AttachmentDownloadTo - скачивание файла вложения созданного заявления в поток.
-//
-//	GET /api/gusmev/files/download/{objectId}/{objectType}?mnemonic={mnemonic}&eserviceCode={eserviceCode}
-//
-// Параметр currentStatusHistoryId - значение поля [OrderDetails].CurrentStatusHistoryId.
-// Параметр link - значение поля [OrderAttachmentFile].Link или [OrderResponseFile].Link
-// из ответа метода [Client.OrderInfo].
-// Параметр eserviceCode - код услуги.
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
-// раздел "2.6. Скачивание файла".
-//
-// В случае ошибки возвращает цепочку из [ErrAttachmentDownload] и следующих возможных ошибок:
-//   - [ErrRequest] - ошибка HTTP-запроса
-//   - [ErrInvalidFileLink] - некорректный параметр link
-//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
-//   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeAccessDeniedSystem])
-func (c *Client) AttachmentDownloadTo(ctx context.Context, token string, currentStatusHistoryId int, link, eserviceCode string, dst io.Writer) error {
+func (c *Client) AttachmentDownload(ctx context.Context, token string, currentStatusHistoryId int, link, eserviceCode string, dst io.Writer) error {
 	endpoint, err := attachmentEndpoint(currentStatusHistoryId, link, eserviceCode)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrAttachmentDownload, err)

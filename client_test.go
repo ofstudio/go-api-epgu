@@ -761,26 +761,6 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 	suite.Run("200 success", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			suite.Equal(http.MethodGet, r.Method)
-			suite.Equal("/api/gusmev/files/download/15000910007/2", r.URL.Path)
-			suite.Equal("req_some-guid-1234.xml", r.URL.Query().Get("mnemonic"))
-			suite.Equal("10000000109", r.URL.Query().Get("eserviceCode"))
-			suite.Equal("Bearer test-token", r.Header.Get("Authorization"))
-
-			w.Header().Set("Content-Type", "application/octet-stream")
-			w.WriteHeader(http.StatusOK)
-			_, _ = w.Write([]byte("test data"))
-		}))
-		defer server.Close()
-
-		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109")
-		suite.NoError(err)
-		suite.Equal("test data", string(data))
-	})
-
-	suite.Run("200 success with writer", func() {
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			suite.Equal(http.MethodGet, r.Method)
 			suite.Equal("/api/gusmev/files/download/15000910007/3", r.URL.Path)
 			suite.Equal("result.xml", r.URL.Query().Get("mnemonic"))
 			suite.Equal("10000000109", r.URL.Query().Get("eserviceCode"))
@@ -791,7 +771,7 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 
 		client := NewClient(server.URL)
 		body := &bytes.Buffer{}
-		err := client.AttachmentDownloadTo(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/result.xml/3", "10000000109", body)
+		err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/result.xml/3", "10000000109", body)
 		suite.NoError(err)
 		suite.Equal("test data", body.String())
 	})
@@ -803,15 +783,11 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109")
+		err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109", &bytes.Buffer{})
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrStatusURLNotFound)
-		suite.Equal(
-			"ошибка AttachmentDownload: HTTP 404 Not Found: не найден URL запроса",
-			err.Error(),
-		)
-		suite.Nil(data)
+		suite.Equal("ошибка AttachmentDownload: HTTP 404 Not Found: не найден URL запроса", err.Error())
 	})
 
 	suite.Run("503 service unavailable", func() {
@@ -821,15 +797,11 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109")
+		err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109", &bytes.Buffer{})
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrStatusServiceUnavailable)
-		suite.Equal(
-			"ошибка AttachmentDownload: HTTP 503 Service Unavailable: сервис недоступен",
-			err.Error(),
-		)
-		suite.Nil(data)
+		suite.Equal("ошибка AttachmentDownload: HTTP 503 Service Unavailable: сервис недоступен", err.Error())
 	})
 
 	suite.Run("403 with access_denied_user code", func() {
@@ -841,43 +813,36 @@ func (suite *suiteTestClient) TestAttachmentDownload() {
 		defer server.Close()
 
 		client := NewClient(server.URL)
-		data, err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109")
+		err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109", &bytes.Buffer{})
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrStatusForbidden)
 		suite.ErrorIs(err, ErrCodeAccessDeniedUser)
-		suite.Equal(
-			"ошибка AttachmentDownload: HTTP 403 Forbidden: доступ запрещен: доступ запрещен для данного типа пользователя [code='access_denied_user', message='Доступ запрещен']",
-			err.Error(),
-		)
-		suite.Nil(data)
+		suite.Equal("ошибка AttachmentDownload: HTTP 403 Forbidden: доступ запрещен: доступ запрещен для данного типа пользователя [code='access_denied_user', message='Доступ запрещен']", err.Error())
 	})
 
 	suite.Run("invalid file link", func() {
 		client := NewClient("")
-		data, err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "invalid link", "10000000109")
+		err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "invalid link", "10000000109", &bytes.Buffer{})
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrInvalidFileLink)
-		suite.Nil(data)
 	})
 
 	suite.Run("invalid object id", func() {
 		client := NewClient("")
-		data, err := client.AttachmentDownload(context.Background(), testToken, 0, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109")
+		err := client.AttachmentDownload(context.Background(), testToken, 0, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109", &bytes.Buffer{})
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrInvalidFileLink)
-		suite.Nil(data)
 	})
 
 	suite.Run("request error", func() {
 		client := NewClient("")
-		data, err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109")
+		err := client.AttachmentDownload(context.Background(), testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109", &bytes.Buffer{})
 		suite.Error(err)
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrRequest)
-		suite.Nil(data)
 	})
 
 }
@@ -958,11 +923,10 @@ func (suite *suiteTestClient) TestContextCanceled() {
 
 	suite.Run("AttachmentDownload", func() {
 		client := NewClient("http://127.0.0.1")
-		data, err := client.AttachmentDownload(ctx, testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109")
+		err := client.AttachmentDownload(ctx, testToken, 15000910007, "terrabyte://00/3500308079/req_some-guid-1234.xml/2", "10000000109", &bytes.Buffer{})
 		suite.ErrorIs(err, ErrAttachmentDownload)
 		suite.ErrorIs(err, ErrRequest)
 		suite.ErrorIs(err, context.Canceled)
-		suite.Nil(data)
 	})
 
 	suite.Run("Dict", func() {

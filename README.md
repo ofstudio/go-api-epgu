@@ -13,7 +13,6 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
  - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) — запрос детальной информации по отправленному заявлению
  - [Client.OrderCancel](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCancel) — отмена заявления
  - [Client.AttachmentDownload](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.AttachmentDownload) — скачивание файла вложения заявления
- - [Client.AttachmentDownloadTo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.AttachmentDownloadTo) — скачивание файла вложения заявления в поток
  - [Client.Dict](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.Dict) — получение справочных данных
 
 ## Запрос согласия и получение маркера доступа ЕСИА
