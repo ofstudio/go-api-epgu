@@ -46,6 +46,24 @@ func (suite *suiteTestClient) TestOrderCreate() {
 		suite.Equal(123456, orderId)
 	})
 
+	suite.Run("200 success with escaped meta", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, _ := io.ReadAll(r.Body)
+			suite.JSONEq(`{"region":"test \"region\"","serviceCode":"test\\service","targetCode":"test\ntarget"}`, string(body))
+
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"orderId":123456}`))
+		}))
+		defer server.Close()
+
+		meta := OrderMeta{Region: `test "region"`, ServiceCode: `test\service`, TargetCode: "test\ntarget"}
+		client := NewClient(server.URL)
+		orderId, err := client.OrderCreate(context.Background(), testToken, meta)
+		suite.NoError(err)
+		suite.Equal(123456, orderId)
+	})
+
 	suite.Run("200 with unexpected json response", func() {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")

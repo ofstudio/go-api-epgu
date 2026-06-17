@@ -1,20 +1,26 @@
 package apipgu
 
 import (
-	"fmt"
+	"encoding/json"
 )
 
 // OrderMeta - метаданные создаваемого заявления.
 type OrderMeta struct {
-	Region      string // Код интерактивной формы на ЕПГУ
-	ServiceCode string // Код цели обращения услуги в ФРГУ
-	TargetCode  string // Код ОКАТО местоположения пользователя (можно передавать код ОКАТО региона, если невозможно определить точнее)
+	Region      string // Код ОКАТО местоположения пользователя (можно передавать код ОКАТО региона, если невозможно определить точнее)
+	ServiceCode string // Код интерактивной формы на ЕПГУ
+	TargetCode  string // Код цели обращения услуги в ФРГУ
 }
 
 // JSON - возвращает метаданные в формате JSON.
 func (m *OrderMeta) JSON() []byte {
-	return []byte(fmt.Sprintf(
-		`{"region":"%s", "serviceCode":"%s", "targetCode":"%s"}`,
-		m.Region, m.ServiceCode, m.TargetCode,
-	))
+	body, _ := json.Marshal(struct {
+		Region      string `json:"region"`
+		ServiceCode string `json:"serviceCode"`
+		TargetCode  string `json:"targetCode"`
+	}{
+		Region:      m.Region,
+		ServiceCode: m.ServiceCode,
+		TargetCode:  m.TargetCode,
+	})
+	return body
 }
