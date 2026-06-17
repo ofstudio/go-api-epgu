@@ -3,13 +3,13 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/ofstudio/go-api-epgu)](https://goreportcard.com/report/github.com/ofstudio/go-api-epgu)
 
 REST-клиент для работы с [API Госуслуг (ЕПГУ)](https://partners.gosuslugi.ru/catalog/api_for_gu).
-Разработан в соответствии с документом [«Спецификация API ЕПГУ, версия 1.12»](/doc)
+Разработан в соответствии с документом [«Спецификация API ЕПГУ, версия 1.14»](/doc/Specifikaciya_API_EPGU_v1_14.docx)
 
 ## Методы
 
- - [Client.OrderCreate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCreate) — создание заявления
- - [Client.OrderPushChunked](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunked) — загрузка архива по частям
- - [Client.OrderPush](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPush) — формирование заявления единым методом
+ - [Client.OrderCreate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCreate) — резервирование номера заявления
+ - [Client.OrderPushChunked](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunked) — загрузка и отправка заявления после резервирования номера
+ - [Client.OrderPush](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPush) — загрузка и отправка заявления одним запросом
  - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) — запрос детальной информации по отправленному заявлению
  - [Client.OrderCancel](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCancel) — отмена заявления
  - [Client.AttachmentDownload](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.AttachmentDownload) — скачивание файла вложения созданного заявления
@@ -22,7 +22,7 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
 
 ## Услуги API ЕПГУ
 
-- [services/sfr/10000000109-zdp](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/services/sfr/10000000109-zdp) — "Доставка пенсии и социальных выплат ПФР"
+- [services/sfr/10000000109-zdp](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/services/sfr/zdp-10000000109) — "Доставка пенсии и социальных выплат ПФР"
 
 
 ## Примеры
@@ -80,7 +80,7 @@ go get -u github.com/ofstudio/go-api-epgu
 
 #### Подключение через TLS
 Прямое подключение к API ЕПГУ через TLS-соединение.
-Подробнее см "Спецификация API ЕПГУ версия 1.12.1", раздел "1.2. Реализация подключения по ГОСТ TLS"
+Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "1.2. Реализация подключения по ГОСТ TLS"
 
 - Тестовая среда (SVCDEV): https://svcdev-beta.test.gosuslugi.ru
 - Продуктовая среда: https://lk.gosuslugi.ru
