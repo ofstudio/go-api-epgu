@@ -1,6 +1,7 @@
 package apipgu
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -36,9 +37,25 @@ func (c *Client) requestBody(
 	accessToken string,
 	body io.Reader,
 ) ([]byte, error) {
+	resBody := &bytes.Buffer{}
+	if err := c.requestStream(ctx, method, endpoint, contentType, accessToken, body, resBody); err != nil {
+		return nil, err
+	}
+	return resBody.Bytes(), nil
+}
+
+func (c *Client) requestStream(
+	ctx context.Context,
+	method,
+	endpoint,
+	contentType,
+	accessToken string,
+	body io.Reader,
+	dst io.Writer,
+) error {
 	req, err := http.NewRequestWithContext(ctx, method, c.baseURI+endpoint, body)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrRequest, err)
+		return fmt.Errorf("%w: %w", ErrRequest, err)
 	}
 
 	if contentType != "" {
@@ -53,21 +70,20 @@ func (c *Client) requestBody(
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrRequest, err)
+		return fmt.Errorf("%w: %w", ErrRequest, err)
 	}
+	defer res.Body.Close()
 
 	c.logRes(res)
 
 	if res.StatusCode >= 400 || res.StatusCode == http.StatusNoContent {
-		return nil, responseError(res)
+		return responseError(res)
 	}
 
-	//goland:noinspection ALL
-	defer res.Body.Close()
-	resBody, err := io.ReadAll(res.Body)
+	_, err = io.Copy(dst, res.Body)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrRequest, err)
+		return fmt.Errorf("%w: %w", ErrRequest, err)
 	}
 
-	return resBody, nil
+	return nil
 }
