@@ -2,16 +2,16 @@ package sfr
 
 // AddressRus - российский адрес
 type AddressRus struct {
-	ZipCode    *string `xml:"УТ:Индекс"`
-	Region     *string `xml:"УТ:РоссийскийАдрес>УТ:Регион>УТ:Название"`
-	District   *string `xml:"УТ:РоссийскийАдрес>УТ:Район>УТ:Название"`
-	City       *string `xml:"УТ:РоссийскийАдрес>УТ:Город>УТ:Название"`
-	Settlement *string `xml:"УТ:РоссийскийАдрес>УТ:НаселенныйПункт>УТ:Название"`
-	Street     *string `xml:"УТ:РоссийскийАдрес>УТ:Улица>УТ:Название"`
-	House      *string `xml:"УТ:РоссийскийАдрес>УТ:Дом>УТ:Номер"`
-	Housing    *string `xml:"УТ:РоссийскийАдрес>УТ:Корпус>УТ:Номер"`
-	Building   *string `xml:"УТ:РоссийскийАдрес>УТ:Строение>УТ:Номер"`
-	Flat       *string `xml:"УТ:РоссийскийАдрес>УТ:Квартира>УТ:Номер"`
+	ZipCode    *string `xml:"ns2:Индекс"`
+	Region     *string `xml:"ns2:РоссийскийАдрес>ns2:Регион>ns2:Название"`
+	District   *string `xml:"ns2:РоссийскийАдрес>ns2:Район>ns2:Название"`
+	City       *string `xml:"ns2:РоссийскийАдрес>ns2:Город>ns2:Название"`
+	Settlement *string `xml:"ns2:РоссийскийАдрес>ns2:НаселенныйПункт>ns2:Название"`
+	Street     *string `xml:"ns2:РоссийскийАдрес>ns2:Улица>ns2:Название"`
+	House      *string `xml:"ns2:РоссийскийАдрес>ns2:Дом>ns2:Номер"`
+	Housing    *string `xml:"ns2:РоссийскийАдрес>ns2:Корпус>ns2:Номер"`
+	Building   *string `xml:"ns2:РоссийскийАдрес>ns2:Строение>ns2:Номер"`
+	Flat       *string `xml:"ns2:РоссийскийАдрес>ns2:Квартира>ns2:Номер"`
 }
 
 // NewAddressRus - конструктор [AddressRus]
@@ -19,7 +19,7 @@ func NewAddressRus() *AddressRus {
 	return &AddressRus{}
 }
 
-// WithZipCode - УТ:Индекс
+// WithZipCode - ns2:Индекс
 func (a *AddressRus) WithZipCode(zipCode string) *AddressRus {
 	a.ZipCode = &zipCode
 	return a
@@ -81,44 +81,44 @@ func (a *AddressRus) WithFlat(flat string) *AddressRus {
 
 // BirthPlace - УТ:МестоРождения
 type BirthPlace struct {
-	Type    string `xml:"УТ:ТипМестаРождения"`         // Пример: ОСОБОЕ
-	City    string `xml:"УТ:ГородРождения,omitempty"`  // Пример: рп Михайловка, Ардатовский р-он
-	Country string `xml:"УТ:СтранаРождения,omitempty"` // Пример: Российская Федерация
+	Type    string `xml:"ns2:ТипМестаРождения"`         // Пример: ОСОБОЕ
+	City    string `xml:"ns2:ГородРождения,omitempty"`  // Пример: рп Михайловка, Ардатовский р-он
+	Country string `xml:"ns2:СтранаРождения,omitempty"` // Пример: Российская Федерация
 }
 
-// УТ:МестоРождения/УТ:ТипМестаРождения
+// ns2:МестоРождения/ns2:ТипМестаРождения
 const BirthPlaceSpecial = "ОСОБОЕ"
 
-// Citizenship - УТ:Гражданство/УТ:Тип
+// Citizenship - ns2:Гражданство/ns2:Тип
 type CitizenshipType string
 
-// УТ:Гражданство/УТ:Тип
+// ns2:Гражданство/ns2:Тип
 const (
 	CitizenshipRF        CitizenshipType = "1" // Гражданин РФ
 	CitizenshipForeign   CitizenshipType = "2" // Иностранный гражданин
 	CitizenshipStateless CitizenshipType = "3" // Лицо без гражданства
 )
 
-// Citizenship - УТ:Гражданство
+// Citizenship - ns2:Гражданство
 type Citizenship struct {
-	Type CitizenshipType `xml:"УТ:Тип"` // Пример: 1
+	Type CitizenshipType `xml:"ns2:Тип"` // Пример: 1
 }
 
-// FIO - УТ:ФИО
+// FIO - ns2:ФИО
 type FIO struct {
-	LastName       string `xml:"УТ:Фамилия"`            // Пример: ИВАНОВ
-	FirstName      string `xml:"УТ:Имя"`                // Пример: ИВАН
-	PatronymicName string `xml:"УТ:Отчество,omitempty"` // Пример: ИВАНОВИЧ
+	LastName       string `xml:"ns2:Фамилия"`            // Пример: ИВАНОВ
+	FirstName      string `xml:"ns2:Имя"`                // Пример: ИВАН
+	PatronymicName string `xml:"ns2:Отчество,omitempty"` // Пример: ИВАНОВИЧ
 }
 
 // IdentityDoc - УТ:УдостоверяющийДокументОграниченногоСрока
 type IdentityDoc struct {
-	Type       string `xml:"УТ:ТипДокумента"`               // Пример: ПАСПОРТ РОССИИ
-	Series     string `xml:"УТ:Серия"`                      // Пример: 1234
-	Number     string `xml:"УТ:Номер"`                      // Пример: 123456
-	IssuedAt   Date   `xml:"УТ:ДатаВыдачи"`                 // Пример: 2010-04-13
-	IssuedBy   string `xml:"УТ:КемВыдан"`                   // Пример: ОВД ЛЕНИНСКОГО РАЙОНА Г. САМАРЫ
-	IssuerCode string `xml:"УТ:КодПодразделения,omitempty"` // Пример: 123456
+	Type       string `xml:"ns2:ТипДокумента"`               // Пример: ПАСПОРТ РОССИИ
+	Series     string `xml:"ns2:Серия"`                      // Пример: 1234
+	Number     string `xml:"ns2:Номер"`                      // Пример: 123456
+	IssuedAt   Date   `xml:"ns2:ДатаВыдачи"`                 // Пример: 2010-04-13
+	IssuedBy   string `xml:"ns2:КемВыдан"`                   // Пример: ОВД ЛЕНИНСКОГО РАЙОНА Г. САМАРЫ
+	IssuerCode string `xml:"ns2:КодПодразделения,omitempty"` // Пример: 123456
 }
 
 // УТ:УдостоверяющийДокументОграниченногоСрока/УТ:ТипДокумента

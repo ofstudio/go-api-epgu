@@ -37,12 +37,12 @@ const (
 
 // DeliveryInfo - сведения о доставке пенсии из структуры [ZDP]
 type DeliveryInfo struct {
-	Date          sfr.Date          `xml:"ДатаДоставки"`                      // Пример: 2023-04-13
-	Location      DeliveryLocation  `xml:"МестоДоставки"`                     // Пример: 1
-	Method        DeliveryMethod    `xml:"СпособДоставки"`                    // Пример: 2
-	Recipient     DeliveryRecipient `xml:"Получатель"`                        // Пример: 1
-	Pickup        DeliveryPickup    `xml:"СпособВручения,omitempty"`          // Пример: 1
-	Organisation  string            `xml:"НаименованиеОрганизации,omitempty"` // Пример: АЛТАЙСКИЙ РФ АО "РОССЕЛЬХОЗБАНК" г Барнаул
-	AccountNumber string            `xml:"НомерСчета,omitempty"`              // Пример: 40817810000000000001
-	Address       sfr.AddressRus    `xml:"Адрес"`                             // Адрес доставки
+	Date          sfr.Date          `xml:"ns3:ДатаДоставки"`                      // Пример: 2023-04-13
+	Location      DeliveryLocation  `xml:"ns3:МестоДоставки"`                     // Пример: 1
+	Method        DeliveryMethod    `xml:"ns3:СпособДоставки"`                    // Пример: 2
+	Recipient     DeliveryRecipient `xml:"ns3:Получатель"`                        // Пример: 1
+	Pickup        DeliveryPickup    `xml:"ns3:СпособВручения,omitempty"`          // Пример: 1
+	Organisation  string            `xml:"ns3:НаименованиеОрганизации,omitempty"` // Пример: АЛТАЙСКИЙ РФ АО "РОССЕЛЬХОЗБАНК" г Барнаул
+	AccountNumber string            `xml:"ns3:НомерСчета,omitempty"`              // Пример: 40817810000000000001
+	Address       sfr.AddressRus    `xml:"ns3:Адрес"`                             // Адрес доставки
 }
