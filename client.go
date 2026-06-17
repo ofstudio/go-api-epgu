@@ -305,14 +305,14 @@ func (c *Client) OrderInfo(ctx context.Context, token string, orderId int) (*Ord
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeCancelNotAllowed])
 //
-// На данный момент ни одна из доступных услуг API ЕПГУ не предусматривает
-// возможность отмены. Вероятно, спецификация метода будет изменена в будущем.
+// Отмена возможна только для заявления, у которого в деталях указан
+// cancelAllowed=true.
 func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) error {
 	if _, err := c.requestBody(
 		ctx,
 		http.MethodPost,
 		fmt.Sprintf("/api/gusmev/order/%d/cancel", orderId),
-		"application/json; charset=utf-8",
+		"",
 		token,
 		nil,
 	); err != nil {
@@ -464,7 +464,7 @@ func (c *Client) Dict(ctx context.Context, code string, filter, parent string, p
 	if err := c.requestJSON(
 		ctx,
 		http.MethodPost,
-		fmt.Sprintf("/api/nsi/v1/dictionary/%s", code),
+		"/api/nsi/v1/dictionary/"+url.PathEscape(code),
 		"application/json; charset=utf-8",
 		"",
 		bytes.NewReader(reqBody),

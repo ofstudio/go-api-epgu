@@ -661,6 +661,7 @@ func (suite *suiteTestClient) TestOrderCancel() {
 			suite.Equal(http.MethodPost, r.Method)
 			suite.Equal("/api/gusmev/order/123456/cancel", r.URL.Path)
 			suite.Equal("Bearer test-token", r.Header.Get("Authorization"))
+			suite.Empty(r.Header.Get("Content-Type"))
 
 			w.WriteHeader(http.StatusOK)
 		}))
@@ -999,6 +1000,22 @@ func (suite *suiteTestClient) TestDict() {
 		itemsJSON, err := json.Marshal(items)
 		suite.NoError(err)
 		suite.JSONEq(dictSuccessSimpleWant, string(itemsJSON))
+	})
+
+	suite.Run("200 success with escaped code", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal("/api/nsi/v1/dictionary/TEST%2FDICT", r.RequestURI)
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(dictSuccessEmptyResponse))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		items, n, err := client.Dict(context.Background(), "TEST/DICT", DictFilterSubTree, "", 0, 0)
+		suite.NoError(err)
+		suite.Equal(5004, n)
+		suite.Len(items, 0)
 	})
 
 	suite.Run("200 success with pagination and complex dict", func() {
