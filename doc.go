@@ -10,7 +10,8 @@
 //   - [Client.OrderPush] — загрузка и отправка заявления одним запросом
 //   - [Client.OrderInfo] — запрос детальной информации по отправленному заявлению
 //   - [Client.OrderCancel] — отмена заявления
-//   - [Client.AttachmentDownload] — скачивание файла вложения созданного заявления
+//   - [Client.AttachmentDownload] — скачивание файла вложения заявления
+//   - [Client.AttachmentDownloadTo] — скачивание файла вложения заявления в поток
 //   - [Client.Dict] — получение справочных данных
 //
 // # Получение маркера доступа (токена) ЕСИА
@@ -20,13 +21,13 @@
 //
 // # Услуги API ЕПГУ
 //
-//   - [github.com/ofstudio/go-api-epgu/services/sfr/10000000109-zdp] — Доставка пенсии и социальных выплат ПФР
+//   - [github.com/ofstudio/go-api-epgu/services/sfr/zdp-10000000109] — Доставка пенсии и социальных выплат ПФР
 //
 // # Примеры
 //
 //   - [github.com/ofstudio/go-api-epgu/examples/esia-token-request] — запрос согласия пользователя и получения маркера доступа
 //   - [github.com/ofstudio/go-api-epgu/examples/esia-token-update] — обновление маркера доступа
-//   - [github.com/ofstudio/go-api-epgu/examples/order-push-chunked] — создание заявления и загрузка архива по частям
+//   - [github.com/ofstudio/go-api-epgu/examples/order-push-chunked] — резервирование номера заявления и загрузка архива по частям
 //   - [github.com/ofstudio/go-api-epgu/examples/order-info] — получение детальной информации по отправленному заявлению
 //
 // # Руководящие документы

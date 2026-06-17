@@ -12,7 +12,8 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
  - [Client.OrderPush](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPush) — загрузка и отправка заявления одним запросом
  - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) — запрос детальной информации по отправленному заявлению
  - [Client.OrderCancel](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCancel) — отмена заявления
- - [Client.AttachmentDownload](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.AttachmentDownload) — скачивание файла вложения созданного заявления
+ - [Client.AttachmentDownload](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.AttachmentDownload) — скачивание файла вложения заявления
+ - [Client.AttachmentDownloadTo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.AttachmentDownloadTo) — скачивание файла вложения заявления в поток
  - [Client.Dict](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.Dict) — получение справочных данных
 
 ## Запрос согласия и получение маркера доступа ЕСИА
@@ -22,13 +23,13 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
 
 ## Услуги API ЕПГУ
 
-- [services/sfr/10000000109-zdp](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/services/sfr/zdp-10000000109) — "Доставка пенсии и социальных выплат ПФР"
+- [services/sfr/zdp-10000000109](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/services/sfr/zdp-10000000109) — "Доставка пенсии и социальных выплат ПФР"
 
 
 ## Примеры
 - [Запрос согласия пользователя и получения маркера доступа](/examples/esia-token-request/main.go)
 - [Обновление маркера доступа](/examples/esia-token-update/main.go)
-- [Создание заявления и загрузка архива по частям](/examples/order-push-chunked/main.go)
+- [Резервирование номера заявления и загрузка архива по частям](/examples/order-push-chunked/main.go)
 - [Получение детальной информации по отправленному заявлению](/examples/order-info/main.go)
 
 ## Установка
