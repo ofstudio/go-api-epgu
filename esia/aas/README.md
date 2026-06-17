@@ -68,7 +68,7 @@ code, _, err := client.ParseCallback(r.URL.Query(), state)
 Методы [Client.AuthURI](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.AuthURI),
 [Client.TokenExchange](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.TokenExchange) и
 [Client.TokenUpdate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/esia/aas/#Client.TokenUpdate)
- передают в ЕСИА обязательный параметр `client_certificate_hash`. По этому параметру ЕСИА
+передают в ЕСИА обязательный параметр `client_certificate_hash`. По этому параметру ЕСИА
 выбирает сертификат ИС, которым должна проверяться подпись `client_secret`.
 
 Сертификат может поставляться в PEM- или DER-представлении. В карточку ИС на
@@ -79,7 +79,7 @@ code, _, err := client.ParseCallback(r.URL.Query(), state)
 
 Если вычислить хэш от PEM-файла целиком, ЕСИА вернет ошибку **ESIA-007053:** `OAuthErrorEnum.clientSecretWrong`.
 
-### Как вычислить хэш 
+### Как вычислить хэш
 
 Windows: 
 ```cmd
