@@ -321,16 +321,15 @@ func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) err
 	return nil
 }
 
-// AttachmentDownload - скачивание файла вложения созданного заявления.
+// AttachmentDownload - скачивание файла.
 //
-//	GET /api/gusmev/files/download/{objectId}/{objectType}?mnemonic={mnemonic}&eserviceCode={eserviceCode}
+//	GET /api/gusmev/files/download/{objectId}/{objectType}?mnemonic={mnemonic}&eserviceCode={eServiceCode}
 //
 // Параметр currentStatusHistoryId - значение поля [OrderDetails].CurrentStatusHistoryId.
 // Параметр link - значение поля [OrderAttachmentFile].Link или [OrderResponseFile].Link
 // из ответа метода [Client.OrderInfo].
-// Параметр eserviceCode - код услуги.
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
-// раздел "2.6. Скачивание файла".
+// Параметр eServiceCode - код услуги.
+// Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "2.6. Скачивание файла".
 //
 // В случае успеха записывает содержимое файла в dst.
 // В случае ошибки возвращает цепочку из [ErrAttachmentDownload] и следующих возможных ошибок:
@@ -338,8 +337,8 @@ func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) err
 //   - [ErrInvalidFileLink] - некорректный параметр link
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeAccessDeniedSystem])
-func (c *Client) AttachmentDownload(ctx context.Context, token string, currentStatusHistoryId int, link, eserviceCode string, dst io.Writer) error {
-	endpoint, err := attachmentEndpoint(currentStatusHistoryId, link, eserviceCode)
+func (c *Client) AttachmentDownload(ctx context.Context, token string, currentStatusHistoryId int, link, eServiceCode string, dst io.Writer) error {
+	endpoint, err := attachmentEndpoint(currentStatusHistoryId, link, eServiceCode)
 	if err != nil {
 		return fmt.Errorf("%w: %w", ErrAttachmentDownload, err)
 	}
@@ -376,12 +375,13 @@ func parseAttachmentLink(link string) (mnemonic, objectType string, err error) {
 // attachmentEndpoint - формирует endpoint для скачивания файла вложения.
 // Параметр currentStatusHistoryId - значение поля [OrderDetails.CurrentStatusHistoryId].
 // Параметр link - значение поля [OrderAttachmentFile.Link] или [OrderResponseFile.Link].
+// Параметр eServiceCode - код услуги.
 // Возвращает endpoint вида:
 //
-//	/api/gusmev/files/download/{objectId}/{objectType}?mnemonic={mnemonic}&eserviceCode={eserviceCode}
+//	/api/gusmev/files/download/{objectId}/{objectType}?mnemonic={mnemonic}&eserviceCode={eServiceCode}
 //
 // либо ошибку [ErrInvalidFileLink], если передан некорректный параметр link.
-func attachmentEndpoint(currentStatusHistoryId int, link, eserviceCode string) (string, error) {
+func attachmentEndpoint(currentStatusHistoryId int, link, eServiceCode string) (string, error) {
 	if currentStatusHistoryId <= 0 {
 		return "", ErrInvalidFileLink
 	}
@@ -393,7 +393,7 @@ func attachmentEndpoint(currentStatusHistoryId int, link, eserviceCode string) (
 
 	query := url.Values{}
 	query.Set("mnemonic", mnemonic)
-	query.Set("eserviceCode", eserviceCode)
+	query.Set("eserviceCode", eServiceCode)
 
 	return fmt.Sprintf(
 		"/api/gusmev/files/download/%s/%s?%s",
