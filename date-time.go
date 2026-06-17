@@ -8,6 +8,7 @@ import (
 
 // "date": "2023-11-02T07:27:22.586+0300"
 const apipguLayout = "2006-01-02T15:04:05.000-0700"
+const apipguLayoutWithoutOffset = "2006-01-02T15:04:05.000"
 
 // DateTime - дата и время в формате API ЕПГУ.
 //
@@ -24,6 +25,9 @@ func (d *DateTime) UnmarshalJSON(b []byte) (err error) {
 	}
 	s = strings.Trim(string(b), `"`)
 	d.Time, err = time.Parse(apipguLayout, s)
+	if err != nil {
+		d.Time, err = time.Parse(apipguLayoutWithoutOffset, s)
+	}
 	return
 }
 
@@ -32,4 +36,8 @@ func (d DateTime) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	return []byte(fmt.Sprintf(`"%s"`, d.Time.Format(apipguLayout))), nil
+}
+
+func formatAPIPGUTimestamp(t time.Time) string {
+	return t.Format(apipguLayoutWithoutOffset)
 }

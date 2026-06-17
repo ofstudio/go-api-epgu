@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -756,6 +757,115 @@ func (suite *suiteTestClient) TestOrderCancel() {
 
 }
 
+func (suite *suiteTestClient) TestGetOrdersStatus() {
+	suite.Run("200 success", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodGet, r.Method)
+			suite.Equal("/api/gusmev/order/getOrdersStatus?pageNum=0&pageSize=5&orderIds=764607248,764603930,2354270898", r.RequestURI)
+			suite.Equal("application/json", r.Header.Get("Content-Type"))
+			suite.Equal("Bearer test-token", r.Header.Get("Authorization"))
+
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(ordersStatusSuccessResponse))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		ordersStatus, err := client.GetOrdersStatus(context.Background(), testToken, 0, 5, []int{764607248, 764603930, 2354270898})
+		suite.NoError(err)
+		suite.Require().NotNil(ordersStatus)
+		suite.Equal(3, ordersStatus.Count)
+		suite.Equal(5, ordersStatus.TotalCount)
+		suite.Len(ordersStatus.Content, 3)
+		suite.Equal(764607248, ordersStatus.Content[0].OrderId)
+		suite.Equal("FOUND", ordersStatus.Content[0].OrderSearchStatus)
+		suite.Equal(24, ordersStatus.Content[0].Status.StatusId)
+		suite.Equal("Ошибка отправки заявления в ведомство", ordersStatus.Content[0].Status.StatusName)
+		suite.Equal(time.Date(2022, 12, 21, 20, 49, 37, 672000000, time.UTC), ordersStatus.Content[0].Status.Updated.Time)
+		suite.Equal(2354270898, ordersStatus.Content[2].OrderId)
+		suite.Equal("NOT_FOUND", ordersStatus.Content[2].OrderSearchStatus)
+		suite.True(ordersStatus.Content[2].Status.Updated.Time.IsZero())
+	})
+
+	suite.Run("400 with bad_request code", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(`{"code":"bad_request", "message":"Некорректные параметры"}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		ordersStatus, err := client.GetOrdersStatus(context.Background(), testToken, 0, 5, []int{764607248})
+		suite.Error(err)
+		suite.ErrorIs(err, ErrGetOrdersStatus)
+		suite.ErrorIs(err, ErrStatusBadRequest)
+		suite.ErrorIs(err, ErrCodeBadRequest)
+		suite.Nil(ordersStatus)
+	})
+
+	suite.Run("request error", func() {
+		client := NewClient("")
+		ordersStatus, err := client.GetOrdersStatus(context.Background(), testToken, 0, 5, []int{764607248})
+		suite.Error(err)
+		suite.ErrorIs(err, ErrGetOrdersStatus)
+		suite.ErrorIs(err, ErrRequest)
+		suite.Nil(ordersStatus)
+	})
+}
+
+func (suite *suiteTestClient) TestGetUpdatedAfter() {
+	suite.Run("200 success", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.Equal(http.MethodGet, r.Method)
+			suite.Equal("/api/gusmev/order/getUpdatedAfter?pageNum=0&pageSize=5&updatedAfter=2022-12-10T12:31:42.000", r.RequestURI)
+			suite.Empty(r.Header.Get("Content-Type"))
+			suite.Equal("Bearer test-token", r.Header.Get("Authorization"))
+
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(ordersStatusSuccessResponse))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		updatedAfter := time.Date(2022, 12, 10, 12, 31, 42, 0, time.UTC)
+		ordersStatus, err := client.GetUpdatedAfter(context.Background(), testToken, 0, 5, updatedAfter)
+		suite.NoError(err)
+		suite.Require().NotNil(ordersStatus)
+		suite.Equal(3, ordersStatus.Count)
+		suite.Equal(5, ordersStatus.TotalCount)
+		suite.Len(ordersStatus.Content, 3)
+	})
+
+	suite.Run("500 with malformed json response", func() {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(`malformed json{}`))
+		}))
+		defer server.Close()
+
+		client := NewClient(server.URL)
+		ordersStatus, err := client.GetUpdatedAfter(context.Background(), testToken, 0, 5, time.Now())
+		suite.Error(err)
+		suite.ErrorIs(err, ErrGetUpdatedAfter)
+		suite.ErrorIs(err, ErrStatusInternalError)
+		suite.ErrorIs(err, ErrJSONUnmarshal)
+		suite.Nil(ordersStatus)
+	})
+
+	suite.Run("request error", func() {
+		client := NewClient("")
+		ordersStatus, err := client.GetUpdatedAfter(context.Background(), testToken, 0, 5, time.Now())
+		suite.Error(err)
+		suite.ErrorIs(err, ErrGetUpdatedAfter)
+		suite.ErrorIs(err, ErrRequest)
+		suite.Nil(ordersStatus)
+	})
+}
+
 func (suite *suiteTestClient) TestAttachmentDownload() {
 
 	suite.Run("200 success", func() {
@@ -919,6 +1029,24 @@ func (suite *suiteTestClient) TestContextCanceled() {
 		suite.ErrorIs(err, ErrOrderCancel)
 		suite.ErrorIs(err, ErrRequest)
 		suite.ErrorIs(err, context.Canceled)
+	})
+
+	suite.Run("GetOrdersStatus", func() {
+		client := NewClient("http://127.0.0.1")
+		ordersStatus, err := client.GetOrdersStatus(ctx, testToken, 0, 5, []int{123456})
+		suite.ErrorIs(err, ErrGetOrdersStatus)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Nil(ordersStatus)
+	})
+
+	suite.Run("GetUpdatedAfter", func() {
+		client := NewClient("http://127.0.0.1")
+		ordersStatus, err := client.GetUpdatedAfter(ctx, testToken, 0, 5, time.Now())
+		suite.ErrorIs(err, ErrGetUpdatedAfter)
+		suite.ErrorIs(err, ErrRequest)
+		suite.ErrorIs(err, context.Canceled)
+		suite.Nil(ordersStatus)
 	})
 
 	suite.Run("AttachmentDownload", func() {
@@ -1114,6 +1242,36 @@ const (
 )
 
 const (
+	ordersStatusSuccessResponse = `{
+		"count": 3,
+		"totalCount": 5,
+		"content": [
+			{
+				"orderId": 764607248,
+				"orderSearchStatus": "FOUND",
+				"status": {
+					"statusId": 24,
+					"statusName": "Ошибка отправки заявления в ведомство",
+					"updated": "2022-12-21T20:49:37.672"
+				}
+			},
+			{
+				"orderId": 764603930,
+				"orderSearchStatus": "FOUND",
+				"status": {
+					"statusId": 15,
+					"statusName": "Заявление требует исправления",
+					"updated": "2022-12-21T19:51:16.852"
+				}
+			},
+			{
+				"orderId": 2354270898,
+				"orderSearchStatus": "NOT_FOUND",
+				"status": null
+			}
+		]
+	}`
+
 	dictSuccessSimpleResponse  = `{"error":{"code":0,"message":"operation completed"},"fieldErrors":[],"total":5004,"items":[{"value":"0550041","title":"1.Клиентская служба (на правах отдела) в Белозерском районе","isLeaf":true,"children":[],"attributes":[],"attributeValues":{}},{"value":"0550091","title":"1. Клиентская служба (на правах  отдела) в Лебяжьевском районе","isLeaf":true,"children":[],"attributes":[],"attributeValues":{}}]}`
 	dictSuccessSimpleWant      = `[{"value":"0550041","title":"1.Клиентская служба (на правах отдела) в Белозерском районе","isLeaf":true,"children":[],"attributes":[],"attributeValues":{}},{"value":"0550091","title":"1. Клиентская служба (на правах  отдела) в Лебяжьевском районе","isLeaf":true,"children":[],"attributes":[],"attributeValues":{}}]`
 	dictSuccessComplexResponse = `{"error":{"code":0,"message":"operation completed"},"fieldErrors":[],"total":1000,"items":[ {"value": "049514608", "title": "049514608 - АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан", "isLeaf": true, "children": [], "attributes": [ { "name": "ID", "type": "STRING", "value": { "asString": "049514608", "typeOfValue": "STRING", "value": "049514608" }, "valueAsOfType": "049514608" }, { "name": "NAME", "type": "STRING", "value": { "asString": "АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан", "typeOfValue": "STRING", "value": "АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан" }, "valueAsOfType": "АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан" }, { "name": "BIC", "type": "STRING", "value": { "asString": "049514608", "typeOfValue": "STRING", "value": "049514608" }, "valueAsOfType": "049514608" }, { "name": "CORR_ACCOUNT", "type": "STRING", "value": { "asString": "30101810500000000608", "typeOfValue": "STRING", "value": "30101810500000000608" }, "valueAsOfType": "30101810500000000608" } ], "attributeValues": { "ID": "049514608", "CORR_ACCOUNT": "30101810500000000608", "BIC": "049514608", "NAME": "АБАКАНСКОЕ ОТДЕЛЕНИЕ N8602 ПАО СБЕРБАНК г Абакан" } }, { "value": "041012765", "title": "041012765 - \"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск", "isLeaf": true, "children": [], "attributes": [ { "name": "ID", "type": "STRING", "value": { "asString": "041012765", "typeOfValue": "STRING", "value": "041012765" }, "valueAsOfType": "041012765" }, { "name": "NAME", "type": "STRING", "value": { "asString": "\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск", "typeOfValue": "STRING", "value": "\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск" }, "valueAsOfType": "\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск" }, { "name": "BIC", "type": "STRING", "value": { "asString": "041012765", "typeOfValue": "STRING", "value": "041012765" }, "valueAsOfType": "041012765" }, { "name": "CORR_ACCOUNT", "type": "STRING", "value": { "asString": "30101810300000000765", "typeOfValue": "STRING", "value": "30101810300000000765" }, "valueAsOfType": "30101810300000000765" } ], "attributeValues": { "ID": "041012765", "CORR_ACCOUNT": "30101810300000000765", "BIC": "041012765", "NAME": "\"Азиатско-Тихоокеанский Банк\" (АО) г Благовещенск" } }]}`

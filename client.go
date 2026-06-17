@@ -9,7 +9,9 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ofstudio/go-api-epgu/utils"
 )
@@ -319,6 +321,93 @@ func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) err
 		return fmt.Errorf("%w: %w", ErrOrderCancel, err)
 	}
 	return nil
+}
+
+// GetOrdersStatus - получение статусов заявлений по переданному списку заявлений.
+//
+//	GET /api/gusmev/order/getOrdersStatus?pageNum={n}&pageSize={m}&orderIds={array[integer]}
+//
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.3.1 Получение статусов заявлений по переданному списку заявлений".
+//
+// Параметры:
+//
+//   - pageNum - номер запрашиваемой страницы
+//   - pageSize - количество записей на странице
+//   - orderIds - номера заявлений
+//
+// В случае успеха возвращает статусы заявлений.
+// В случае ошибки возвращает цепочку из [ErrGetOrdersStatus] и следующих возможных ошибок:
+//   - [ErrRequest] - ошибка HTTP-запроса
+//   - [ErrJSONUnmarshal] - ошибка разбора ответа
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
+//   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
+func (c *Client) GetOrdersStatus(ctx context.Context, token string, pageNum, pageSize int, orderIds []int) (*OrdersStatus, error) {
+	strOrderIds := make([]string, len(orderIds))
+	for i, orderId := range orderIds {
+		strOrderIds[i] = strconv.Itoa(orderId)
+	}
+
+	ordersStatus := &OrdersStatus{}
+	if err := c.requestJSON(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"/api/gusmev/order/getOrdersStatus?pageNum=%d&pageSize=%d&orderIds=%s",
+			pageNum,
+			pageSize,
+			strings.Join(strOrderIds, ","),
+		),
+		"application/json",
+		token,
+		nil,
+		ordersStatus,
+	); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrGetOrdersStatus, err)
+	}
+
+	return ordersStatus, nil
+}
+
+// GetUpdatedAfter - получение статусов всех заявлений с даты обновления статуса.
+//
+//	GET /api/gusmev/order/getUpdatedAfter?pageNum={n}&pageSize={m}&updatedAfter={timestamp}
+//
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.3.2 Получение статусов всех заявлений с даты обновления статуса".
+//
+// Параметры:
+//
+//   - pageNum - номер запрашиваемой страницы
+//   - pageSize - количество записей на странице
+//   - updatedAfter - дата и время, после которых были обновлены статусы
+//
+// В случае успеха возвращает статусы заявлений.
+// В случае ошибки возвращает цепочку из [ErrGetUpdatedAfter] и следующих возможных ошибок:
+//   - [ErrRequest] - ошибка HTTP-запроса
+//   - [ErrJSONUnmarshal] - ошибка разбора ответа
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
+//   - Ошибок ЕПГУ: ErrCodeXXXX (например, [ErrCodeBadRequest])
+func (c *Client) GetUpdatedAfter(ctx context.Context, token string, pageNum, pageSize int, updatedAfter time.Time) (*OrdersStatus, error) {
+	ordersStatus := &OrdersStatus{}
+	if err := c.requestJSON(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf(
+			"/api/gusmev/order/getUpdatedAfter?pageNum=%d&pageSize=%d&updatedAfter=%s",
+			pageNum,
+			pageSize,
+			formatAPIPGUTimestamp(updatedAfter),
+		),
+		"",
+		token,
+		nil,
+		ordersStatus,
+	); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrGetUpdatedAfter, err)
+	}
+
+	return ordersStatus, nil
 }
 
 // AttachmentDownload - скачивание файла.

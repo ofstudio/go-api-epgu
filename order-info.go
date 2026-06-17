@@ -455,3 +455,28 @@ type OrderQrlink struct {
 	CanSentToMFC        bool `json:"canSentToMFC"`        // Флаг отправки в МФЦ
 	CanPrintMFC         bool `json:"canPrintMFC"`         // [Не документировано]
 }
+
+// OrdersStatus - статусы заявлений из ответа методов [Client.GetOrdersStatus]
+// и [Client.GetUpdatedAfter].
+//
+// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// раздел "2.3. Получение статусов заявлений".
+type OrdersStatus struct {
+	Count      int            `json:"count"`      // Количество записей, содержащихся в массиве Content
+	TotalCount int            `json:"totalCount"` // Количество найденных записей, подходящих под условие
+	Content    []OrderContent `json:"content"`    // Массив записей с информацией о заявлении и статусе
+}
+
+// OrderContent - информация о заявлении и его текущем статусе из структуры [OrdersStatus].
+type OrderContent struct {
+	OrderId           int                `json:"orderId"`           // Номер заявления
+	OrderSearchStatus string             `json:"orderSearchStatus"` // Признак нахождения статуса заявления: FOUND или NOT_FOUND
+	Status            OrderContentStatus `json:"status"`            // Информация о текущем статусе заявления
+}
+
+// OrderContentStatus - текущий статус заявления из структуры [OrderContent].
+type OrderContentStatus struct {
+	StatusId   int      `json:"statusId"`   // Код статуса из ЛК ЕПГУ, соответствует статусной модели услуг
+	StatusName string   `json:"statusName"` // Наименование текущего статуса
+	Updated    DateTime `json:"updated"`    // Дата и время обновления статуса
+}

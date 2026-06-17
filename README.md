@@ -12,6 +12,8 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
  - [Client.OrderPushChunked](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunked) — загрузка и отправка заявления после резервирования номера
  - [Client.OrderPush](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPush) — загрузка и отправка заявления одним запросом
  - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) — запрос детальной информации по отправленному заявлению
+ - [Client.GetOrdersStatus](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.GetOrdersStatus) — получение статусов заявлений по списку заявлений
+ - [Client.GetUpdatedAfter](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.GetUpdatedAfter) — получение статусов заявлений с даты обновления статуса
  - [Client.OrderCancel](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCancel) — отмена заявления
  - [Client.AttachmentDownload](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.AttachmentDownload) — скачивание файла
  - [Client.Dict](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.Dict) — получение справочных данных

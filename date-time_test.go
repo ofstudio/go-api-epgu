@@ -43,6 +43,14 @@ func (suite *suiteTestDateTime) TestUnmarshalJSON() {
 		suite.Equal(time.Date(2023, 11, 2, 7, 27, 22, 0, dt.Time.Location()), dt.Time)
 	})
 
+	suite.Run("2023-11-02T07:27:22 without offset", func() {
+		var dt DateTime
+
+		err := json.Unmarshal([]byte(`"2023-11-02T07:27:22.586"`), &dt)
+		suite.NoError(err)
+		suite.Equal(time.Date(2023, 11, 2, 7, 27, 22, 586000000, time.UTC), dt.Time)
+	})
+
 	suite.Run("null time", func() {
 		var dt DateTime
 		err := json.Unmarshal([]byte(`null`), &dt)
@@ -63,4 +71,9 @@ func (suite *suiteTestDateTime) TestUnmarshalJSON() {
 		suite.Error(err)
 		suite.Equal(time.Time{}, dt.Time)
 	})
+}
+
+func (suite *suiteTestDateTime) TestFormatAPIPGUTimestamp() {
+	dt := time.Date(2023, 11, 2, 7, 27, 22, 586000000, time.UTC)
+	suite.Equal("2023-11-02T07:27:22.586", formatAPIPGUTimestamp(dt))
 }
