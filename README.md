@@ -25,7 +25,8 @@ REST-клиент для работы с [API Госуслуг (ЕПГУ)](https
 
 ## Услуги API ЕПГУ
 
-- [services/sfr/zdp-10000000109](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/services/sfr/zdp-10000000109) — "Доставка пенсии и социальных выплат ПФР"
+- [services/sfr/zdp-10000000109](https://pkg.go.dev/github.com/ofstudio/go-api-epgu/services/sfr/zdp-10000000109) — Доставка пенсии и социальных выплат ПФР (10000000109, ЗДП)
+- [services/sfr/zird-60013502](services/sfr/zird-60013502/README.md) — Прием заявлений о доставке пенсии и иных социальных выплат (60013502, ЗИРД)
 
 ## Примеры
 

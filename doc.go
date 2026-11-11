@@ -22,7 +22,8 @@
 //
 // # Услуги API ЕПГУ
 //
-//   - [github.com/ofstudio/go-api-epgu/services/sfr/zdp-10000000109] — Доставка пенсии и социальных выплат ПФР
+//   - [github.com/ofstudio/go-api-epgu/services/sfr/zdp-10000000109] — Доставка пенсии и социальных выплат ПФР (10000000109, ЗДП)
+//   - [github.com/ofstudio/go-api-epgu/services/sfr/zird-60013502] — Прием заявлений о доставке пенсии и иных социальных выплат (60013502, ЗИРД)
 //
 // # Примеры
 //
