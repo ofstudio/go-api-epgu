@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://пф.рф/Представитель/2026-01-01"
+targetNamespace="http://пф.рф/Представитель/2026-01-01" elementFormDefault="qualified"
+version="2.0" xmlns:УТ8="http://пф.рф/УТ/2025-01-01">
+<xs:import namespace="http://пф.рф/УТ/2025-01-01" schemaLocation="%D0%A3%D0%BD%D0%B8%D1%84%D0%A2%D0%B8%D0%BF%D1%8B_2025-01-01.xsd"/>
+<xs:annotation>
+<xs:documentation>Сведения о представителе</xs:documentation>
+<xs:documentation>Рекомендуемый префикс для пространства имен http://пф.рф/Представитель/2026-01-01 - ПР10</xs:documentation>
+</xs:annotation>
+<xs:complexType name="ТипЗаконныйПредставитель">
+<xs:annotation>
+<xs:documentation>Сведения о представителе</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="ВидЗП">
+<xs:annotation>
+<xs:documentation>
+Законный представитель несовершеннолетнего или недееспособного лица. Форма представительства:
+1 - родитель
+2 - опекун
+3 - попечитель
+</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="xs:integer">
+<xs:enumeration value="1"/>
+<xs:enumeration value="2"/>
+<xs:enumeration value="3"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:choice>
+<xs:element name="Гражданин">
+<xs:annotation>
+<xs:documentation>Анкетные данные обратившегося представителя-физического лица</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element ref="УТ8:ФИО">
+<xs:annotation>
+<xs:documentation>Фамилия, имя, отчество</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:СНИЛС"/>
+<xs:element ref="УТ8:Гражданство" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Гражданство</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:choice minOccurs="0">
+<xs:element maxOccurs="3" ref="УТ8:АдресРФ"/>
+<xs:element ref="УТ8:АдресИностранный"/>
+</xs:choice>
+<xs:element ref="УТ8:Телефон" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Контактный номер телефона</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:АдресЭлПочты" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Адрес электронной почты представителя</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:УдостоверяющийДокумент">
+<xs:annotation>
+<xs:documentation>Документ, удостоверяющий личность</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group ref="УТ8:ГрДатаРождения" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Дата рождения</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element ref="УТ8:МестоРождения" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Место рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:Пол" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Пол</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="ЮридическоеЛицо">
+<xs:annotation>
+<xs:documentation>Блок сведений о представителе - юридическом лице</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element ref="УТ8:Наименование">
+<xs:annotation>
+<xs:documentation>Наименование организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="ДоверенноеЛицо" type="ТипДоверенноеЛицо"/>
+<xs:element minOccurs="0" ref="УТ8:РегНомер"/>
+<xs:element ref="УТ8:ЮрАдрес" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Юридический адрес</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element minOccurs="0" ref="УТ8:КодЕГРЮЛ"/>
+<xs:element ref="УТ8:ИНН" minOccurs="0"/>
+<xs:element ref="УТ8:КПП" minOccurs="0"/>
+<xs:element name="Адрес" type="УТ8:ТипАдресОбщий" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Адрес места нахождения организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:Телефон" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Телефон организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:АдресЭлПочты" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Адрес электронной почты организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:choice>
+<xs:element ref="УТ8:ДокументПодтверждающийПолномочия">
+<xs:annotation>
+<xs:documentation>Блок сведений о документе, подтверждающем полномочия представителя</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипДоверенноеЛицо">
+<xs:annotation>
+<xs:documentation>Сведения о представителе</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element ref="УТ8:ФИО">
+<xs:annotation>
+<xs:documentation>Фамилия, имя, отчество</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:СНИЛС" minOccurs="0"/>
+<xs:element ref="УТ8:Гражданство" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Гражданство</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:choice minOccurs="0">
+<xs:element maxOccurs="3" ref="УТ8:АдресРФ"/>
+<xs:element ref="УТ8:АдресИностранный"/>
+</xs:choice>
+<xs:element ref="УТ8:Телефон" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Контактный номер телефона</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:АдресЭлПочты" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Адрес электронной почты представителя</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:УдостоверяющийДокумент">
+<xs:annotation>
+<xs:documentation>Документ, удостоверяющий личность</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group ref="УТ8:ГрДатаРождения" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Дата рождения</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element ref="УТ8:МестоРождения" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Место рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:Пол" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Пол</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="УТ8:ДокументПодтверждающийПолномочия">
+<xs:annotation>
+<xs:documentation>Блок сведений о документе, подтверждающем полномочия представителя</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

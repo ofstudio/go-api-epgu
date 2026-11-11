@@ -1,0 +1,2011 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://пф.рф/УТ/2025-01-01"
+targetNamespace="http://пф.рф/УТ/2025-01-01" elementFormDefault="qualified">
+<!--
+Типы данных, группы элементов, имеющие отношение к представлению анкетных данных физ. лица/застрахованного лица
+ -->
+<!-- =================== Базовые типы УТ =========================-->
+<xs:simpleType name="ТипGUID">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления правила заполнения глобального идентификатора из пространства http://microsoft.com/wsdl/types/. Реализация спецификации стандарта http://www.ietf.org/rfc/rfc4122.txt</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern
+value="([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\})"
+/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления элементов со строковым значением, заполнение которых обязательно (т.е. значение не может быть пустым)</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:normalizedString">
+<xs:minLength value="1"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="Наименование" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Тип для представления любых наименований - от наименований документа, населенного пункта до наименования организаций</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="НаименованиеКраткое">
+<xs:annotation>
+<xs:documentation>Тип для представления любых кратких наименований - от наименований документа, населенного пункта до наименования организаций</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="ТипНепустаяСтрока">
+<xs:minLength value="1"/>
+<xs:maxLength value="255"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:complexType name="ТипВременнойПериод">
+<xs:annotation>
+<xs:documentation>Тип для описания временных периодов, определяющихся датой начала периода (дата "с") и датой окончания периода (дата "по")</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="С" type="xs:date">
+<xs:annotation>
+<xs:documentation>Дата начала периода (дата "с")</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="По" type="xs:date">
+<xs:annotation>
+<xs:documentation>Дата окончания периода (дата "по")</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипЧасовойПериод">
+<xs:annotation>
+<xs:documentation>Тип для описания периодов во времени, определяющихся временем начала периода (время "с") и временем окончания периода (время "по")</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="С" type="xs:time">
+<xs:annotation>
+<xs:documentation>Время начала</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="По" type="xs:time">
+<xs:annotation>
+<xs:documentation>Время конца</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипОткрытыйВременнойПериод">
+<xs:annotation>
+<xs:documentation>Тип для описания временных периодов, определяющихся датой начала периода (дата "с") и датой окончания периода (дата "по"), где дата "по" может отсутствовать</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="С" type="xs:date">
+<xs:annotation>
+<xs:documentation>Дата начала периода (дата "с")</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="По" type="xs:date" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Дата окончания периода (дата "по")</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<!-- =================== УТ для представления сведений о документах =========================-->
+<xs:complexType name="ТипРеквизитыДокумента">
+<xs:annotation>
+<xs:documentation>Тип, содержащий информацию о дате «ОТ» и номере документа</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Дата" type="xs:date">
+<xs:annotation>
+<xs:documentation>Дата документа «ОТ»</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Номер" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Номер документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипРеквизитыДоговора">
+<xs:annotation>
+<xs:documentation>Сведения о документе-основании (договоре).</xs:documentation>
+</xs:annotation>
+<xs:complexContent>
+<xs:extension base="ТипРеквизитыДокумента">
+<xs:sequence>
+<xs:element ref="Наименование" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Наименование документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:extension>
+</xs:complexContent>
+</xs:complexType>
+<xs:group name="ГрСведенияДокумента">
+<xs:annotation>
+<xs:documentation>Группа сведений о документе.</xs:documentation>
+<xs:documentation>Группа элементов, используемая для представления сведения о документе (серия, номер, дата выдачи), где серия может отсутствовать</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Серия" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Серия документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Номер" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Номер документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="ДатаВыдачи" type="xs:date">
+<xs:annotation>
+<xs:documentation>Дата выдачи документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:group>
+<xs:complexType name="ТипАктГС">
+<xs:annotation>
+<xs:documentation>Тип для представления сведений о реквизитах записи акта гражданского состояния (номер,
+                дата и наименование органа, составившего запись)
+            </xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Реквизиты" type="ТипРеквизитыДокумента">
+<xs:annotation>
+<xs:documentation>Дата и номер актовой записи</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element minOccurs="0" name="КодЗАГС" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Код ЗАГС</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование органа, которым произведена государственная регистрация акта</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<!-- =================== Анкетные данные =========================-->
+<xs:simpleType name="ТипСтраховойНомер">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления страхового номера индивидуального лицевого счета зарегистрированного лица (СНИЛС) в формате XXX-XXX-XXX CC или XXX-XXX-XXX-CC</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{3}-\d{3}-\d{3} \d{2}"/>
+<xs:pattern value="\d{3}-\d{3}-\d{3}-\d{2}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="СНИЛС" type="ТипСтраховойНомер">
+<xs:annotation>
+<xs:documentation>Страховой номер индивидуального лицевого счета застрахованного лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКодПол">
+<xs:annotation>
+<xs:documentation>Тип для представления пола человека:
+1Мужской
+2Женский
+</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:integer">
+<xs:enumeration value="1"/>
+<xs:enumeration value="2"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="Пол" type="ТипКодПол">
+<xs:annotation>
+<xs:documentation>Пол</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="ДатаРождения" type="xs:date">
+<xs:annotation>
+<xs:documentation>Дата рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="ДатаРожденияОсобая" type="ТипДатаОсобая">
+<xs:annotation>
+<xs:documentation>Дата рождения зарегистрированного лица без указания месяца и/или дня месяца рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group name="ГрДатаРождения">
+<xs:annotation>
+<xs:documentation>Группа, содержащая сведения о дате рождения</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:choice>
+<xs:annotation>
+<xs:documentation>В случае, если отсутствует месяц и/или день месяца рождения (например, “май 1940 года” или “1940 год”), то используется компонент ДатаРожденияОсобая. В случае, если присутствует день месяца, месяц и год рождения, то используется компонент ДатаРождения</xs:documentation>
+</xs:annotation>
+<xs:element ref="ДатаРождения">
+<xs:annotation>
+<xs:documentation>Дата рождения зарегистрированного лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="ДатаРожденияОсобая">
+<xs:annotation>
+<xs:documentation>Дата рождения зарегистрированного лица без указания месяца и/или дня месяца рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+</xs:sequence>
+</xs:group>
+<xs:complexType name="ТипМестоРождения">
+<xs:annotation>
+<xs:documentation>Тип для представления места рождения. Предусматривает как стандартный вид места рождения (населенный пункт - район - регион - страна), так особый, когда место рождения невозможно указать в соответствии с предложенной схемой (например, “с/х Электростальский, деревня Афанасово, Электроугличский городской отдел, Ногинский горисполком”).</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Тип">
+<xs:annotation>
+<xs:documentation>Тип места рождения. Возможные значения: 1 - стандартное, 2 - особое</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="xs:integer">
+<xs:pattern value="\d+"/>
+<xs:enumeration value="1"/>
+<xs:enumeration value="2"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:element name="Город" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Город рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Район" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Район рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Регион" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Регион рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Страна" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Страна рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="МестоРождения" type="ТипМестоРождения">
+<xs:annotation>
+<xs:documentation>Место рождения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипГражданство">
+<xs:annotation>
+<xs:documentation>Сведения о гражданстве</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Тип">
+<xs:annotation>
+<xs:documentation>Тип гражданства: 1 - гражданин(-ка) РФ; 2 - иностранный гражданин; 3 - лицо без гражданства.</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="xs:integer">
+<xs:pattern value="\d+"/>
+<xs:enumeration value="1"/>
+<xs:enumeration value="2"/>
+<xs:enumeration value="3"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:element name="Государство" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Наименование и код государства, гражданином которого является физическое лицо. Заполняется в случае, если физическое лицо - иностранный гражданин</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование государства, гражданином которого является физическое лицо. Заполняется в случае, если физическое лицо - иностранный гражданин</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="КодСтраны">
+<xs:annotation>
+<xs:documentation>Код страны согласно Общероссийскому классификатору стран мира</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="Гражданство" type="ТипГражданство">
+<xs:annotation>
+<xs:documentation>Гражданство</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Гражданства">
+<xs:annotation>
+<xs:documentation>Список гражданств</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element ref="Гражданство" maxOccurs="unbounded">
+<xs:annotation>
+<xs:documentation>Гражданство</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="КемВыдан" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Кем выдан документ</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="СрокДействия" type="xs:date">
+<xs:annotation>
+<xs:documentation>Срок действия документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипУдостоверяющийДокумент">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления содержания документа, удостоверяющего личность</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Код">
+<xs:annotation>
+<xs:documentation>Код документа, удостоверяющего личность</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="ТипНепустаяСтрока">
+<xs:pattern value="\d{1,4}"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование документа, удлостоверяющего личность</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group ref="ГрСведенияДокумента">
+<xs:annotation>
+<xs:documentation>Сведения о документе, удостоверяющем личность</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element ref="КемВыдан">
+<xs:annotation>
+<xs:documentation>Кем выдан документ</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="КодПодразделения" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Код подразделения, выдавшего документ, удостоверяющий личность заявителя</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="СрокДействия" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Срок действия документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="УдостоверяющийДокумент" type="ТипУдостоверяющийДокумент">
+<xs:annotation>
+<xs:documentation>Удостоверяющий документ</xs:documentation>
+</xs:annotation>
+</xs:element>
+<!-- =================== ФАМИЛИЯ, ИМЯ, ОТЧЕСТВО =========================-->
+<xs:element name="Фамилия" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Фамилия физического лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Имя" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Имя физического лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Отчество" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Отчество физического лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="ФамилияРожд" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Фамилия, которая была при рождении</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group name="ГрФИО">
+<xs:annotation>
+<xs:documentation>Базовая унифицированная группа элементов, использующаяся для представления ФИО физического лица</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element ref="Фамилия" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Фамилия физического лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Имя" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Имя физического лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Отчество" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Отчество физического лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:group>
+<xs:complexType name="ТипФИО">
+<xs:annotation>
+<xs:documentation>Базовый унифицированный тип, использующийся для представления ФИО физического лица</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:group ref="ГрФИО">
+<xs:annotation>
+<xs:documentation>Фамилия, Имя, Отчество (необязательно)</xs:documentation>
+</xs:annotation>
+</xs:group>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="ФИО" type="ТипФИО">
+<xs:annotation>
+<xs:documentation>Фамилия, имя, отчество</xs:documentation>
+</xs:annotation>
+</xs:element>
+<!-- =================== Дополнительные анкетные данные =========================-->
+<xs:simpleType name="ТипНомерТелефонаРФ">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления телефонного номера</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="[+]{1}7\d{10}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипНомерМеждународный">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления телефонного номера</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:maxLength value="30"/>
+<xs:pattern value="[+]{1}7\d{10}"/>
+<xs:pattern value="[+]{1}\d{11,15}"/>
+<xs:pattern value="\d{11,15}"/>
+<xs:pattern value="(\+|[ ]|\)|\(|\d|\-|\*){1,30}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="Телефон" type="ТипНомерМеждународный">
+<xs:annotation>
+<xs:documentation>Номер телефона</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипСписокТелефонов">
+<xs:annotation>
+<xs:documentation>Тип для представления перечня контактных номеров телефонов</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Телефон" type="ТипНомерМеждународный" maxOccurs="unbounded">
+<xs:annotation>
+<xs:documentation>Контактный номер телефона</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="Телефоны" type="ТипСписокТелефонов">
+<xs:annotation>
+<xs:documentation>Перечень контактных номеров телефонов</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипАдресЭлПочты">
+<xs:annotation>
+<xs:documentation>Тип для представления адреса электронной почты</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:normalizedString">
+<xs:pattern value="[^@]+@[^\.]+\..+"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="АдресЭлПочты" type="ТипАдресЭлПочты">
+<xs:annotation>
+<xs:documentation>Адрес электронной почты</xs:documentation>
+</xs:annotation>
+</xs:element>
+<!-- =================== УТ для организаций/юр.лиц/физ.лиц =========================-->
+<xs:simpleType name="ТипИНН">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления 12-значного ИНН физического лица или 10-значного ИНН юридического лица</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{10}"/>
+<xs:pattern value="\d{12}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="ИНН" type="ТипИНН">
+<xs:annotation>
+<xs:documentation>Индивидуальный номер налогоплательщика</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипИНН_ЮЛ">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления 10-значного ИНН юридического лица</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{10}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипИНН_ФЛ">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления 12-значного ИНН физического лица</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{12}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипРегНомер">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления регистрационного номера страхователя, который присваивается СФР:
+ - маска для старого номера - 123-123-123456;
+ - маска для нового номера 1234567890.
+</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{3}-\d{3}-\d{6}"/>
+<xs:pattern value="\d{10}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="РегНомер" type="ТипРегНомер">
+<xs:annotation>
+<xs:documentation>Регистрационный номер страхователя, присваиваемый СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="РегистрационныйНомер" type="ТипРегНомер">
+<xs:annotation>
+<xs:documentation>Регистрационный номер страхователя, присваиваемый СФР - для совместимости с АИС</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКПП">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления 9-значного КПП юридического лица</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{9}"/>
+<xs:pattern value="\d{4}[0-9a-zA-Z]{2}\d{3}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="КПП" type="ТипКПП">
+<xs:annotation>
+<xs:documentation>Код причины постановки на учет</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКодПоОКАТО">
+<xs:annotation>
+<xs:documentation>Код по ОКАТО (Общероссийский классификатор административно-территориального деления объектов)</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:maxLength value="11"/>
+<xs:pattern value="[0-9]*"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="ОКАТО" type="ТипКодПоОКАТО">
+<xs:annotation>
+<xs:documentation>ОКАТО</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКодПоОКТМО">
+<xs:annotation>
+<xs:documentation>Код по ОКТМО (Общероссийский классификатор  территорий муниципальных образований)</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:maxLength value="11"/>
+<xs:pattern value="[0-9]*"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="ОКТМО" type="ТипКодПоОКТМО">
+<xs:annotation>
+<xs:documentation>ОКТМО</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКодПоОКВЭД">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления кода по Общероссийскому классификатору видов экономической деятельности</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{2}\.\d{2}\.\d{2}"/>
+<xs:pattern value="\d{2}\.\d{2}\.\d{1}"/>
+<xs:pattern value="\d{2}\.\d{2}"/>
+<xs:pattern value="\d{2}\.\d{1}"/>
+<xs:pattern value="\d{2}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="КодПоОКВЭД" type="ТипКодПоОКВЭД">
+<xs:annotation>
+<xs:documentation>Код по Общероссийскому классификатору видов экономической деятельности</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКодЕГРИП">
+<xs:annotation>
+<xs:documentation>Код ОГРН в Едином государственном реестре индивидуальных предпринимателей, присваивается ФНС России</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{15}"/>
+<xs:pattern value="0"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="КодЕГРИП" type="ТипКодЕГРИП">
+<xs:annotation>
+<xs:documentation>Код ОГРН в Едином государственном реестре индивидуальных предпринимателей</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКодЕГРЮЛ">
+<xs:annotation>
+<xs:documentation>Код ОГРН в Едином государственном реестре юридических лиц, присваивается ФНС России</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{13}"/>
+<xs:pattern value="0"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="КодЕГРЮЛ" type="ТипКодЕГРЮЛ">
+<xs:annotation>
+<xs:documentation>Код ОГРН в Едином государственном реестре юридических лиц</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group name="ГрОкатоОктмо">
+<xs:annotation>
+<xs:documentation>ОКАТО (ОКТМО)</xs:documentation>
+</xs:annotation>
+<xs:choice>
+<xs:annotation>
+<xs:documentation>ОКАТО (ОКТМО)</xs:documentation>
+</xs:annotation>
+<xs:element ref="ОКАТО">
+<xs:annotation>
+<xs:documentation>ОКАТО</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="ОКТМО">
+<xs:annotation>
+<xs:documentation>ОКТМО</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+</xs:group>
+<xs:group name="ГрНН">
+<xs:annotation>
+<xs:documentation>Группа элементов налогового номера: ИНН и КПП</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element ref="ИНН">
+<xs:annotation>
+<xs:documentation>Индивидуальный номер налогоплательщика</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="КПП" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Код причины постановки на учет</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:group>
+<xs:simpleType name="ТипБИК">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления Банковского идентификационного кода (БИК)</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:normalizedString">
+<xs:pattern value="\d{9}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="БИК" type="ТипБИК">
+<xs:annotation>
+<xs:documentation>Банковский идентификационный код (БИК)</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКБК">
+<xs:annotation>
+<xs:documentation>Тип для представления Кода бюджетной классификации (КБК)</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{20}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="КБК" type="ТипКБК">
+<xs:annotation>
+<xs:documentation>Код бюджетной классификации (КБК)</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипУИН">
+<xs:annotation>
+<xs:documentation>Тип для представления Уникального идентификатора начисления (УИН)</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{20,23}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="УИН" type="ТипУИН">
+<xs:annotation>
+<xs:documentation>Уникальный идентификатор начисления (УИН)</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипФСИНиСУ">
+<xs:annotation>
+<xs:documentation>Тип для доставки ФСИН и спец.учреждений</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование органа ФСИН или спец.учреждения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Счет" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер счета</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:simpleType name="ТипБанковскийСчет">
+<xs:annotation>
+<xs:documentation>Тип для представления банковских счетов (расчетный, банковский, корреспондентский)</xs:documentation>
+</xs:annotation>
+<xs:restriction base="ТипНепустаяСтрока">
+<xs:pattern value="\d{20}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="РСчет" type="ТипБанковскийСчет">
+<xs:annotation>
+<xs:documentation>Расчетный счет получателя</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="КСчет" type="ТипБанковскийСчет">
+<xs:annotation>
+<xs:documentation>Корреспондентский счёт (банка)</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипРеквизитыБанка">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления сведений о банковских реквизитах</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование банка получателя</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Адрес" type="ТипАдресОбщий">
+<xs:annotation>
+<xs:documentation>Адрес банка</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="КСчет">
+<xs:annotation>
+<xs:documentation>Корреспондентский счёт банка</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="БИК">
+<xs:annotation>
+<xs:documentation>БИК банка</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group ref="ГрНН">
+<xs:annotation>
+<xs:documentation>ИНН и КПП банка</xs:documentation>
+</xs:annotation>
+</xs:group>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="Банк" type="ТипРеквизитыБанка">
+<xs:annotation>
+<xs:documentation>Банк получателя</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипБанковскиеРеквизиты">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления сведений о банковских реквизитах</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="РСчет" type="ТипБанковскийСчет">
+<xs:annotation>
+<xs:documentation>Расчетный счет получателя</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Банк">
+<xs:annotation>
+<xs:documentation>Банк получателя</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="БанковскиеРеквизиты" type="ТипБанковскиеРеквизиты">
+<xs:annotation>
+<xs:documentation>Банковские реквизиты организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипПодразделениеОрганизации">
+<xs:annotation>
+<xs:documentation>Тип, отражающий сведения о подразделении организации</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование подразделения организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Номер" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер подразделения</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипОрганизация">
+<xs:annotation>
+<xs:documentation>Тип, отражающий общие сведения об организации</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:group ref="ГрНН" minOccurs="0">
+<xs:annotation>
+<xs:documentation>ИНН и КПП организации</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:choice minOccurs="0">
+<xs:annotation>
+<xs:documentation>Указывается либо код ЕГРИП, либо код ЕГРЮЛ</xs:documentation>
+</xs:annotation>
+<xs:element ref="КодЕГРИП">
+<xs:annotation>
+<xs:documentation>Код ОГРН в Едином государственном реестре индивидуальных предпринимателей</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="КодЕГРЮЛ">
+<xs:annotation>
+<xs:documentation>Код ОГРН в Едином государственном реестре юридических лиц</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+<xs:element name="Форма" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Организационно-правовая форма организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Наименование" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Полное наименование организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="НаименованиеКраткое" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Краткое наименование организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:choice>
+<xs:element ref="РегНомер" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Регистрационный номер СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element minOccurs="0" ref="РегистрационныйНомер"/>
+</xs:choice>
+<xs:element name="Адрес" type="ТипАдресОбщий" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Адрес организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Подразделение" type="ТипПодразделениеОрганизации" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Подразделение организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<!-- =================== УТ для общепринятых понятий =========================-->
+<xs:simpleType name="ТипДеньги">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления суммы в рублях или рублях и копейках, а также в иностранной валюте - вещественное число с дробной частью в 2 знака</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:decimal">
+<xs:pattern value="\-?[0-9]+\.\d{2}"/>
+<xs:pattern value="\-?[0-9]+"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипДеньгиНеотрицательный">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления неотрицательной суммы в рублях или рублях и копейках, а также в иностранной валюте - вещественное число с дробной частью в 2 знака</xs:documentation>
+</xs:annotation>
+<xs:restriction base="ТипДеньги">
+<xs:minInclusive value="0"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипДеньгиКоп">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления суммы строго в рублях и копейках - вещественное число с дробной частью в 2 знака</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:decimal">
+<xs:pattern value="\-?[0-9]+\.\d{2}"/>
+<xs:pattern value="\-?[0-9]+\.\d{1}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипДеньгиКопПоложительный">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления суммы строго в рублях и копейках - вещественное число с дробной частью в 2 знака, с ограничением на минимальное значение в одну копейку (больше нуля)</xs:documentation>
+</xs:annotation>
+<xs:restriction base="ТипДеньгиКоп">
+<xs:minInclusive value="0.01"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипДень">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления календарного номера дня в месяце</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:integer">
+<xs:minInclusive value="1"/>
+<xs:maxInclusive value="31"/>
+<xs:totalDigits value="2"/>
+<xs:pattern value="\d+"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="День" type="ТипДень">
+<xs:annotation>
+<xs:documentation>День</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипМесяц">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления календарного (порядкового) номера месяца в году</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:integer">
+<xs:maxInclusive value="12"/>
+<xs:minInclusive value="1"/>
+<xs:pattern value="\d+"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="Месяц" type="ТипМесяц">
+<xs:annotation>
+<xs:documentation>Месяц</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипДатаОсобая">
+<xs:annotation>
+<xs:documentation>Тип даты для особых случаев когда: 1) известен только год; 2) известны только месяц и год; 3) указанные день, месяц и год при объединении не могут давать правильной даты</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element ref="День" minOccurs="0">
+<xs:annotation>
+<xs:documentation>День</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Месяц" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Месяц</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Год" type="xs:gYear">
+<xs:annotation>
+<xs:documentation>Год</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:simpleType name="ТипКоличествоМесяцев">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления количественного показателя в месяцах: от 0 до 11 месяцев</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:integer">
+<xs:maxInclusive value="11"/>
+<xs:minInclusive value="0"/>
+<xs:pattern value="\d+"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипКоличествоДней">
+<xs:annotation>
+<xs:documentation>Тип, используемый для представления количественного показателя в днях: от 0 до 30 дней</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:integer">
+<xs:maxInclusive value="30"/>
+<xs:minInclusive value="0"/>
+<xs:pattern value="\d+"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипМинута">
+<xs:annotation>
+<xs:documentation>Тип Минута. Может использоваться как номер минуты или как число минут, например, отработанных</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:integer">
+<xs:maxInclusive value="59"/>
+<xs:minInclusive value="0"/>
+<xs:pattern value="\d+"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипКадастровыйНомер">
+<xs:annotation>
+<xs:documentation>Тип, описывающий кадастровый номер</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:maxLength value="25"/>
+<xs:pattern value="(\d+:){3}\d+(/\d+)?"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ТипДоля">
+<xs:annotation>
+<xs:documentation>Тип для представления доли (процентного соотношения)</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:decimal">
+<xs:totalDigits value="8"/>
+<xs:fractionDigits value="5"/>
+<xs:pattern value="\+?[0-9]+\.\d{5}"/>
+<xs:pattern value="\+?[0-9]+\.\d{2}"/>
+</xs:restriction>
+</xs:simpleType>
+<!-- =================== УТ для адресов =========================-->
+<xs:simpleType name="ТипИндекс">
+<xs:annotation>
+<xs:documentation>Почтовый индекс</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:pattern value="\d{5,7}"/>
+<xs:pattern value=""/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="Индекс" type="ТипИндекс">
+<xs:annotation>
+<xs:documentation>Почтовый индекс</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипГеография">
+<xs:annotation>
+<xs:documentation>Тип, используемый для структурированного представления части адреса</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Название" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Географическое наименование объекта, например, Вологда, Вяземское и т.д.</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Сокращение" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Сокращение адресного элемента, например, «Г» (город), «КРАЙ», «ОБЛ» (область)</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:simpleType name="ТипКодСтраны">
+<xs:annotation>
+<xs:documentation>Код страны согласно Общероссийскому классификатору стран мира</xs:documentation>
+</xs:annotation>
+<xs:restriction base="ТипНепустаяСтрока">
+<xs:pattern value="\d{3}"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="КодСтраны" type="ТипКодСтраны">
+<xs:annotation>
+<xs:documentation>Код страны согласно Общероссийскому классификатору стран мира</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group name="ГрАдрес">
+<xs:annotation>
+<xs:documentation>Группа элементов для представления структурированных сведений о российском адресе</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Регион" type="ТипГеография" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Для региональных центров наименования регионов могут не указываться</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Округ" type="ТипГеография" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Округ (автономия)</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Район" type="ТипГеография" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Для районных центров наименования районов могут не указываться</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Город" type="ТипГеография" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Город</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="ВнутригородскойРайон" type="ТипГеография" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Внутригородской район</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="НаселенныйПункт" type="ТипГеография" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Населенный пункт</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Улица" type="ТипГеография" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Улица</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Дом" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер дома</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="ТипНепустаяСтрока">
+<xs:maxLength value="20"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:element name="Строение" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер строения</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="ТипНепустаяСтрока">
+<xs:maxLength value="50"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:element name="Владение" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер владения</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="ТипНепустаяСтрока">
+<xs:maxLength value="10"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:element name="Корпус" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер корпуса</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="ТипНепустаяСтрока">
+<xs:maxLength value="50"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:element name="Квартира" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Квартира</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:group>
+<xs:group name="ГрАдресРФ">
+<xs:annotation>
+<xs:documentation>Российский адрес с возможностью указания кода ФИАС и типа адреса</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="ТипАдреса">
+<xs:annotation>
+<xs:documentation>Тип адреса:
+1 - Адрес места жительства
+2 - Адрес места пребывания
+3 - Адрес места фактичеткого проживания
+</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="xs:integer">
+<xs:enumeration value="1"/>
+<xs:enumeration value="2"/>
+<xs:enumeration value="3"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:choice>
+<xs:group ref="ГрАдресФИАС">
+<xs:annotation>
+<xs:documentation>Группа элементов для представления сведений о российском адресе</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element ref="Неструктурированный"/>
+</xs:choice>
+</xs:sequence>
+</xs:group>
+<xs:group name="ГрАдресФИАС">
+<xs:annotation>
+<xs:documentation>Российский адрес с возможностью указания кода ФИАС</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="GUID" type="ТипGUID" minOccurs="0">
+<xs:annotation>
+<xs:documentation>GUID-код ФИАС - глобальный уникальный идентификатор адресного объекта или уникальный идентификатор записи дома</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Индекс" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Почтовый индекс</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group ref="ГрАдрес">
+<xs:annotation>
+<xs:documentation>Группа элементов для представления сведений о российском адресе</xs:documentation>
+</xs:annotation>
+</xs:group>
+</xs:sequence>
+</xs:group>
+<xs:group name="ГрАдресФИАСИнд">
+<xs:annotation>
+<xs:documentation>Российский адрес с возможностью указания кода ФИАС</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="GUID" type="ТипGUID" minOccurs="0">
+<xs:annotation>
+<xs:documentation>GUID-код ФИАС - глобальный уникальный идентификатор адресного объекта или уникальный идентификатор записи дома</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Индекс">
+<xs:annotation>
+<xs:documentation>Почтовый индекс</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group ref="ГрАдрес">
+<xs:annotation>
+<xs:documentation>Группа элементов для представления сведений о российском адресе</xs:documentation>
+</xs:annotation>
+</xs:group>
+</xs:sequence>
+</xs:group>
+<xs:complexType name="ТипАдресИностранный">
+<xs:annotation>
+<xs:documentation>Иностранный адрес</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element ref="Индекс" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Почтовый индекс</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="КодСтраны">
+<xs:annotation>
+<xs:documentation>Код страны согласно Общероссийскому классификатору стран мира</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="НазваниеСтраны" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Название страны</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="АдресКириллицей" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Адрес в стране, отличной от РФ (кириллица)</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="АдресЛатиницей" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Адрес в стране, отличной от РФ (латиница)</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипАдресФИАС">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления российского адреса с кодами ФИАС</xs:documentation>
+</xs:annotation>
+<xs:choice>
+<xs:group ref="ГрАдресФИАС">
+<xs:annotation>
+<xs:documentation>Адрес</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element name="Неструктурированый" type="ТипНепустаяСтрока"/>
+</xs:choice>
+</xs:complexType>
+<xs:complexType name="ТипАдресФИАСИнд">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления российского адреса с кодами ФИАС с обязательным индексом</xs:documentation>
+</xs:annotation>
+<xs:choice>
+<xs:group ref="ГрАдресФИАСИнд">
+<xs:annotation>
+<xs:documentation>Адрес</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element name="Неструктурированый" type="ТипНепустаяСтрока"/>
+</xs:choice>
+</xs:complexType>
+<xs:complexType name="ТипАдресРФ">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления российского адреса с типом адреса</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="ТипАдреса">
+<xs:annotation>
+<xs:documentation>Тип адреса:
+1 - Адрес места жительства
+2 - Адрес места пребывания
+3 - Адрес места фактичеткого проживания
+</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="xs:integer">
+<xs:enumeration value="1"/>
+<xs:enumeration value="2"/>
+<xs:enumeration value="3"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:choice>
+<xs:group ref="ГрАдресФИАС"/>
+<xs:element name="Неструктурированный" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Неструктурированный адрес в виде строки</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипАдресРФИнд">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления российского адреса с обязательным индексом</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="ТипАдреса">
+<xs:annotation>
+<xs:documentation>Тип адреса:
+1 - Адрес места жительства
+2 - Адрес места пребывания
+3 - Адрес места фактичеткого проживания
+</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="xs:integer">
+<xs:enumeration value="1"/>
+<xs:enumeration value="2"/>
+<xs:enumeration value="3"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:choice>
+<xs:group ref="ГрАдресФИАСИнд"/>
+<xs:element name="Неструктурированный" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Неструктурированный адрес в виде строки</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипАдресРФ_ПМЖ">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления российского адреса до выезда за пределы Российской Федерации. Заполняется в случае, если заявитель проживает за пределами РФ.</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="ТипАдреса">
+<xs:annotation>
+<xs:documentation>Тип адреса:
+11 - Адрес места жительства в Российской Федерации до выезда за пределы Российской Федерации;
+12 - Адрес места пребывания в Российской Федерации до выезда за пределы Российской Федерации;
+13 - Адрес места фактичеткого проживания в Российской Федерации до выезда за пределы Российской Федерации.
+</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="xs:integer">
+<xs:enumeration value="11"/>
+<xs:enumeration value="12"/>
+<xs:enumeration value="13"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:choice>
+<xs:group ref="ГрАдресФИАС"/>
+<xs:element name="Неструктурированный" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Неструктурированный адрес в виде строки</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипАдрес">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления российского адреса</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:choice>
+<xs:annotation>
+<xs:documentation>Указывается либо российский адрес (с указанием типа адреса и индекса), либо иностранный адрес, либо любой неструктурированный адрес</xs:documentation>
+</xs:annotation>
+<xs:group ref="ГрАдресФИАС">
+<xs:annotation>
+<xs:documentation>Российский адрес</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element name="Неструктурированный" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Неструктурированный адрес в виде строки</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипАдресОбщий">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления адреса, как российского, так и иностранного</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:choice>
+<xs:annotation>
+<xs:documentation>Указывается либо российский адрес (с возможностью указания кода по ФИАС), либо иностранный адрес, либо любой неструктурированный адрес</xs:documentation>
+</xs:annotation>
+<xs:group ref="ГрАдресФИАС">
+<xs:annotation>
+<xs:documentation>Российский адрес</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element name="Иностранный" type="ТипАдресИностранный">
+<xs:annotation>
+<xs:documentation>Иностранный адрес</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Неструктурированный" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Неструктурированный адрес в виде строки</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипАдресОбщийРФ">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления адреса, как российского, так и иностранного</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:choice>
+<xs:annotation>
+<xs:documentation>Указывается либо российский адрес (с возможностью указания кода по ФИАС), либо иностранный адрес, либо любой неструктурированный адрес</xs:documentation>
+</xs:annotation>
+<xs:group ref="ГрАдресРФ">
+<xs:annotation>
+<xs:documentation>Российский адрес</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element name="Иностранный" type="ТипАдресИностранный">
+<xs:annotation>
+<xs:documentation>Иностранный адрес</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="АдресИностранный" type="ТипАдресИностранный">
+<xs:annotation>
+<xs:documentation>Иностранный адрес</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Неструктурированный" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Неструктурированный адрес в виде строки</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="ЮрАдрес" type="ТипАдресОбщий">
+<xs:annotation>
+<xs:documentation>Юридический адрес организации</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="АдресРФ" type="ТипАдресРФ">
+<xs:annotation>
+<xs:documentation>Адрес РФ</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="АдресРФ_ПМЖ" type="ТипАдресРФ_ПМЖ">
+<xs:annotation>
+<xs:documentation>Адрес РФ до выезда за пределы Российской Федерации. Заполняется в случае, если заявитель проживает за пределами РФ.</xs:documentation>
+</xs:annotation>
+</xs:element>
+<!-- =================== УТ для представления сведений о представителе =========================-->
+<xs:complexType name="ТипПодтверждающийДокумент">
+<xs:annotation>
+<xs:documentation>Тип документ, подтверждающий полномочия представителя</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Код">
+<xs:annotation>
+<xs:documentation>Код типа документа, подтверждающего полномочия представителя</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="ТипНепустаяСтрока">
+<xs:pattern value="\d{1,4}"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование документа, подтверждающего полномочия представителя</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group ref="ГрСведенияДокумента">
+<xs:annotation>
+<xs:documentation>Сведения о документе, подтверждающем полномочия представителя</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element minOccurs="0" ref="КемВыдан">
+<xs:annotation>
+<xs:documentation>Кем выдан документ</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element minOccurs="0" ref="СрокДействия">
+<xs:annotation>
+<xs:documentation>Срок действия документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="ДокументПодтверждающийПолномочия" type="ТипПодтверждающийДокумент">
+<xs:annotation>
+<xs:documentation>Документ, подтверждающий полномочия представителя застрахованного лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:complexType name="ТипТипПредставителя">
+<xs:annotation>
+<xs:documentation>Тип представителя:
+- законный представиель несовершеннолетнего или недееспособного лица,
+- доверенное лицо.
+</xs:documentation>
+</xs:annotation>
+<xs:choice>
+<xs:element name="ЗаконныйПР">
+<xs:annotation>
+<xs:documentation>законный представитель несовершеннолетнего или недееспособного лица. Форма представительства:
+1 - родитель
+2 - опекун
+3 - попечитель
+Заполняется только если тип представителя - законный представитель
+</xs:documentation>
+</xs:annotation>
+<xs:simpleType>
+<xs:restriction base="xs:unsignedShort">
+<xs:enumeration value="1"/>
+<xs:enumeration value="2"/>
+<xs:enumeration value="3"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:element>
+<xs:element fixed="2" name="ДоверенноеЛицо" type="xs:unsignedShort">
+<xs:annotation>
+<xs:documentation>Доверенное лицо</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:choice>
+</xs:complexType>
+<xs:element name="ТипПредставителя" type="ТипТипПредставителя">
+<xs:annotation>
+<xs:documentation>Тип представителя</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКодФормаПредставительства">
+<xs:annotation>
+<xs:documentation>Форма представительства:
+            1 - родитель
+            2 - опекун
+            3 - попечитель
+            </xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:integer">
+<xs:pattern value="\d+"/>
+<xs:enumeration value="1"/>
+<xs:enumeration value="2"/>
+<xs:enumeration value="3"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="ФормаПредставительства" type="ТипКодФормаПредставительства">
+<xs:annotation>
+<xs:documentation>Форма представительства:
+                        1 - родитель
+2 - опекун
+3 - попечитель
+                        Заполняется только если тип представителя - законный представитель</xs:documentation>
+</xs:annotation>
+</xs:element>
+<!-- =================== специфические для обмена с СФР типы, которые могут считаться унифицированными в рамках любого информационного обмена =========================-->
+<xs:complexType name="ТипПунктНормативногоДокумента">
+<xs:annotation>
+<xs:documentation>Тип для представления любого пункта, части, статьи Федерального закона, приказа, распоряжения и пр.</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="НормативныйДокумент" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Наименование нормативного документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Статья" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер статьи Федерального закона</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Часть" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер части статьи Федерального закона</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Пункт" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер пункта из нормативного документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Подпункт" type="ТипНепустаяСтрока" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Номер подпункта из нормативного документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипСписокОзнакомленийЗаявителя">
+<xs:annotation>
+<xs:documentation>Тип, который может быть использован для представления перечня ФЗ, распоряжений, правил и (или) иных нормативных документов, с которыми ознакомлен/не ознакомлен заявитель при подаче заявления.</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="ОзнакомлениеЗаявителя" type="ТипОзнакомлениеЗаявителя"
+maxOccurs="unbounded">
+<xs:annotation>
+<xs:documentation>Сведения об ознакомлении заявителя с ФЗ, распоряжением, правилами и (или) иным нормативным документом</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипОзнакомлениеЗаявителя">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления информации об ознакомлении заявителя с ФЗ, распоряжением, правилами и (или) иным нормативным документом</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="ПредметОзнакомления" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>ФЗ, распоряжение, правила и (или) иной нормативный документ с которым был ознакомлен (не ознакомлен) заявитель.</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Ознакомлен" type="xs:boolean">
+<xs:annotation>
+<xs:documentation>Признак ознакомления: 1 - ознакомлен, 0 - не ознакомлен.</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:group name="ГрПрилагаемыйДокумент">
+<xs:annotation>
+<xs:documentation>Группа элементов, использующийся для отражения сведений о документах, предоставленных  в качестве прилагаемых к основному документу (заявлению, решению и пр.)</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование прилагаемого документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Реквизиты" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Перечень реквизитов прилагаемого документа</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element name="Реквизит" maxOccurs="unbounded">
+<xs:annotation>
+<xs:documentation>Перечень реквизитов прилагаемого документа</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование реквизита прилагаемого документа (№, серия, дата от, ФИО и прочее)</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Значение" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Значение реквизита прилагаемого документа</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="ПредставленностьДокумента" type="xs:integer" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Количество экземпляров (копий) документа, предоставленных заявителем</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:group>
+<xs:complexType name="ТипПрилагаемыйДокументНумерованный">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для отражения сведений о документах, предоставленных  в качестве прилагаемых к основному документу</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="НомерПП" type="xs:positiveInteger">
+<xs:annotation>
+<xs:documentation>Номер записи (строки) по порядку</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group ref="ГрПрилагаемыйДокумент">
+<xs:annotation>
+<xs:documentation>Сведения из прилагаемого документа</xs:documentation>
+</xs:annotation>
+</xs:group>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипПрилагаемыйДокумент">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для отражения сведений о документе, прилагаемом к основному документу</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:group ref="ГрПрилагаемыйДокумент">
+<xs:annotation>
+<xs:documentation>Сведения из прилагаемого документа</xs:documentation>
+</xs:annotation>
+</xs:group>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипПрилагаемыеДокументы">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для отражения сведений о документах, предоставленных  в качестве прилагаемых к основному документу</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="ПрилагаемыйДокумент" type="ТипПрилагаемыйДокумент"
+maxOccurs="unbounded">
+<xs:annotation>
+<xs:documentation>Сведения о прилагаемом документе</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:group name="ГрДолжностноеЛицо">
+<xs:annotation>
+<xs:documentation>Группа элементов, которая может быть использована для любого представления о должности и ФИО лица, в том числе для представления подписи должностного лица с формы</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="ФИО" type="ТипФИО">
+<xs:annotation>
+<xs:documentation>Фамилия, Имя, Отчество должностного лица. Обязательно для заполнения</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Должность" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Должность лица. Обязателен для заполнения</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:group>
+<xs:complexType name="ТипДолжностноеЛицо">
+<xs:annotation>
+<xs:documentation>Абстрактное должностное лицо. Может быть использовано для любого представления о должности и ФИО лица, в том числе для представления подписи должностного лица с формы.</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:group ref="ГрДолжностноеЛицо">
+<xs:annotation>
+<xs:documentation>Фамилия, Имя, Отчество и должность должностного лица. Обязательно для заполнения</xs:documentation>
+</xs:annotation>
+</xs:group>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипКонтактноеДолжностноеЛицо">
+<xs:annotation>
+<xs:documentation>Абстрактное должностное лицо. Может быть использовано для любого представления о должности, ФИО и контактного номера телефона лица</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:group ref="ГрДолжностноеЛицо">
+<xs:annotation>
+<xs:documentation>Фамилия, Имя, Отчество и должность должностного лица. Обязательно для заполнения</xs:documentation>
+</xs:annotation>
+</xs:group>
+<xs:element name="Телефон" type="ТипНомерМеждународный" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Контактный телефон должностного лица</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<!-- =================== Сведения о ТО СФР =========================-->
+<xs:simpleType name="ТипКодТОСФР">
+<xs:annotation>
+<xs:documentation>Код территориального органа СФР</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:string">
+<xs:maxLength value="20"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="КодТОСФР" type="ТипКодТОСФР">
+<xs:annotation>
+<xs:documentation>Код территориального органа СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:simpleType name="ТипКодРегионаСФР">
+<xs:annotation>
+<xs:documentation>Код регионального отделения СФР</xs:documentation>
+</xs:annotation>
+<xs:restriction base="xs:normalizedString">
+<xs:pattern value="0([0-1]){1}\d"/>
+<xs:pattern value="0(20|24|27|28){1}"/>
+<xs:pattern value="03[0-3]"/>
+<xs:pattern value="03[5-9]"/>
+<xs:pattern value="04\d{1}"/>
+<xs:pattern value="0(50|(5[2-6])|(5[8-9])){1}"/>
+<xs:pattern value="06[1-8]"/>
+<xs:pattern value="07\d"/>
+<xs:pattern value="08([0-4]|6|9)"/>
+<xs:pattern value="09([0-2])"/>
+<xs:pattern value="20[1-7]"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:element name="КодРегионаСФР" type="ТипКодРегионаСФР">
+<xs:annotation>
+<xs:documentation>Код  регионального отделения СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group name="ГрСведенияОрганизацииСФР">
+<xs:annotation>
+<xs:documentation>Группа элементов, использующийся для представления сведений о подразделении СФР, как об организации</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Полное наименование организации СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="НаименованиеКраткое" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Краткое наименование организации СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Адрес" type="ТипАдресФИАС" minOccurs="0"/>
+<xs:element ref="Телефоны" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Перечень контактных номеров телефонов</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="АдресЭлПочты" minOccurs="0">
+<xs:annotation>
+<xs:documentation>Адрес электронной почты</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:group>
+<xs:complexType name="ТипОрганизацияСФР">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления сведений о подразделении СФР, как об организации, без кода территориального органа</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:group ref="ГрСведенияОрганизацииСФР">
+<xs:annotation>
+<xs:documentation>Группа элементов, использующийся для представления сведений о подразделении СФР, как об организации</xs:documentation>
+</xs:annotation>
+</xs:group>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипСведенияТОСФР">
+<xs:annotation>
+<xs:documentation>Тип, использующийся для представления сведений о подразделении СФР, как о территориальном органе, с обязательным указанием кода территориального органа</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Код" type="ТипКодТОСФР">
+<xs:annotation>
+<xs:documentation>Код территориального органа СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:group ref="ГрСведенияОрганизацииСФР">
+<xs:annotation>
+<xs:documentation>Группа элементов, использующийся для представления сведений о подразделении СФР, как об организации</xs:documentation>
+</xs:annotation>
+</xs:group>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипТОСФР">
+<xs:annotation>
+<xs:documentation>Тип для представления кратких сведений о территориальном органе СФР</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Код" type="ТипКодТОСФР">
+<xs:annotation>
+<xs:documentation>Код территориального органа СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование территориального органа СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="ТипТОСФРсАдресом">
+<xs:annotation>
+<xs:documentation>Тип для представления кратких сведений о территориальном органе СФР с адресом местонахождения</xs:documentation>
+</xs:annotation>
+<xs:sequence>
+<xs:element name="Код" type="ТипКодТОСФР">
+<xs:annotation>
+<xs:documentation>Код территориального органа СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование территориального органа СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element minOccurs="0" name="Адрес" type="ТипАдрес">
+<xs:annotation>
+<xs:documentation>Адрес организации СФР</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+<xs:element name="Государство">
+<xs:annotation>
+<xs:documentation>Наименование и код государства, гражданином которого является физическое лицо.</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element name="Код" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Код страны согласно Общероссийскому классификатору стран мира</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование государства, гражданином которого является физическое лицо.</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="ЗАГС">
+<xs:annotation>
+<xs:documentation>Наименование и код ЗАГС</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element name="Код" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Код органа ЗАГС согласно справочника СОЗАГ.С</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование органа ЗАГС согласно справочника СОЗАГС.</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="Ведомство">
+<xs:annotation>
+<xs:documentation>Тип описания ведомства</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element name="Код" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Код ведомства</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование ведомства</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:element name="Причина">
+<xs:annotation>
+<xs:documentation>Тип для описания причины</xs:documentation>
+</xs:annotation>
+<xs:complexType>
+<xs:sequence>
+<xs:element name="Код" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Код причины</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element ref="Наименование">
+<xs:annotation>
+<xs:documentation>Наименование причины</xs:documentation>
+</xs:annotation>
+</xs:element>
+</xs:sequence>
+</xs:complexType>
+</xs:element>
+<xs:complexType name="ТипСубъектРФ">
+<xs:sequence>
+<xs:element name="Код" type="ТипНепустаяСтрока">
+<xs:annotation>
+<xs:documentation>Код субъекта</xs:documentation>
+</xs:annotation>
+</xs:element>
+<xs:element name="Субъект" type="ТипГеография"/>
+</xs:sequence>
+</xs:complexType>
+</xs:schema>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Восстановлено по спецификации API ЕПГУ 60013502; RegNum исправлен на SNILS, версия транспорта — на 1.0.2. -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:t="urn://iis.ecp.ru/zird/types/1.0.2" targetNamespace="urn://iis.ecp.ru/zird/types/1.0.2" elementFormDefault="qualified">
+<xs:element name="SNILS" type="t:SNILSType"/>
+<xs:element name="ExternalRegistrationData" type="t:ExternalRegistrationDataType"/>
+<xs:element name="MFCCode" type="t:String20"/>
+<xs:element name="FRGUTargetId" type="t:TargetType"/>
+<xs:element name="ApplicationFileName" type="t:FileNameType"/>
+<xs:simpleType name="SNILSType"><xs:restriction base="xs:string"><xs:pattern value="[0-9]{11}"/></xs:restriction></xs:simpleType>
+<xs:simpleType name="String20"><xs:restriction base="xs:string"><xs:maxLength value="20"/></xs:restriction></xs:simpleType>
+<xs:simpleType name="TargetType"><xs:restriction base="xs:string"><xs:enumeration value="364359127"/></xs:restriction></xs:simpleType>
+<xs:simpleType name="FileNameType"><xs:restriction base="xs:string"><xs:pattern value="[A-Za-z0-9а-яёА-ЯЁ][A-Za-z0-9а-яёА-ЯЁ_.-]{0,99}"/></xs:restriction></xs:simpleType>
+<xs:complexType name="ExternalRegistrationDataType"><xs:sequence><xs:element name="ExternalRegistrationNumber"><xs:simpleType><xs:restriction base="xs:string"><xs:maxLength value="50"/></xs:restriction></xs:simpleType></xs:element><xs:element name="ExternalRegistrationDate" type="xs:date"/></xs:sequence></xs:complexType>
+</xs:schema>

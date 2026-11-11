@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns2:Request xmlns="urn://iis.ecp.ru/zird/types/1.0.2" xmlns:ns2="urn://iis.ecp.ru/zird/1.0.2" AF="ЗИРД_2025-05-01">
+  <SNILS>77166008713</SNILS>
+  <ExternalRegistrationData>
+    <ExternalRegistrationNumber>123456789</ExternalRegistrationNumber>
+    <ExternalRegistrationDate>2026-11-10</ExternalRegistrationDate>
+  </ExternalRegistrationData>
+  <MFCCode>API ЕПГУ</MFCCode>
+  <FRGUTargetId>364359127</FRGUTargetId>
+  <ApplicationFileName>req_ca6058eb-63ed-42fc-9682-4fd73c7d9641.xml</ApplicationFileName>
+</ns2:Request>
