@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn://iis.ecp.ru/zird/types/1.0.2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn://iis.ecp.ru/zird/types/1.0.2">
+	<!-- ========================== SIMPLE TYPES ========================== -->
+	<xs:simpleType name="string-10">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="10"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-20">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="20"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-50">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="50"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-200">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="200"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="string-4000">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="4000"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="SNILSType">
+		<xs:annotation>
+			<xs:documentation>СНИЛС</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:length value="11"/>
+			<xs:pattern value="\d{11}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ТипGUID">
+		<xs:annotation>
+			<xs:documentation>Тип, используемый для представления правила заполнения глобального идентификатора из пространства http://microsoft.com/wsdl/types/. Реализация спецификации стандарта http://www.ietf.org/rfc/rfc4122.txt</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\})"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- ========================== COMPLEX TYPES ========================== -->
+	<xs:complexType name="AttachmentsDataType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">
+        Тип данных о вложениях
+      </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="AttachmentData" type="AttachmentDataType">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Данные о вложении
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ApplicationRequestType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">
+        Унифицированный тип для подачи заявления из СМЭВ в СФР
+      </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="SNILS" type="SNILSType">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+						СНИЛС заявителя
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ExternalRegistrationData" type="ExternalRegistrationDataType">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Регистрационные данные обращения в МФЦ/ЕПГУ
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="MFCCode" type="string-20">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Код МФЦ
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FRGUTargetId" type="string-20">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+                  Идентификатор цели оказания госуслуги по ФРГУ, в рамках которой идёт обращение к виду сведений
+                </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ApplicationFileName" type="xs:string">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Имя файла заявления, передаваемого в качестве вложения к сообщению
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="Documents" type="AttachmentsDataType">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+									 Прилагаемые документы к заявлению
+								</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ApplicationResponseType">
+		<xs:annotation>
+			<xs:documentation>
+        Унифицированный тип для ответа сервисов подачи заявлений
+      </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ExternalRegistrationNumber" type="string-50">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Регистрационный номер обращения, переданный в запросе
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProcessingStatusCode" type="xs:int">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Код статуса обработки
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ProcessingStatusComment" type="string-4000">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Комментарий к статусу
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="AttachmentDataType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">
+        Тип описания данных об одном вложении
+      </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="FileGUID" type="ТипGUID">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+GUID файла вложения (то же, что в блоке вложений в конверте СМЭВ)
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="FileName" type="xs:string">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Имя файла вложения (то же, что в блоке вложений в конверте СМЭВ)
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="TypeCode" type="string-10">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Код типа вложения
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="GroupCode" type="string-10">
+				<xs:annotation>
+					<xs:documentation>Код группы документов</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="Description" type="string-200">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Описание вложения
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ExternalRegistrationDataType">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">
+        Регистрационные данные во внешней системе
+      </xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ExternalRegistrationNumber" type="string-50">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Регистрационный номер обращения, присвоенный в МФЦ/ЕПГУ
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ExternalRegistrationDate" type="xs:date">
+				<xs:annotation>
+					<xs:documentation xml:lang="ru">
+            Дата и время регистрации обращения в МФЦ/ЕПГУ
+          </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+</xs:schema>

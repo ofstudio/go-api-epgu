@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://пф.рф/ВЗЛ/типы/2025-01-01"
-xmlns:УТ8="http://пф.рф/УТ/2025-01-01"
-targetNamespace="http://пф.рф/ВЗЛ/типы/2025-01-01" elementFormDefault="qualified" version="2.0">
-<xs:import namespace="http://пф.рф/УТ/2025-01-01" schemaLocation="%D0%A3%D0%BD%D0%B8%D1%84%D0%A2%D0%B8%D0%BF%D1%8B_2025-01-01.xsd"/>
-
-<xs:annotation>
-<xs:documentation>Общие типы данных для информационного обмена "Взаимодействие с застрахованными лицами"
+	xmlns:УТ8="http://пф.рф/УТ/2025-01-01" 
+	targetNamespace="http://пф.рф/ВЗЛ/типы/2025-01-01" elementFormDefault="qualified" version="2.0">
+	<xs:import namespace="http://пф.рф/УТ/2025-01-01" schemaLocation="УнифТипы_2025-01-01.xsd"/>
+	<xs:import namespace="http://пф.рф/АФ/2025-01-01" schemaLocation="ТипыАФ_2025-01-01.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Общие типы данных для информационного обмена "Взаимодействие с застрахованными лицами"
         </xs:documentation>
-<xs:documentation>Рекомендуемый префикс для пространства имен http://пф.рф/ВЗЛ/типы/2025-01-01 - ВЗЛ8
+		<xs:documentation>Рекомендуемый префикс для пространства имен http://пф.рф/ВЗЛ/типы/2025-01-01 - ВЗЛ8
         </xs:documentation>
-</xs:annotation>
-<xs:simpleType name="ТипКатегории">
-<xs:annotation>
-<xs:documentation>Категория застрахованного лица</xs:documentation>
-</xs:annotation>
-<xs:restriction base="xs:string">
-<xs:pattern value="\d{3}"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:simpleType name="ТипВидПенсии">
-<xs:annotation>
-<xs:documentation>Классификатор видов пенсии за назначением которой может обратится заявитель:
+	</xs:annotation>
+	<xs:simpleType name="ТипКатегории">
+		<xs:annotation>
+			<xs:documentation>Категория застрахованного лица</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="\d{3}"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ТипВидПенсии">
+		<xs:annotation>
+			<xs:documentation>Классификатор видов пенсии за назначением которой может обратится заявитель:
                 5 - «страховая пенсия по инвалидности»;
                 6 - «страховая пенсия по случаю потери кормильца»;
                 7 - «страховая пенсия по старости»;
@@ -43,30 +43,30 @@ targetNamespace="http://пф.рф/ВЗЛ/типы/2025-01-01" elementFormDefault
                 социальной защите граждан, подвергшихся воздействию радиации вследствие катастрофы на Чернобыльской
                 АЭС"».
             </xs:documentation>
-</xs:annotation>
-<xs:restriction base="xs:integer">
-<xs:enumeration value="5"/>
-<xs:enumeration value="6"/>
-<xs:enumeration value="7"/>
-<xs:enumeration value="8"/>
-<xs:enumeration value="12"/>
-<xs:enumeration value="13"/>
-<xs:enumeration value="14"/>
-<xs:enumeration value="15"/>
-<xs:enumeration value="16"/>
-<xs:enumeration value="17"/>
-<xs:enumeration value="18"/>
-<xs:enumeration value="19"/>
-<xs:enumeration value="20"/>
-<xs:enumeration value="21"/>
-<xs:enumeration value="22"/>
-<xs:enumeration value="24"/>
-<xs:enumeration value="35"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:simpleType name="ТипВидНазначения">
-<xs:annotation>
-<xs:documentation>Классификатор видов назначений, за которыми может обратится заявитель:
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="8"/>
+			<xs:enumeration value="12"/>
+			<xs:enumeration value="13"/>
+			<xs:enumeration value="14"/>
+			<xs:enumeration value="15"/>
+			<xs:enumeration value="16"/>
+			<xs:enumeration value="17"/>
+			<xs:enumeration value="18"/>
+			<xs:enumeration value="19"/>
+			<xs:enumeration value="20"/>
+			<xs:enumeration value="21"/>
+			<xs:enumeration value="22"/>
+			<xs:enumeration value="24"/>
+			<xs:enumeration value="35"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ТипВидНазначения">
+		<xs:annotation>
+			<xs:documentation>Классификатор видов назначений, за которыми может обратится заявитель:
                 1 - назначить страховую пенсию по старости с установлением фиксированной выплаты к указанной страховой
                 пенсии
                 2 - назначить страховую пенсию по инвалидности с установлением фиксированной выплаты к указанной
@@ -92,15 +92,15 @@ targetNamespace="http://пф.рф/ВЗЛ/типы/2025-01-01" elementFormDefault
                 17 - установить федеральную социальную доплату к пенсии (если общая сумма моего материального
                 обеспечения не достигнет величины прожиточного минимума пенсионера в субъекте Российской Федерации);
             </xs:documentation>
-</xs:annotation>
-<xs:restriction base="xs:integer">
-<xs:minInclusive value="1"/>
-<xs:maxInclusive value="17"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:simpleType name="ТипВидПенсионногоДействия">
-<xs:annotation>
-<xs:documentation>Классификатор видов пенсионного действия:
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:minInclusive value="1"/>
+			<xs:maxInclusive value="17"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ТипВидПенсионногоДействия">
+		<xs:annotation>
+			<xs:documentation>Классификатор видов пенсионного действия:
                 1 - Индексация
                 2 - Информирование
                 3 - Приостановление выплаты
@@ -119,73 +119,73 @@ targetNamespace="http://пф.рф/ВЗЛ/типы/2025-01-01" elementFormDefault
                 16 - Дополнительное увеличение
                 17 - Уточнение размера
             </xs:documentation>
-</xs:annotation>
-<xs:restriction base="xs:integer">
-<xs:minInclusive value="1"/>
-<xs:maxInclusive value="17"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:complexType name="ТипСписокЭД">
-<xs:annotation>
-<xs:documentation>Тип для представления списка документов</xs:documentation>
-</xs:annotation>
-<xs:sequence>
-<xs:element name="Документ" maxOccurs="unbounded">
-<xs:annotation>
-<xs:documentation>Документ предоставляемый страхователем</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="Наименование" type="xs:normalizedString">
-<xs:annotation>
-<xs:documentation>Наименование документа</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="ЭлектронныйОбраз">
-<xs:annotation>
-<xs:documentation>Электронный образ документа</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:simpleContent>
-<xs:extension base="xs:base64Binary">
-<xs:attribute name="ИмяФайла" type="xs:normalizedString">
-<xs:annotation>
-<xs:documentation>Имя файла</xs:documentation>
-</xs:annotation>
-</xs:attribute>
-</xs:extension>
-</xs:simpleContent>
-</xs:complexType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:simpleType name="ТипВидПовышенияФВ">
-<xs:annotation>
-<xs:documentation>Вид повышения при указании размера страховой пенсии суммарно с размером фиксированной
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:minInclusive value="1"/>
+			<xs:maxInclusive value="17"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ТипСписокЭД">
+		<xs:annotation>
+			<xs:documentation>Тип для представления списка документов</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Документ" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Документ предоставляемый страхователем</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Наименование" type="xs:normalizedString">
+							<xs:annotation>
+								<xs:documentation>Наименование документа</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="ЭлектронныйОбраз">
+							<xs:annotation>
+								<xs:documentation>Электронный образ документа</xs:documentation>
+							</xs:annotation>
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:base64Binary">
+										<xs:attribute name="ИмяФайла" type="xs:normalizedString">
+											<xs:annotation>
+												<xs:documentation>Имя файла</xs:documentation>
+											</xs:annotation>
+										</xs:attribute>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="ТипВидПовышенияФВ">
+		<xs:annotation>
+			<xs:documentation>Вид повышения при указании размера страховой пенсии суммарно с размером фиксированной
                 выплаты с повышениями. Возможные значения:
                 1 - «повышения(ий) фиксированной выплаты к страховой пенсии»,
                 2 - «повышения(ий) фиксированной выплаты к страховой пенсии, дополнительного увеличения повышения(ий)
                 фиксированной выплаты к страховой пенсии»
             </xs:documentation>
-</xs:annotation>
-<xs:restriction base="xs:integer">
-<xs:minInclusive value="1"/>
-<xs:maxInclusive value="2"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:complexType name="ТипКатегорияЕДВ">
-<xs:annotation>
-<xs:documentation>Сведения о категории граждан, имеющих право на получение ЕДВ, к которой принадлежит
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:minInclusive value="1"/>
+			<xs:maxInclusive value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ТипКатегорияЕДВ">
+		<xs:annotation>
+			<xs:documentation>Сведения о категории граждан, имеющих право на получение ЕДВ, к которой принадлежит
                 заявитель и сведения о соответствующем нормативном документе
             </xs:documentation>
-</xs:annotation>
-<xs:sequence>
-<xs:element name="Код">
-<xs:annotation>
-<xs:documentation>Категория, по которой установлена ежемесячная денежная выплата. Возможные
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Код">
+				<xs:annotation>
+					<xs:documentation>Категория, по которой установлена ежемесячная денежная выплата. Возможные
                         варианты:
                         001 – Герой Советского Союза (п. 1, ст. 9.1 Закона Российской Федерации от 15.01.1993 № 4301-1)
                         002 – Герой Российской Федерации (п. 1, ст. 9.1 Закона Российской Федерации от 15.01.1993 №
@@ -358,94 +358,94 @@ targetNamespace="http://пф.рф/ВЗЛ/типы/2025-01-01" elementFormDefault
                         вследствие радиационного воздействия на одного из родителей (ст. 4.1 Федерального закона от
                         10.01.2002 № 2-ФЗ)
                     </xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="ТипКатегории">
-<xs:enumeration value="001"/>
-<xs:enumeration value="002"/>
-<xs:enumeration value="003"/>
-<xs:enumeration value="004"/>
-<xs:enumeration value="005"/>
-<xs:enumeration value="006"/>
-<xs:enumeration value="007"/>
-<xs:enumeration value="010"/>
-<xs:enumeration value="011"/>
-<xs:enumeration value="012"/>
-<xs:enumeration value="020"/>
-<xs:enumeration value="040"/>
-<xs:enumeration value="120"/>
-<xs:enumeration value="050"/>
-<xs:enumeration value="030"/>
-<xs:enumeration value="060"/>
-<xs:enumeration value="061"/>
-<xs:enumeration value="062"/>
-<xs:enumeration value="063"/>
-<xs:enumeration value="064"/>
-<xs:enumeration value="140"/>
-<xs:enumeration value="150"/>
-<xs:enumeration value="081"/>
-<xs:enumeration value="082"/>
-<xs:enumeration value="083"/>
-<xs:enumeration value="084"/>
-<xs:enumeration value="085"/>
-<xs:enumeration value="091"/>
-<xs:enumeration value="092"/>
-<xs:enumeration value="093"/>
-<xs:enumeration value="094"/>
-<xs:enumeration value="098"/>
-<xs:enumeration value="095"/>
-<xs:enumeration value="096"/>
-<xs:enumeration value="097"/>
-<xs:enumeration value="099"/>
-<xs:enumeration value="101"/>
-<xs:enumeration value="102"/>
-<xs:enumeration value="100"/>
-<xs:enumeration value="142"/>
-<xs:enumeration value="141"/>
-<xs:enumeration value="122"/>
-<xs:enumeration value="121"/>
-<xs:enumeration value="123"/>
-<xs:enumeration value="124"/>
-<xs:enumeration value="128"/>
-<xs:enumeration value="125"/>
-<xs:enumeration value="126"/>
-<xs:enumeration value="129"/>
-<xs:enumeration value="132"/>
-<xs:enumeration value="131"/>
-<xs:enumeration value="111"/>
-<xs:enumeration value="112"/>
-<xs:enumeration value="113"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element name="НормативныйДокумент">
-<xs:annotation>
-<xs:documentation>Дата, №, наименование соответствующего Федерального закона (нормативного
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="ТипКатегории">
+						<xs:enumeration value="001"/>
+						<xs:enumeration value="002"/>
+						<xs:enumeration value="003"/>
+						<xs:enumeration value="004"/>
+						<xs:enumeration value="005"/>
+						<xs:enumeration value="006"/>
+						<xs:enumeration value="007"/>
+						<xs:enumeration value="010"/>
+						<xs:enumeration value="011"/>
+						<xs:enumeration value="012"/>
+						<xs:enumeration value="020"/>
+						<xs:enumeration value="040"/>
+						<xs:enumeration value="120"/>
+						<xs:enumeration value="050"/>
+						<xs:enumeration value="030"/>
+						<xs:enumeration value="060"/>
+						<xs:enumeration value="061"/>
+						<xs:enumeration value="062"/>
+						<xs:enumeration value="063"/>
+						<xs:enumeration value="064"/>
+						<xs:enumeration value="140"/>
+						<xs:enumeration value="150"/>
+						<xs:enumeration value="081"/>
+						<xs:enumeration value="082"/>
+						<xs:enumeration value="083"/>
+						<xs:enumeration value="084"/>
+						<xs:enumeration value="085"/>
+						<xs:enumeration value="091"/>
+						<xs:enumeration value="092"/>
+						<xs:enumeration value="093"/>
+						<xs:enumeration value="094"/>
+						<xs:enumeration value="098"/>
+						<xs:enumeration value="095"/>
+						<xs:enumeration value="096"/>
+						<xs:enumeration value="097"/>
+						<xs:enumeration value="099"/>
+						<xs:enumeration value="101"/>
+						<xs:enumeration value="102"/>
+						<xs:enumeration value="100"/>
+						<xs:enumeration value="142"/>
+						<xs:enumeration value="141"/>
+						<xs:enumeration value="122"/>
+						<xs:enumeration value="121"/>
+						<xs:enumeration value="123"/>
+						<xs:enumeration value="124"/>
+						<xs:enumeration value="128"/>
+						<xs:enumeration value="125"/>
+						<xs:enumeration value="126"/>
+						<xs:enumeration value="129"/>
+						<xs:enumeration value="132"/>
+						<xs:enumeration value="131"/>
+						<xs:enumeration value="111"/>
+						<xs:enumeration value="112"/>
+						<xs:enumeration value="113"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="НормативныйДокумент">
+				<xs:annotation>
+					<xs:documentation>Дата, №, наименование соответствующего Федерального закона (нормативного
                         документа)
                     </xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element ref="УТ8:Наименование">
-<xs:annotation>
-<xs:documentation>Наименование документа</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Реквизиты" type="УТ8:ТипРеквизитыДокумента">
-<xs:annotation>
-<xs:documentation>Дата и номер Федерального закона, на основании которого установлена
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element ref="УТ8:Наименование">
+							<xs:annotation>
+								<xs:documentation>Наименование документа</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Реквизиты" type="УТ8:ТипРеквизитыДокумента">
+							<xs:annotation>
+								<xs:documentation>Дата и номер Федерального закона, на основании которого установлена
                                     ежемесячная денежная выплата
                                 </xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:simpleType name="ТипРодственныхСвязей">
-<xs:annotation>
-<xs:documentation>Справочник типов родственных/семейных связей:
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="ТипРодственныхСвязей">
+		<xs:annotation>
+			<xs:documentation>Справочник типов родственных/семейных связей:
                 1 Мать
                 2 Отец
                 3 Сын
@@ -459,363 +459,363 @@ targetNamespace="http://пф.рф/ВЗЛ/типы/2025-01-01" elementFormDefault
                 11 Супруг
                 12 Супруга
             </xs:documentation>
-</xs:annotation>
-<xs:restriction base="xs:integer">
-<xs:enumeration value="1"/>
-<xs:enumeration value="2"/>
-<xs:enumeration value="3"/>
-<xs:enumeration value="4"/>
-<xs:enumeration value="5"/>
-<xs:enumeration value="6"/>
-<xs:enumeration value="7"/>
-<xs:enumeration value="8"/>
-<xs:enumeration value="9"/>
-<xs:enumeration value="10"/>
-<xs:enumeration value="11"/>
-<xs:enumeration value="12"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:group name="ГрСведенияДоставка">
-<xs:annotation>
-<xs:documentation>Группа, содержащая сведения о доставке почты заявителю</xs:documentation>
-</xs:annotation>
-<xs:sequence>
-<xs:element name="Дата">
-<xs:annotation>
-<xs:documentation>Дата начала доставки пенсии</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:date">
-<xs:pattern value=".{8}01"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element name="Способ">
-<xs:annotation>
-<xs:documentation>Способ доставки пенсии: 1 - через организацию почтовой связи; 2 - через кредитную
+		</xs:annotation>
+		<xs:restriction base="xs:integer">
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+			<xs:enumeration value="3"/>
+			<xs:enumeration value="4"/>
+			<xs:enumeration value="5"/>
+			<xs:enumeration value="6"/>
+			<xs:enumeration value="7"/>
+			<xs:enumeration value="8"/>
+			<xs:enumeration value="9"/>
+			<xs:enumeration value="10"/>
+			<xs:enumeration value="11"/>
+			<xs:enumeration value="12"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:group name="ГрСведенияДоставка">
+		<xs:annotation>
+			<xs:documentation>Группа, содержащая сведения о доставке почты заявителю</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Дата">
+				<xs:annotation>
+					<xs:documentation>Дата начала доставки пенсии</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:date">
+						<xs:pattern value=".{8}01"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Способ">
+				<xs:annotation>
+					<xs:documentation>Способ доставки пенсии: 1 - через организацию почтовой связи; 2 - через кредитную
                         организацию; 4 - через иную организацию, занимающуюся доставкой пенсии
                     </xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:integer">
-<xs:enumeration value="1"/>
-<xs:enumeration value="2"/>
-<xs:enumeration value="4"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element name="Адрес" type="УТ8:ТипАдресОбщий" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Адрес почтовой, либо иной организации, занимающейся доставкой пенсии
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:enumeration value="1"/>
+						<xs:enumeration value="2"/>
+						<xs:enumeration value="4"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Адрес" type="УТ8:ТипАдресОбщий" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Адрес почтовой, либо иной организации, занимающейся доставкой пенсии
                     </xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="НаименованиеОрганизации" type="УТ8:ТипНепустаяСтрока" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Наименование кредитной, либо иной организации, занимающейся доставкой пенсии
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="НаименованиеОрганизации" type="УТ8:ТипНепустаяСтрока" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Наименование кредитной, либо иной организации, занимающейся доставкой пенсии
                     </xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="НомерСчета" type="УТ8:ТипБанковскийСчет" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Номер счета получателя пенсии в указанной кредитной организации</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:group>
-<xs:group name="ГрСведенияОДоставке">
-<xs:annotation>
-<xs:documentation>Сведения о доставке выплаты</xs:documentation>
-</xs:annotation>
-<xs:choice>
-<xs:element name="Почта" type="ТипПочтаНП">
-<xs:annotation>
-<xs:documentation>Способ доставки выплаты через организацию почтовой связи</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Банк" type="ТипБанкУПД">
-<xs:annotation>
-<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:choice>
-</xs:group>
-<xs:group name="ГрСведенияОДоставкеЕДВ">
-<xs:annotation>
-<xs:documentation>Сведения о доставке выплаты</xs:documentation>
-</xs:annotation>
-<xs:choice>
-<xs:element name="Почта" type="ТипПочтаНП">
-<xs:annotation>
-<xs:documentation>Способ доставки выплаты через организацию почтовой связи</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Банк" type="ТипБанк">
-<xs:annotation>
-<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:choice>
-</xs:group>
-<xs:element name="СведенияОДоставкеДоЗаключенияДоговора">
-<xs:annotation>
-<xs:documentation>Признак о предупреждении заявителя, что с организацией, выбранной  для доставки пенсии, не заключен договор, предусмотренный частью 14 статьи 21  Федерального закона «О страховых пенсиях».</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:choice>
-<xs:element name="Почта" type="ТипПочта">
-<xs:annotation>
-<xs:documentation>Способ доставки выплаты через организацию почтовой связи</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Банк" type="ТипБанк">
-<xs:annotation>
-<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:choice>
-</xs:complexType>
-</xs:element>
-<xs:complexType name="ТипПочтаНП">
-<xs:sequence>
-<xs:element name="Индекс" type="УТ8:ТипИндекс">
-<xs:annotation>
-<xs:documentation>Почтовый индекс</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="СпособВручения">
-<xs:annotation>
-<xs:documentation>Способ вручения выплаты:
-1 - путем вручения в кассе организации;
-2 - путем вручения на дому.
-</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:integer">
-<xs:enumeration value="1"/>
-<xs:enumeration value="2"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element name="ПризнакНеполученные" type="ТипБанк" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Неполученные в текущем месяце суммы пенсии в организации почтовой связи или иной организации, осуществляющей доставку пенсии, перечислить на счет в кредитной организации</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="ТипБанкУПД">
-<xs:sequence>
-<xs:element name="НаименованиеОрганизации" type="УТ8:ТипНепустаяСтрока">
-<xs:annotation>
-<xs:documentation>Наименование кредитной организации, занимающейся доставкой выплаты</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="БИК" type="УТ8:ТипБИК">
-<xs:annotation>
-<xs:documentation>БИК кредитной организации, занимающейся доставкой выплаты</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="НомерСчета" type="УТ8:ТипБанковскийСчет">
-<xs:annotation>
-<xs:documentation>Номер счета получателя выплаты в указанной кредитной организации</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="УчестьПрежнююДоставку" type="xs:boolean">
-<xs:annotation>
-<xs:documentation>Учесть прежнюю дату доставки. Возможные значения:
-                        1 - учесть,
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="НомерСчета" type="УТ8:ТипБанковскийСчет" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Номер счета получателя пенсии в указанной кредитной организации</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:group>
+	<xs:group name="ГрСведенияОДоставке">
+		<xs:annotation>
+			<xs:documentation>Сведения о доставке выплаты</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="Почта" type="ТипПочтаНП">
+				<xs:annotation>
+					<xs:documentation>Способ доставки выплаты через организацию почтовой связи</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Банк" type="ТипБанкУПД">
+				<xs:annotation>
+					<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+	</xs:group>
+	<xs:group name="ГрСведенияОДоставкеЕДВ">
+		<xs:annotation>
+			<xs:documentation>Сведения о доставке выплаты</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="Почта" type="ТипПочтаНП">
+				<xs:annotation>
+					<xs:documentation>Способ доставки выплаты через организацию почтовой связи</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Банк" type="ТипБанк">
+				<xs:annotation>
+					<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:choice>
+	</xs:group>
+	<xs:element name="СведенияОДоставкеДоЗаключенияДоговора">
+		<xs:annotation>
+			<xs:documentation>Признак о предупреждении заявителя, что с организацией, выбранной  для доставки пенсии, не заключен договор, предусмотренный частью 14 статьи 21  Федерального закона «О страховых пенсиях».</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:choice>
+				<xs:element name="Почта" type="ТипПочта">
+					<xs:annotation>
+						<xs:documentation>Способ доставки выплаты через организацию почтовой связи</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="Банк" type="ТипБанк">
+					<xs:annotation>
+						<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="ТипПочтаНП">
+		<xs:sequence>
+			<xs:element name="Индекс" type="УТ8:ТипИндекс">
+				<xs:annotation>
+					<xs:documentation>Почтовый индекс</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="СпособВручения">
+				<xs:annotation>
+					<xs:documentation>Способ вручения выплаты: 
+									1 - путем вручения в кассе организации;
+									2 - путем вручения на дому.
+								</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:enumeration value="1"/>
+						<xs:enumeration value="2"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="ПризнакНеполученные" type="ТипБанк" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Неполученные в текущем месяце суммы пенсии в организации почтовой связи или иной организации, осуществляющей доставку пенсии, перечислить на счет в кредитной организации</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ТипБанкУПД">
+		<xs:sequence>
+			<xs:element name="НаименованиеОрганизации" type="УТ8:ТипНепустаяСтрока">
+				<xs:annotation>
+					<xs:documentation>Наименование кредитной организации, занимающейся доставкой выплаты</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="БИК" type="УТ8:ТипБИК">
+				<xs:annotation>
+					<xs:documentation>БИК кредитной организации, занимающейся доставкой выплаты</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="НомерСчета" type="УТ8:ТипБанковскийСчет">
+				<xs:annotation>
+					<xs:documentation>Номер счета получателя выплаты в указанной кредитной организации</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="УчестьПрежнююДоставку" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Учесть прежнюю дату доставки. Возможные значения: 
+                        1 - учесть, 
                         0 - не учитывать.
                     </xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="ТипПочта">
-<xs:sequence>
-<xs:element name="Индекс" type="УТ8:ТипИндекс">
-<xs:annotation>
-<xs:documentation>Почтовый индекс</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="СпособВручения">
-<xs:annotation>
-<xs:documentation>Способ вручения выплаты: 1 - путем вручения в кассе организации; 2 - путем вручения на дому.</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:integer">
-<xs:enumeration value="1"/>
-<xs:enumeration value="2"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="ТипБанк">
-<xs:sequence>
-<xs:element name="НаименованиеОрганизации" type="УТ8:ТипНепустаяСтрока">
-<xs:annotation>
-<xs:documentation>Наименование кредитной организации, занимающейся доставкой выплаты</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="БИК" type="УТ8:ТипБИК">
-<xs:annotation>
-<xs:documentation>БИК кредитной организации, занимающейся доставкой выплаты</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="НомерСчета" type="УТ8:ТипБанковскийСчет">
-<xs:annotation>
-<xs:documentation>Номер счета получателя выплаты в указанной кредитной организации</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:simpleType name="ТипЗамещениеГосДолжностейРФ">
-<xs:restriction base="xs:unsignedShort">
-<xs:minInclusive value="0"/>
-<xs:maxInclusive value="2"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:simpleType name="ТипПризнакПолученияУмершимКормильцем">
-<xs:annotation>
-<xs:documentation>Сведения о факте получении пенсии (выплаты) умершим кормильцем:
-0 - не являлся получателем,
-1 - являлся получателем,
-2 - сведений не имею
-</xs:documentation>
-</xs:annotation>
-<xs:restriction base="xs:unsignedShort">
-<xs:enumeration value="0"/>
-<xs:enumeration value="1"/>
-<xs:enumeration value="2"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:complexType name="ТипСведенияОПолученииПенсии">
-<xs:sequence>
-<xs:element name="ВидПенсии">
-<xs:annotation>
-<xs:documentation>Вид пенсии. Допустимые значения:
-69 - «пенсия за выслугу лет по государственному пенсионному обеспечению»;
-70 - «пенсия по инвалидности по государственному пенсионному обеспечению»;
-71 - «пенсия по случаю потери кормильца по государственному пенсионному обеспечению»;
-</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:integer">
-<xs:enumeration value="69"/>
-<xs:enumeration value="70"/>
-<xs:enumeration value="71"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element ref="УТ8:Ведомство">
-<xs:annotation>
-<xs:documentation>Ведомство, осуществляющий(вший) пенсионное обеспечение</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:simpleType name="ТипПризнакПолученияЕПСЕВ">
-<xs:restriction base="xs:unsignedShort">
-<xs:enumeration value="0"/>
-<xs:enumeration value="1"/>
-<xs:enumeration value="2"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:complexType name="ТипПризнакПолученияВоеннойПенсии">
-<xs:sequence>
-<xs:element name="ПолучаюВоенуюПенсию" type="ТипСведенияОПолученииПенсии" minOccurs="0"
-maxOccurs="unbounded">
-<xs:annotation>
-<xs:documentation>Блок сведений о виде пенсии и
-ведомстве, осуществляющем(вшим) пенсионное
-обеспечение заявителя. Указывается
-однократно, если заявитель является
-получателем пенсии в соответствии с Законом
-РФ от 12 февраля 1993 г. № 4468-1, и может
-быть указан многократно, если получатель
-являлся получателем пенсии в соответствии с
-Законом РФ от 12 февраля 1993 г. № 4468-1 на
-момент заполнения заявления
-</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="ПолучалВоенуюПенсию" type="ТипСведенияОПолученииПенсии" minOccurs="0"
-maxOccurs="unbounded">
-<xs:annotation>
-<xs:documentation>Блок сведений о виде пенсии и
-ведомстве, осуществляющем(вшим) пенсионное
-обеспечение заявителя. Указывается
-однократно, если заявитель является
-получателем пенсии в соответствии с Законом
-РФ от 12 февраля 1993 г. № 4468-1, и может
-быть указан многократно, если получатель
-являлся получателем пенсии в соответствии с
-Законом РФ от 12 февраля 1993 г. № 4468-1 на
-момент заполнения заявления
-</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="ТипПризнакПолученияВоеннойПенсииУК">
-<xs:sequence>
-<xs:element name="ПризнакПолучения" type="ТипПризнакПолученияУмершимКормильцем">
-<xs:annotation>
-<xs:documentation>Сведения о факте получении
-пенсии умершим кормильцем. Возможные
-значения:
-0 - не являлся,
-1 - являлся,
-2 - сведений не имею
-</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Пенсия" type="ТипСведенияОПолученииПенсии" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Блок сведений о виде пенсии и
-ведомстве, осуществлявшем пенсионное
-обеспечение умершего кормильца. Указывается,
-если умерший кормилец являлся получателем
-пенсии в соответствии с Законом РФ от 12
-февраля 1993 г. № 4468-1
-</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="ТипПолучениеПенсииИностранногоГосударства">
-<xs:sequence>
-<xs:element name="ПризнакПолучения" type="xs:boolean">
-<xs:annotation>
-<xs:documentation>Сведения о факте получения
-пенсии в соответствии с законодательством
-иностранного государства. Возможные
-значения:
-1 - являюсь (лся),
-0 - не являюсь (лся) получателем пенсии в
-соответствии с законодательством
-иностранного государства
-</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element ref="УТ8:Государство" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="ТипПолучениеПенсииИГУмершим">
-<xs:sequence>
-<xs:element name="ПризнакПолучения" type="ТипПризнакПолученияУмершимКормильцем">
-<xs:annotation>
-<xs:documentation>Сведения о факте получении
-пенсии умершим кормильцем. Возможные
-значения:
-0 - не являлся,
-1 - являлся,
-2 - сведений не имею
-</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element ref="УТ8:Государство" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ТипПочта">
+		<xs:sequence>
+			<xs:element name="Индекс" type="УТ8:ТипИндекс">
+				<xs:annotation>
+					<xs:documentation>Почтовый индекс</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="СпособВручения">
+				<xs:annotation>
+					<xs:documentation>Способ вручения выплаты: 1 - путем вручения в кассе организации; 2 - путем вручения на дому.</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:enumeration value="1"/>
+						<xs:enumeration value="2"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ТипБанк">
+		<xs:sequence>
+			<xs:element name="НаименованиеОрганизации" type="УТ8:ТипНепустаяСтрока">
+				<xs:annotation>
+					<xs:documentation>Наименование кредитной организации, занимающейся доставкой выплаты</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="БИК" type="УТ8:ТипБИК">
+				<xs:annotation>
+					<xs:documentation>БИК кредитной организации, занимающейся доставкой выплаты</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="НомерСчета" type="УТ8:ТипБанковскийСчет">
+				<xs:annotation>
+					<xs:documentation>Номер счета получателя выплаты в указанной кредитной организации</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="ТипЗамещениеГосДолжностейРФ">
+		<xs:restriction base="xs:unsignedShort">
+			<xs:minInclusive value="0"/>
+			<xs:maxInclusive value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="ТипПризнакПолученияУмершимКормильцем">
+		<xs:annotation>
+			<xs:documentation>Сведения о факте получении пенсии (выплаты) умершим кормильцем:
+				0 - не являлся получателем,
+				1 - являлся получателем,
+				2 - сведений не имею
+			</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:unsignedShort">
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ТипСведенияОПолученииПенсии">
+		<xs:sequence>
+			<xs:element name="ВидПенсии">
+				<xs:annotation>
+					<xs:documentation>Вид пенсии. Допустимые значения:
+						69 - «пенсия за выслугу лет по государственному пенсионному обеспечению»;
+						70 - «пенсия по инвалидности по государственному пенсионному обеспечению»;
+						71 - «пенсия по случаю потери кормильца по государственному пенсионному обеспечению»;
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:integer">
+						<xs:enumeration value="69"/>
+						<xs:enumeration value="70"/>
+						<xs:enumeration value="71"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element ref="УТ8:Ведомство">
+				<xs:annotation>
+					<xs:documentation>Ведомство, осуществляющий(вший) пенсионное обеспечение</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="ТипПризнакПолученияЕПСЕВ">
+		<xs:restriction base="xs:unsignedShort">
+			<xs:enumeration value="0"/>
+			<xs:enumeration value="1"/>
+			<xs:enumeration value="2"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="ТипПризнакПолученияВоеннойПенсии">
+		<xs:sequence>
+			<xs:element name="ПолучаюВоенуюПенсию" type="ТипСведенияОПолученииПенсии" minOccurs="0"
+				maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Блок сведений о виде пенсии и
+						ведомстве, осуществляющем(вшим) пенсионное
+						обеспечение заявителя. Указывается
+						однократно, если заявитель является
+						получателем пенсии в соответствии с Законом
+						РФ от 12 февраля 1993 г. № 4468-1, и может
+						быть указан многократно, если получатель
+						являлся получателем пенсии в соответствии с
+						Законом РФ от 12 февраля 1993 г. № 4468-1 на
+						момент заполнения заявления
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ПолучалВоенуюПенсию" type="ТипСведенияОПолученииПенсии" minOccurs="0"
+				maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Блок сведений о виде пенсии и
+						ведомстве, осуществляющем(вшим) пенсионное
+						обеспечение заявителя. Указывается
+						однократно, если заявитель является
+						получателем пенсии в соответствии с Законом
+						РФ от 12 февраля 1993 г. № 4468-1, и может
+						быть указан многократно, если получатель
+						являлся получателем пенсии в соответствии с
+						Законом РФ от 12 февраля 1993 г. № 4468-1 на
+						момент заполнения заявления
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ТипПризнакПолученияВоеннойПенсииУК">
+		<xs:sequence>
+			<xs:element name="ПризнакПолучения" type="ТипПризнакПолученияУмершимКормильцем">
+				<xs:annotation>
+					<xs:documentation>Сведения о факте получении
+						пенсии умершим кормильцем. Возможные
+						значения:
+						0 - не являлся,
+						1 - являлся,
+						2 - сведений не имею
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Пенсия" type="ТипСведенияОПолученииПенсии" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Блок сведений о виде пенсии и
+						ведомстве, осуществлявшем пенсионное
+						обеспечение умершего кормильца. Указывается,
+						если умерший кормилец являлся получателем
+						пенсии в соответствии с Законом РФ от 12
+						февраля 1993 г. № 4468-1
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ТипПолучениеПенсииИностранногоГосударства">
+		<xs:sequence>
+			<xs:element name="ПризнакПолучения" type="xs:boolean">
+				<xs:annotation>
+					<xs:documentation>Сведения о факте получения
+						пенсии в соответствии с законодательством
+						иностранного государства. Возможные
+						значения:
+						1 - являюсь (лся),
+						0 - не являюсь (лся) получателем пенсии в
+						соответствии с законодательством
+						иностранного государства
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="УТ8:Государство" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ТипПолучениеПенсииИГУмершим">
+		<xs:sequence>
+			<xs:element name="ПризнакПолучения" type="ТипПризнакПолученияУмершимКормильцем">
+				<xs:annotation>
+					<xs:documentation>Сведения о факте получении
+						пенсии умершим кормильцем. Возможные
+						значения:
+						0 - не являлся,
+						1 - являлся,
+						2 - сведений не имею
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element ref="УТ8:Государство" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
 </xs:schema>

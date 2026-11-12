@@ -1,540 +1,540 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://пф.рф/ЗИРД/2025-05-01"
-xmlns:ЗИРД="http://пф.рф/ЗИРД/2025-05-01" xmlns:УТ8="http://пф.рф/УТ/2025-01-01"
-xmlns:ВЗЛ8="http://пф.рф/ВЗЛ/типы/2025-01-01" xmlns:ПР10="http://пф.рф/Представитель/2026-01-01"
-xmlns:ns1="http://www.w3.org/2000/09/xmldsig#" xmlns:sig="http://iis.ecp.ru/SignInfo/2023-01-10"
-targetNamespace="http://пф.рф/ЗИРД/2025-05-01" elementFormDefault="qualified" version="2.0">
-<xs:import namespace="http://пф.рф/УТ/2025-01-01" schemaLocation="%D0%A3%D0%BD%D0%B8%D1%84%D0%A2%D0%B8%D0%BF%D1%8B_2025-01-01.xsd"/>
-<xs:import namespace="http://пф.рф/ВЗЛ/типы/2025-01-01"
-schemaLocation="%D0%A2%D0%B8%D0%BF%D1%8B%D0%92%D0%97%D0%9B_2025-01-01.xsd"/>
-<xs:import namespace="http://пф.рф/Представитель/2026-01-01"
-schemaLocation="%D0%A2%D0%B8%D0%BF%D0%9F%D1%80%D0%B5%D0%B4%D1%81%D1%82%D0%B0%D0%B2%D0%B8%D1%82%D0%B5%D0%BB%D1%8C_2026-01-01.xsd"/>
-<xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
-schemaLocation="xmldsig_core_schema.xsd"/>
-<xs:import namespace="http://iis.ecp.ru/SignInfo/2023-01-10"
-schemaLocation="SignInfo_2023-01-10.xsd"/>
-<xs:annotation>
-<xs:documentation>Заявление о доставке (об изменении реквизитов) мер социальной поддержки (поддержки)</xs:documentation>
-</xs:annotation>
-<xs:element name="ЭДСФР">
-<xs:annotation>
-<xs:documentation>Корневой элемент. Содержит сведения самого документа и служебную информацию об электронном документе.</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="ЗИРД">
-<xs:annotation>
-<xs:documentation>Заявление о доставке (об изменении реквизитов) мер социальной поддержки (поддержки)</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="ТОСФР" type="УТ8:ТипТОСФР">
-<xs:annotation>
-<xs:documentation>Наименование территориального органа Фонда пенсионного и социального страхования Российской Федерации</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Заявитель">
-<xs:annotation>
-<xs:documentation>Сведения о заявителе</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element ref="УТ8:ФИО">
-<xs:annotation>
-<xs:documentation>Фамилия, Имя и Отчество (при наличии) заявителя. Заполняются полностью, без сокращений, кириллицей</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element ref="УТ8:СНИЛС">
-<xs:annotation>
-<xs:documentation>Страховой номер индивидуального лицевого счета заявителя</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="ПИН" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Иностранный идентификатор (при наличии)</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="Страна" type="УТ8:ТипКодСтраны">
-<xs:annotation>
-<xs:documentation>Наименование страны, в соответствии со справочником стран, с которыми заключен Международный договор</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Номер"
-type="УТ8:ТипНепустаяСтрока">
-<xs:annotation>
-<xs:documentation>Персональный идентификационный номер</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-<xs:group ref="УТ8:ГрДатаРождения"/>
-<xs:element name="Адрес" type="УТ8:ТипАдресОбщийРФ"
-maxOccurs="3"/>
-<xs:element minOccurs="0" name="АдресДоставки"
-type="УТ8:ТипАдрес"/>
-<xs:element ref="УТ8:УдостоверяющийДокумент">
-<xs:annotation>
-<xs:documentation>Удостоверяющий документ заявителя</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element minOccurs="0" ref="УТ8:Телефон"/>
-</xs:sequence>
-</xs:complexType>
-<xs:unique name="АдресРФ">
-<xs:selector xpath="ЗИРД:Адрес"/>
-<xs:field xpath="УТ8:ТипАдреса"/>
-</xs:unique>
-</xs:element>
-<xs:choice minOccurs="0">
-<xs:element name="ЗаконныйПредставитель"
-type="ПР10:ТипЗаконныйПредставитель"> </xs:element>
-<xs:element name="ДоверенноеЛицо" type="ПР10:ТипДоверенноеЛицо"/>
-</xs:choice>
-<xs:element name="Доставка">
-<xs:complexType>
-<xs:sequence>
-<xs:element name="Получатель">
-<xs:annotation>
-<xs:documentation>
-Тип получателя:
-   1 - получатель меры социальной защиты (поддержки);
-   2 - представитель.
-</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:integer">
-<xs:minInclusive value="1"/>
-<xs:maxInclusive value="2"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:choice>
-<xs:element name="ЗДП">
-<xs:annotation>
-<xs:documentation>Единые реквизиты доставки. Доставка мер социальной защиты (поддержки), выплачиваемых согласно Правилам выплаты пенсий (приказ Минтруда РФ от 05.08.2021 № 545н)</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="ЗапросВыплатногоДела"
-type="xs:boolean">
-<xs:annotation>
-<xs:documentation>
-Прошу запросить выплатное дело для постановки на учет в территориальном органе Фонда пенсионного и социального страхования Российской Федерации по новому месту жительства (пребывания, фактического проживания):
-0 - нет;
-1 - да.
+	xmlns:ЗИРД="http://пф.рф/ЗИРД/2025-05-01" xmlns:УТ8="http://пф.рф/УТ/2025-01-01"
+	xmlns:ВЗЛ8="http://пф.рф/ВЗЛ/типы/2025-01-01" xmlns:ПР10="http://пф.рф/Представитель/2026-01-01"
+	xmlns:ns1="http://www.w3.org/2000/09/xmldsig#" xmlns:sig="http://iis.ecp.ru/SignInfo/2023-01-10"
+	targetNamespace="http://пф.рф/ЗИРД/2025-05-01" elementFormDefault="qualified" version="2.0">
+	<xs:import namespace="http://пф.рф/УТ/2025-01-01" schemaLocation="../../УнифТипы_2025-01-01.xsd"/>
+	<xs:import namespace="http://пф.рф/ВЗЛ/типы/2025-01-01"
+		schemaLocation="../ТипыВЗЛ_2025-01-01.xsd"/>
+	<xs:import namespace="http://пф.рф/Представитель/2026-01-01"
+		schemaLocation="../../ТипПредставитель_2026-01-01.xsd"/>
+	<xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
+		schemaLocation="../../xmldsig_core_schema.xsd"/>
+	<xs:import namespace="http://iis.ecp.ru/SignInfo/2023-01-10"
+		schemaLocation="../../SignInfo_2023-01-10.xsd"/>
+	<xs:annotation>
+		<xs:documentation>Заявление о доставке (об изменении реквизитов) мер социальной поддержки (поддержки)</xs:documentation>
+	</xs:annotation>
+	<xs:element name="ЭДСФР">
+		<xs:annotation>
+			<xs:documentation>Корневой элемент. Содержит сведения самого документа и служебную информацию об электронном документе.</xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="ЗИРД">
+					<xs:annotation>
+						<xs:documentation>Заявление о доставке (об изменении реквизитов) мер социальной поддержки (поддержки)</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element name="ТОСФР" type="УТ8:ТипТОСФР">
+								<xs:annotation>
+									<xs:documentation>Наименование территориального органа Фонда пенсионного и социального страхования Российской Федерации</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+							<xs:element name="Заявитель">
+								<xs:annotation>
+									<xs:documentation>Сведения о заявителе</xs:documentation>
+								</xs:annotation>
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element ref="УТ8:ФИО">
+											<xs:annotation>
+												<xs:documentation>Фамилия, Имя и Отчество (при наличии) заявителя. Заполняются полностью, без сокращений, кириллицей</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element ref="УТ8:СНИЛС">
+											<xs:annotation>
+												<xs:documentation>Страховой номер индивидуального лицевого счета заявителя</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element name="ПИН" minOccurs="0">
+											<xs:annotation>
+												<xs:documentation>Иностранный идентификатор (при наличии)</xs:documentation>
+											</xs:annotation>
+											<xs:complexType>
+												<xs:sequence>
+												<xs:element name="Страна" type="УТ8:ТипКодСтраны">
+												<xs:annotation>
+													<xs:documentation>Наименование страны, в соответствии со справочником стран, с которыми заключен Международный договор</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element name="Номер"
+												type="УТ8:ТипНепустаяСтрока">
+												<xs:annotation>
+												<xs:documentation>Персональный идентификационный номер</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												</xs:sequence>
+											</xs:complexType>
+										</xs:element>
+										<xs:group ref="УТ8:ГрДатаРождения"/>
+										<xs:element name="Адрес" type="УТ8:ТипАдресОбщийРФ"
+											maxOccurs="3"/>
+										<xs:element minOccurs="0" name="АдресДоставки"
+											type="УТ8:ТипАдрес"/>
+										<xs:element ref="УТ8:УдостоверяющийДокумент">
+											<xs:annotation>
+												<xs:documentation>Удостоверяющий документ заявителя</xs:documentation>
+											</xs:annotation>
+										</xs:element>
+										<xs:element minOccurs="0" ref="УТ8:Телефон"/>
+									</xs:sequence>
+								</xs:complexType>
+								<xs:unique name="АдресРФ">
+									<xs:selector xpath="ЗИРД:Адрес"/>
+									<xs:field xpath="УТ8:ТипАдреса"/>
+								</xs:unique>
+							</xs:element>
+							<xs:choice minOccurs="0">
+								<xs:element name="ЗаконныйПредставитель"
+									type="ПР10:ТипЗаконныйПредставитель"> </xs:element>
+								<xs:element name="ДоверенноеЛицо" type="ПР10:ТипДоверенноеЛицо"/>
+							</xs:choice>
+							<xs:element name="Доставка">
+								<xs:complexType>
+									<xs:sequence>
+										<xs:element name="Получатель">
+											<xs:annotation>
+												<xs:documentation>
+													Тип получателя:
+													   1 - получатель меры социальной защиты (поддержки);
+													   2 - представитель.
+												</xs:documentation>
+											</xs:annotation>
+											<xs:simpleType>
+												<xs:restriction base="xs:integer">
+												<xs:minInclusive value="1"/>
+												<xs:maxInclusive value="2"/>
+												</xs:restriction>
+											</xs:simpleType>
+										</xs:element>
+										<xs:choice>
+											<xs:element name="ЗДП">
+												<xs:annotation>
+												<xs:documentation>Единые реквизиты доставки. Доставка мер социальной защиты (поддержки), выплачиваемых согласно Правилам выплаты пенсий (приказ Минтруда РФ от 05.08.2021 № 545н)</xs:documentation>
+												</xs:annotation>
+												<xs:complexType>
+												<xs:sequence>
+												<xs:element name="ЗапросВыплатногоДела"
+												type="xs:boolean">
+												<xs:annotation>
+												<xs:documentation>
+													Прошу запросить выплатное дело для постановки на учет в территориальном органе Фонда пенсионного и социального страхования Российской Федерации по новому месту жительства (пребывания, фактического проживания): 						
+													0 - нет; 
+													1 - да.
                                                 </xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:choice>
-<xs:element name="Почта" type="ВЗЛ8:ТипПочтаНП">
-<xs:annotation>
-<xs:documentation>Признак доставки Почтой</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Банк" type="ВЗЛ8:ТипБанкУПД">
-<xs:annotation>
-<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="БанкИн">
-<xs:annotation>
-<xs:documentation>Блок сведений об иностранном банке получателя </xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element ref="УТ8:Наименование">
-<xs:annotation>
-<xs:documentation>Наименование учреждения Банка</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element ref="УТ8:Государство">
-<xs:annotation>
-<xs:documentation>Страна, в которой находится кредитная организация </xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:choice>
-<xs:element name="SWIFT">
-<xs:annotation>
-<xs:documentation>SWIFT-код иностранного банка</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:string">
-<xs:pattern value="[A-Z]{6}[A-Z0-9]{2}"/>
-<xs:pattern value="[A-Z]{6}[A-Z0-9]{5}"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element ref="УТ8:БИК"/>
-<xs:element name="ИнойИд"
-type="УТ8:ТипНепустаяСтрока">
-<xs:annotation>
-<xs:documentation>Иной идентификатор банка </xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:choice>
-<xs:element name="Валюта">
-<xs:annotation>
-<xs:documentation>Валюта перевода</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="Код">
-<xs:annotation>
-<xs:documentation>Код валюты ОКВ буквенный</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:normalizedString">
-<xs:pattern value="[A-Z]{3}"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element name="Номер">
-<xs:annotation>
-<xs:documentation>Код валюты ОКВ числовой</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:normalizedString">
-<xs:pattern value="\d{3}"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-<xs:choice>
-<xs:element name="IBAN">
-<xs:annotation>
-<xs:documentation>Тип для представления кода получателя IBAN</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:string">
-<xs:maxLength value="34"/>
-<xs:pattern
-value="[A-Za-z]{2}[ ]?[0-9]{2}[ ]?[a-zA-Z0-9]{4}[ ]?[0-9]{7}[ ]?([a-zA-Z0-9]?[ ]?){0,16}"
-/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element name="НомерСчета"
-type="УТ8:ТипБанковскийСчет">
-<xs:annotation>
-<xs:documentation>Номер счета</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:choice>
-<xs:element name="Получатель" type="УТ8:ТипФИО">
-<xs:annotation>
-<xs:documentation>Фамилия, имя, отчество (при наличии) получателя (на иностранном языке (латиницей) в соответствии с банковскими данными)</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element ref="УТ8:КСчет" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Корреспондентский счет банка-корреспондента, открытый в российском банке</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element minOccurs="0" name="БанкКорреспондент">
-<xs:complexType>
-<xs:sequence>
-<xs:element ref="УТ8:Наименование">
-<xs:annotation>
-<xs:documentation>Полное наименование банка-корреспондента</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:choice>
-<xs:element name="SWIFT">
-<xs:annotation>
-<xs:documentation>SWIFT-код банка-корреспондента</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:string">
-<xs:pattern value="[A-Z]{6}[A-Z0-9]{2}"/>
-<xs:pattern value="[A-Z]{6}[A-Z0-9]{5}"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element ref="УТ8:БИК"/>
-<xs:element name="ИнойИд"
-type="УТ8:ТипНепустаяСтрока">
-<xs:annotation>
-<xs:documentation>Иной идентификатор банка </xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:choice>
-<xs:element ref="УТ8:КСчет">
-<xs:annotation>
-<xs:documentation>Корреспондентский счет банка-корреспондента, открытый в российском банке</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:choice>
-<xs:element minOccurs="0"
-ref="ВЗЛ8:СведенияОДоставкеДоЗаключенияДоговора"
-> </xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-<xs:element name="МСЗ">
-<xs:annotation>
-<xs:documentation>Доставка иной меры социальной защиты (поддержки)</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="Код" type="xs:integer">
-<xs:annotation>
-<xs:documentation>Код МСЗ</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element ref="УТ8:Наименование">
-<xs:annotation>
-<xs:documentation>Наименование МСЗ</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="ЗапросВыплатногоДела"
-type="xs:boolean" minOccurs="0">
-<xs:annotation>
-<xs:documentation>
-Прошу запросить выплатное дело для постановки на учет в территориальном органе Фонда пенсионного и социального страхования Российской Федерации по новому месту жительства (пребывания, фактического проживания):
-0 - нет;
-1 - да.
+												</xs:annotation>
+												</xs:element>
+												<xs:choice>
+												<xs:element name="Почта" type="ВЗЛ8:ТипПочтаНП">
+												<xs:annotation>
+													<xs:documentation>Признак доставки Почтой</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element name="Банк" type="ВЗЛ8:ТипБанкУПД">
+												<xs:annotation>
+												<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element name="БанкИн">
+												<xs:annotation>
+												<xs:documentation>Блок сведений об иностранном банке получателя </xs:documentation>
+												</xs:annotation>
+												<xs:complexType>
+												<xs:sequence>
+												<xs:element ref="УТ8:Наименование">
+												<xs:annotation>
+												<xs:documentation>Наименование учреждения Банка</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element ref="УТ8:Государство">
+												<xs:annotation>
+												<xs:documentation>Страна, в которой находится кредитная организация </xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:choice>
+												<xs:element name="SWIFT">
+												<xs:annotation>
+												<xs:documentation>SWIFT-код иностранного банка</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:string">
+												<xs:pattern value="[A-Z]{6}[A-Z0-9]{2}"/>
+												<xs:pattern value="[A-Z]{6}[A-Z0-9]{5}"/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												<xs:element ref="УТ8:БИК"/>
+												<xs:element name="ИнойИд"
+												type="УТ8:ТипНепустаяСтрока">
+												<xs:annotation>
+												<xs:documentation>Иной идентификатор банка </xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												</xs:choice>
+												<xs:element name="Валюта">
+												<xs:annotation>
+												<xs:documentation>Валюта перевода</xs:documentation>
+												</xs:annotation>
+												<xs:complexType>
+												<xs:sequence>
+												<xs:element name="Код">
+												<xs:annotation>
+												<xs:documentation>Код валюты ОКВ буквенный</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:normalizedString">
+												<xs:pattern value="[A-Z]{3}"/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												<xs:element name="Номер">
+												<xs:annotation>
+												<xs:documentation>Код валюты ОКВ числовой</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:normalizedString">
+												<xs:pattern value="\d{3}"/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												</xs:sequence>
+												</xs:complexType>
+												</xs:element>
+												<xs:choice>
+												<xs:element name="IBAN">
+												<xs:annotation>
+												<xs:documentation>Тип для представления кода получателя IBAN</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:string">
+												<xs:maxLength value="34"/>
+												<xs:pattern
+												value="[A-Za-z]{2}[ ]?[0-9]{2}[ ]?[a-zA-Z0-9]{4}[ ]?[0-9]{7}[ ]?([a-zA-Z0-9]?[ ]?){0,16}"
+												/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												<xs:element name="НомерСчета"
+												type="УТ8:ТипБанковскийСчет">
+												<xs:annotation>
+												<xs:documentation>Номер счета</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												</xs:choice>
+												<xs:element name="Получатель" type="УТ8:ТипФИО">
+												<xs:annotation>
+												<xs:documentation>Фамилия, имя, отчество (при наличии) получателя (на иностранном языке (латиницей) в соответствии с банковскими данными)</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element ref="УТ8:КСчет" minOccurs="0">
+												<xs:annotation>
+												<xs:documentation>Корреспондентский счет банка-корреспондента, открытый в российском банке</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element minOccurs="0" name="БанкКорреспондент">
+												<xs:complexType>
+												<xs:sequence>
+												<xs:element ref="УТ8:Наименование">
+												<xs:annotation>
+												<xs:documentation>Полное наименование банка-корреспондента</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:choice>
+												<xs:element name="SWIFT">
+												<xs:annotation>
+												<xs:documentation>SWIFT-код банка-корреспондента</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:string">
+												<xs:pattern value="[A-Z]{6}[A-Z0-9]{2}"/>
+												<xs:pattern value="[A-Z]{6}[A-Z0-9]{5}"/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												<xs:element ref="УТ8:БИК"/>
+												<xs:element name="ИнойИд"
+												type="УТ8:ТипНепустаяСтрока">
+												<xs:annotation>
+												<xs:documentation>Иной идентификатор банка </xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												</xs:choice>
+												<xs:element ref="УТ8:КСчет">
+												<xs:annotation>
+												<xs:documentation>Корреспондентский счет банка-корреспондента, открытый в российском банке</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												</xs:sequence>
+												</xs:complexType>
+												</xs:element>
+												</xs:sequence>
+												</xs:complexType>
+												</xs:element>
+												</xs:choice>
+												<xs:element minOccurs="0"
+												ref="ВЗЛ8:СведенияОДоставкеДоЗаключенияДоговора"
+												> </xs:element>
+												</xs:sequence>
+												</xs:complexType>
+											</xs:element>
+											<xs:element name="МСЗ">
+												<xs:annotation>
+												<xs:documentation>Доставка иной меры социальной защиты (поддержки)</xs:documentation>
+												</xs:annotation>
+												<xs:complexType>
+												<xs:sequence>
+												<xs:element name="Код" type="xs:integer">
+												<xs:annotation>
+												<xs:documentation>Код МСЗ</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element ref="УТ8:Наименование">
+												<xs:annotation>
+												<xs:documentation>Наименование МСЗ</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element name="ЗапросВыплатногоДела"
+												type="xs:boolean" minOccurs="0">
+												<xs:annotation>
+												<xs:documentation>
+													Прошу запросить выплатное дело для постановки на учет в территориальном органе Фонда пенсионного и социального страхования Российской Федерации по новому месту жительства (пребывания, фактического проживания): 						
+													0 - нет; 
+													1 - да.
                                                 </xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:choice>
-<xs:element name="Почта" type="ВЗЛ8:ТипПочтаНП">
-<xs:annotation>
-<xs:documentation>Признак доставки Почтой</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Банк">
-<xs:annotation>
-<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:complexContent>
-<xs:extension base="ВЗЛ8:ТипБанк">
-<xs:sequence>
-<xs:element minOccurs="0"
-name="УчестьПрежнююДоставку" type="xs:boolean"/>
-</xs:sequence>
-</xs:extension>
-</xs:complexContent>
-</xs:complexType>
-</xs:element>
-<xs:element name="МИР"
-type="УТ8:ТипНепустаяСтрока"/>
-<xs:element name="БанкИн">
-<xs:annotation>
-<xs:documentation>Блок сведений об иностранном банке получателя </xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element ref="УТ8:Наименование">
-<xs:annotation>
-<xs:documentation>Наименование учреждения Банка</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element ref="УТ8:Государство">
-<xs:annotation>
-<xs:documentation>Страна, в которой находится кредитная организация </xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:choice>
-<xs:element name="SWIFT">
-<xs:annotation>
-<xs:documentation>SWIFT-код иностранного банка</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:string">
-<xs:pattern value="[A-Z]{6}[A-Z0-9]{2}"/>
-<xs:pattern value="[A-Z]{6}[A-Z0-9]{5}"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element ref="УТ8:БИК"/>
-<xs:element name="ИнойИд"
-type="УТ8:ТипНепустаяСтрока">
-<xs:annotation>
-<xs:documentation>Иной идентификатор банка </xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:choice>
-<xs:element name="Валюта">
-<xs:annotation>
-<xs:documentation>Валюта перевода</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="Код">
-<xs:annotation>
-<xs:documentation>Код валюты ОКВ буквенный</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:normalizedString">
-<xs:pattern value="[A-Z]{3}"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element name="Номер">
-<xs:annotation>
-<xs:documentation>Код валюты ОКВ числовой</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:normalizedString">
-<xs:pattern value="\d{3}"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-<xs:choice>
-<xs:element name="IBAN">
-<xs:annotation>
-<xs:documentation>Тип для представления кода получателя IBAN</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:string">
-<xs:maxLength value="34"/>
-<xs:pattern
-value="[A-Za-z]{2}[ ]?[0-9]{2}[ ]?[a-zA-Z0-9]{4}[ ]?[0-9]{7}[ ]?([a-zA-Z0-9]?[ ]?){0,16}"
-/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element name="НомерСчета"
-type="УТ8:ТипБанковскийСчет">
-<xs:annotation>
-<xs:documentation>Номер счета</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:choice>
-<xs:element name="Получатель" type="УТ8:ТипФИО">
-<xs:annotation>
-<xs:documentation>Фамилия, имя, отчество (при наличии) получателя (на иностранном языке (латиницей) в соответствии с банковскими данными)</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element ref="УТ8:КСчет" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Корреспондентский счет банка-корреспондента, открытый в российском банке</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element minOccurs="0" name="БанкКорреспондент">
-<xs:complexType>
-<xs:sequence>
-<xs:element ref="УТ8:Наименование">
-<xs:annotation>
-<xs:documentation>Полное наименование банка-корреспондента</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:choice>
-<xs:element name="SWIFT">
-<xs:annotation>
-<xs:documentation>SWIFT-код банка-корреспондента</xs:documentation>
-</xs:annotation>
-<xs:simpleType>
-<xs:restriction base="xs:string">
-<xs:pattern value="[A-Z]{6}[A-Z0-9]{2}"/>
-<xs:pattern value="[A-Z]{6}[A-Z0-9]{5}"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:element>
-<xs:element ref="УТ8:БИК"/>
-<xs:element name="ИнойИд"
-type="УТ8:ТипНепустаяСтрока">
-<xs:annotation>
-<xs:documentation>Иной идентификатор банка </xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:choice>
-<xs:element ref="УТ8:КСчет">
-<xs:annotation>
-<xs:documentation>Корреспондентский счет банка-корреспондента, открытый в российском банке</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:choice>
-<xs:element minOccurs="0"
-ref="ВЗЛ8:СведенияОДоставкеДоЗаключенияДоговора"
-> </xs:element>
-</xs:sequence>
-<xs:attribute default="0" name="ЗВД"
-type="xs:boolean">
-<xs:annotation>
-<xs:documentation>Признак запрос выплатного дела</xs:documentation>
-</xs:annotation>
-</xs:attribute>
-<xs:attribute default="0" name="Почта"
-type="xs:boolean">
-<xs:annotation>
-<xs:documentation>Признак доставки Почтой</xs:documentation>
-</xs:annotation>
-</xs:attribute>
-<xs:attribute default="0" name="НТМ"
-type="xs:boolean">
-<xs:annotation>
-<xs:documentation>Признак неполученные в текущем месяце суммы пенсии в организации федеральной почтовой связи </xs:documentation>
-</xs:annotation>
-</xs:attribute>
-<xs:attribute default="0" name="Банк"
-type="xs:boolean">
-<xs:annotation>
-<xs:documentation>Признак доставки через кредитную организацию</xs:documentation>
-</xs:annotation>
-</xs:attribute>
-<xs:attribute default="0" name="МИР"
-type="xs:boolean">
-<xs:annotation>
-<xs:documentation>Признак доставки на карту МИР</xs:documentation>
-</xs:annotation>
-</xs:attribute>
-<xs:attribute default="0" name="ДДЗД"
-type="xs:boolean">
-<xs:annotation>
-<xs:documentation>Признак доставки до заключения договора</xs:documentation>
-</xs:annotation>
-</xs:attribute>
-<xs:attribute default="0" name="УПДД"
-type="xs:boolean">
-<xs:annotation>
-<xs:documentation>Признак - Учет прежней даты доставки</xs:documentation>
-</xs:annotation>
-</xs:attribute>
-<xs:attribute default="0" name="ИнфЗДП"
-type="xs:boolean"/>
-</xs:complexType>
-</xs:element>
-</xs:choice>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-<xs:element name="ДатаЗаполнения" type="xs:date">
-<xs:annotation>
-<xs:documentation>Дата заполнения заявления заявителем</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-<xs:element name="ЭлектроннаяПодпись" type="ns1:SignatureType" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Электронная подпись (ЭП) в соответствии со спецификацией XMLDsig
+												</xs:annotation>
+												</xs:element>
+												<xs:choice>
+												<xs:element name="Почта" type="ВЗЛ8:ТипПочтаНП">
+												<xs:annotation>
+													<xs:documentation>Признак доставки Почтой</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element name="Банк">
+												<xs:annotation>
+												<xs:documentation>Способ доставки выплаты через кредитную организацию</xs:documentation>
+												</xs:annotation>
+												<xs:complexType>
+												<xs:complexContent>
+												<xs:extension base="ВЗЛ8:ТипБанк">
+												<xs:sequence>
+												<xs:element minOccurs="0"
+												name="УчестьПрежнююДоставку" type="xs:boolean"/>
+												</xs:sequence>
+												</xs:extension>
+												</xs:complexContent>
+												</xs:complexType>
+												</xs:element>
+												<xs:element name="МИР"
+												type="УТ8:ТипНепустаяСтрока"/>
+												<xs:element name="БанкИн">
+												<xs:annotation>
+												<xs:documentation>Блок сведений об иностранном банке получателя </xs:documentation>
+												</xs:annotation>
+												<xs:complexType>
+												<xs:sequence>
+												<xs:element ref="УТ8:Наименование">
+												<xs:annotation>
+												<xs:documentation>Наименование учреждения Банка</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element ref="УТ8:Государство">
+												<xs:annotation>
+												<xs:documentation>Страна, в которой находится кредитная организация </xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:choice>
+												<xs:element name="SWIFT">
+												<xs:annotation>
+												<xs:documentation>SWIFT-код иностранного банка</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:string">
+												<xs:pattern value="[A-Z]{6}[A-Z0-9]{2}"/>
+												<xs:pattern value="[A-Z]{6}[A-Z0-9]{5}"/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												<xs:element ref="УТ8:БИК"/>
+												<xs:element name="ИнойИд"
+												type="УТ8:ТипНепустаяСтрока">
+												<xs:annotation>
+												<xs:documentation>Иной идентификатор банка </xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												</xs:choice>
+												<xs:element name="Валюта">
+												<xs:annotation>
+												<xs:documentation>Валюта перевода</xs:documentation>
+												</xs:annotation>
+												<xs:complexType>
+												<xs:sequence>
+												<xs:element name="Код">
+												<xs:annotation>
+												<xs:documentation>Код валюты ОКВ буквенный</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:normalizedString">
+												<xs:pattern value="[A-Z]{3}"/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												<xs:element name="Номер">
+												<xs:annotation>
+												<xs:documentation>Код валюты ОКВ числовой</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:normalizedString">
+												<xs:pattern value="\d{3}"/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												</xs:sequence>
+												</xs:complexType>
+												</xs:element>
+												<xs:choice>
+												<xs:element name="IBAN">
+												<xs:annotation>
+												<xs:documentation>Тип для представления кода получателя IBAN</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:string">
+												<xs:maxLength value="34"/>
+												<xs:pattern
+												value="[A-Za-z]{2}[ ]?[0-9]{2}[ ]?[a-zA-Z0-9]{4}[ ]?[0-9]{7}[ ]?([a-zA-Z0-9]?[ ]?){0,16}"
+												/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												<xs:element name="НомерСчета"
+												type="УТ8:ТипБанковскийСчет">
+												<xs:annotation>
+												<xs:documentation>Номер счета</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												</xs:choice>
+												<xs:element name="Получатель" type="УТ8:ТипФИО">
+												<xs:annotation>
+												<xs:documentation>Фамилия, имя, отчество (при наличии) получателя (на иностранном языке (латиницей) в соответствии с банковскими данными)</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element ref="УТ8:КСчет" minOccurs="0">
+												<xs:annotation>
+												<xs:documentation>Корреспондентский счет банка-корреспондента, открытый в российском банке</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:element minOccurs="0" name="БанкКорреспондент">
+												<xs:complexType>
+												<xs:sequence>
+												<xs:element ref="УТ8:Наименование">
+												<xs:annotation>
+												<xs:documentation>Полное наименование банка-корреспондента</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												<xs:choice>
+												<xs:element name="SWIFT">
+												<xs:annotation>
+												<xs:documentation>SWIFT-код банка-корреспондента</xs:documentation>
+												</xs:annotation>
+												<xs:simpleType>
+												<xs:restriction base="xs:string">
+												<xs:pattern value="[A-Z]{6}[A-Z0-9]{2}"/>
+												<xs:pattern value="[A-Z]{6}[A-Z0-9]{5}"/>
+												</xs:restriction>
+												</xs:simpleType>
+												</xs:element>
+												<xs:element ref="УТ8:БИК"/>
+												<xs:element name="ИнойИд"
+												type="УТ8:ТипНепустаяСтрока">
+												<xs:annotation>
+												<xs:documentation>Иной идентификатор банка </xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												</xs:choice>
+												<xs:element ref="УТ8:КСчет">
+												<xs:annotation>
+												<xs:documentation>Корреспондентский счет банка-корреспондента, открытый в российском банке</xs:documentation>
+												</xs:annotation>
+												</xs:element>
+												</xs:sequence>
+												</xs:complexType>
+												</xs:element>
+												</xs:sequence>
+												</xs:complexType>
+												</xs:element>
+												</xs:choice>
+												<xs:element minOccurs="0"
+												ref="ВЗЛ8:СведенияОДоставкеДоЗаключенияДоговора"
+												> </xs:element>
+												</xs:sequence>
+												<xs:attribute default="0" name="ЗВД"
+												type="xs:boolean">
+												<xs:annotation>
+												<xs:documentation>Признак запрос выплатного дела</xs:documentation>
+												</xs:annotation>
+												</xs:attribute>
+												<xs:attribute default="0" name="Почта"
+												type="xs:boolean">
+												<xs:annotation>
+													<xs:documentation>Признак доставки Почтой</xs:documentation>
+												</xs:annotation>
+												</xs:attribute>
+												<xs:attribute default="0" name="НТМ"
+												type="xs:boolean">
+												<xs:annotation>
+												<xs:documentation>Признак неполученные в текущем месяце суммы пенсии в организации федеральной почтовой связи </xs:documentation>
+												</xs:annotation>
+												</xs:attribute>
+												<xs:attribute default="0" name="Банк"
+												type="xs:boolean">
+												<xs:annotation>
+												<xs:documentation>Признак доставки через кредитную организацию</xs:documentation>
+												</xs:annotation>
+												</xs:attribute>
+												<xs:attribute default="0" name="МИР"
+												type="xs:boolean">
+												<xs:annotation>
+												<xs:documentation>Признак доставки на карту МИР</xs:documentation>
+												</xs:annotation>
+												</xs:attribute>
+												<xs:attribute default="0" name="ДДЗД"
+												type="xs:boolean">
+												<xs:annotation>
+												<xs:documentation>Признак доставки до заключения договора</xs:documentation>
+												</xs:annotation>
+												</xs:attribute>
+												<xs:attribute default="0" name="УПДД"
+												type="xs:boolean">
+												<xs:annotation>
+												<xs:documentation>Признак - Учет прежней даты доставки</xs:documentation>
+												</xs:annotation>
+												</xs:attribute>
+												<xs:attribute default="0" name="ИнфЗДП"
+												type="xs:boolean"/>
+												</xs:complexType>
+											</xs:element>
+										</xs:choice>
+									</xs:sequence>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="ДатаЗаполнения" type="xs:date">
+								<xs:annotation>
+									<xs:documentation>Дата заполнения заявления заявителем</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+				<xs:element name="ЭлектроннаяПодпись" type="ns1:SignatureType" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>Электронная подпись (ЭП) в соответствии со спецификацией XMLDsig
                         </xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element ref="sig:SignInfo" minOccurs="0"/>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
+					</xs:annotation>
+				</xs:element>
+				<xs:element ref="sig:SignInfo" minOccurs="0"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
 </xs:schema>

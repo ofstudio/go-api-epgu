@@ -1,79 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns="http://iis.ecp.ru/SignInfo/2023-01-10" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://iis.ecp.ru/SignInfo/2023-01-10" elementFormDefault="qualified" version="2.0">
-<xs:annotation>
-<xs:documentation>Тип данных для отображения реквизитов ЭП</xs:documentation>
-</xs:annotation>
-<xs:complexType name="SignInfoType">
-<xs:annotation>
-<xs:documentation>Тип для представления сведений о реквизитах электронной подписи.</xs:documentation>
-</xs:annotation>
-<xs:sequence>
-<xs:element name="Name" type="xs:string" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Организация-владелец</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Owner" minOccurs="0">
-<xs:annotation>
-<xs:documentation>ФИО владельца сертификата ЭП (кому выдан сертификат)</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="Surname" type="xs:string">
-<xs:annotation>
-<xs:documentation>Фамилия владельца</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Name" type="xs:string">
-<xs:annotation>
-<xs:documentation>Имя владельца</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="Patronymic" type="xs:string" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Отчество владельца (при наличии)</xs:documentation>
-</xs:annotation>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-<xs:element name="Issuer" type="xs:string">
-<xs:annotation>
-<xs:documentation>Издатель сертификата ЭП</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="CertID" type="xs:string">
-<xs:annotation>
-<xs:documentation>Идентификатор сертификата ЭП</xs:documentation>
-</xs:annotation>
-</xs:element>
-<xs:element name="CertValid">
-<xs:annotation>
-<xs:documentation>Срок действия сертификата ЭП</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="From" type="xs:date"/>
-<xs:element name="To" type="xs:date"/>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-<xs:element name="PrivateKeyValid" minOccurs="0">
-<xs:annotation>
-<xs:documentation>Срок действия закрытого ключа ЭП</xs:documentation>
-</xs:annotation>
-<xs:complexType>
-<xs:sequence>
-<xs:element name="From" type="xs:date"/>
-<xs:element name="To" type="xs:date"/>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:element name="SignInfo" type="SignInfoType">
-<xs:annotation>
-<xs:documentation>Сведения о реквизитах электронной подписи</xs:documentation>
-</xs:annotation>
-</xs:element>
+	<xs:annotation>
+		<xs:documentation>Тип данных для отображения реквизитов ЭП</xs:documentation>
+	</xs:annotation>
+	<xs:complexType name="SignInfoType">
+		<xs:annotation>
+			<xs:documentation>Тип для представления сведений о реквизитах электронной подписи.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Name" type="xs:string" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Организация-владелец</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Owner" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>ФИО владельца сертификата ЭП (кому выдан сертификат)</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Surname" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Фамилия владельца</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Name" type="xs:string">
+							<xs:annotation>
+								<xs:documentation>Имя владельца</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+						<xs:element name="Patronymic" type="xs:string" minOccurs="0">
+							<xs:annotation>
+								<xs:documentation>Отчество владельца (при наличии)</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Issuer" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Издатель сертификата ЭП</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CertID" type="xs:string">
+				<xs:annotation>
+					<xs:documentation>Идентификатор сертификата ЭП</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="CertValid">
+				<xs:annotation>
+					<xs:documentation>Срок действия сертификата ЭП</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="From" type="xs:date"/>
+						<xs:element name="To" type="xs:date"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="PrivateKeyValid" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Срок действия закрытого ключа ЭП</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="From" type="xs:date"/>
+						<xs:element name="To" type="xs:date"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="SignInfo" type="SignInfoType">
+		<xs:annotation>
+			<xs:documentation>Сведения о реквизитах электронной подписи</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 </xs:schema>

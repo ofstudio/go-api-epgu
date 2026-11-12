@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="urn://iis.ecp.ru/zird/1.0.2" xmlns:iis="urn://iis.ecp.ru/zird/types/1.0.2" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="urn://iis.ecp.ru/zird/1.0.2">
+	<xs:import namespace="urn://iis.ecp.ru/zird/types/1.0.2" schemaLocation="zird-types-1.0.2.xsd"/>
+	<xs:annotation>
+		<xs:documentation xml:lang="ru">
+			Прием заявления о доставке (об изменении реквизитов) мер социальной поддержки (ЗИРД)
+    </xs:documentation>
+	</xs:annotation>
+	<xs:element name="Request">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">
+        Сообщение-запрос
+      </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="iis:ApplicationRequestType">
+					<xs:attribute fixed="ЗИРД_2025-05-01" name="AF" type="xs:string"/>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="Response">
+		<xs:annotation>
+			<xs:documentation xml:lang="ru">
+        Сообщение-ответ
+      </xs:documentation>
+		</xs:annotation>
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="iis:ApplicationResponseType">
+					<xs:attribute fixed="ЗИРД_2025-05-01" name="AF" type="xs:string"/>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
