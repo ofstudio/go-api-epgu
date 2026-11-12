@@ -4,15 +4,15 @@
 	xmlns:ВЗЛ8="http://пф.рф/ВЗЛ/типы/2025-01-01" xmlns:ПР10="http://пф.рф/Представитель/2026-01-01"
 	xmlns:ns1="http://www.w3.org/2000/09/xmldsig#" xmlns:sig="http://iis.ecp.ru/SignInfo/2023-01-10"
 	targetNamespace="http://пф.рф/ЗИРД/2025-05-01" elementFormDefault="qualified" version="2.0">
-	<xs:import namespace="http://пф.рф/УТ/2025-01-01" schemaLocation="../../УнифТипы_2025-01-01.xsd"/>
+	<xs:import namespace="http://пф.рф/УТ/2025-01-01" schemaLocation="УнифТипы_2025-01-01.xsd"/>
 	<xs:import namespace="http://пф.рф/ВЗЛ/типы/2025-01-01"
-		schemaLocation="../ТипыВЗЛ_2025-01-01.xsd"/>
+		schemaLocation="ТипыВЗЛ_2025-01-01.xsd"/>
 	<xs:import namespace="http://пф.рф/Представитель/2026-01-01"
-		schemaLocation="../../ТипПредставитель_2026-01-01.xsd"/>
+		schemaLocation="ТипПредставитель_2026-01-01.xsd"/>
 	<xs:import namespace="http://www.w3.org/2000/09/xmldsig#"
-		schemaLocation="../../xmldsig_core_schema.xsd"/>
+		schemaLocation="xmldsig_core_schema.xsd"/>
 	<xs:import namespace="http://iis.ecp.ru/SignInfo/2023-01-10"
-		schemaLocation="../../SignInfo_2023-01-10.xsd"/>
+		schemaLocation="SignInfo_2023-01-10.xsd"/>
 	<xs:annotation>
 		<xs:documentation>Заявление о доставке (об изменении реквизитов) мер социальной поддержки (поддержки)</xs:documentation>
 	</xs:annotation>
