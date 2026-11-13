@@ -41,8 +41,8 @@ var (
 
 // HTTP-ошибки.
 //
-// Подробнее см. "Спецификация API ЕПГУ версия 1.14",
-// "Приложение 4. Ошибки, возвращаемые при запросах к API ЕПГУ"
+// Подробнее см. "Спецификация API ЕПГУ версия 1.15",
+// "Приложение 4. Сообщения, возвращаемые при запросах к API ЕПГУ в части подачи заявлений"
 var (
 	ErrStatusOrderNotFound         = errors.New("заявление не найдено")         // HTTP 204
 	ErrStatusBadRequest            = errors.New("неверные параметры")           // HTTP 400
@@ -60,8 +60,8 @@ var (
 
 // Ошибки ЕПГУ.
 //
-// Подробнее см. "Спецификация API ЕПГУ версия 1.14",
-// "Приложение 4. Ошибки, возвращаемые при запросах к API ЕПГУ"
+// Подробнее см. "Спецификация API ЕПГУ версия 1.15",
+// "Приложение 4. Сообщения, возвращаемые при запросах к API ЕПГУ в части подачи заявлений"
 //
 // Пример JSON-ответа от ЕПГУ при ошибке:
 //
@@ -115,6 +115,10 @@ var (
 
 	// Ошибка ЕПГУ: code = service_not_found
 	ErrCodeServiceNotFound = errors.New("не найдена услуга, заданная кодом serviceCode в запросе")
+
+	// Ошибка ЕПГУ: code = service_unavailable (спецификация 1.15).
+	// Подача заявлений недоступна; текст дисклеймера передается в message.
+	ErrCodeServiceUnavailable = errors.New("подача заявлений по услуге недоступна")
 
 	// Ошибка ЕПГУ: неизвестное значение code
 	ErrCodeUnexpected = errors.New("неожиданный код ошибки")
@@ -217,6 +221,8 @@ func jsonError(body []byte) error {
 		err = ErrCodeOrderAccess
 	case "push_denied":
 		err = ErrCodePushDenied
+	case "service_unavailable":
+		err = ErrCodeServiceUnavailable
 	case "service_not_found":
 		err = ErrCodeServiceNotFound
 	case "":

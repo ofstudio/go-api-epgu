@@ -16,15 +16,15 @@ import (
 	"github.com/ofstudio/go-api-epgu/utils"
 )
 
-// DefaultChunkSize - размер чанка по умолчанию для метода [Client.OrderPushChunked].
+// DefaultChunkSize - размер чанка по умолчанию для методов [Client.OrderPushChunked] и [Client.OrderPushChunkedV2].
 // Если размер архива вложения будет больше, то метод отправит архив несколькими запросами.
 // Значение можно изменить с помощью [Client.WithChunkSize].
 //
-// Подробнее см. "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см. "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.1.3 Загрузка и отправка заявления после резервирования номера".
 const DefaultChunkSize = 5_000_000
 
-// DefaultArchiveName - имя архива по умолчанию для методов [Client.OrderPush] и [Client.OrderPushChunked].
+// DefaultArchiveName - имя по умолчанию для архива заявления.
 // Используется, если в [Archive].Name не передано имя архива.
 const DefaultArchiveName = "archive"
 
@@ -71,10 +71,10 @@ func (c *Client) WithHTTPClient(httpClient *http.Client) *Client {
 	return c
 }
 
-// WithChunkSize устанавливает максимальный размер чанка для метода [Client.OrderPushChunked].
+// WithChunkSize устанавливает максимальный размер чанка для методов [Client.OrderPushChunked] и [Client.OrderPushChunkedV2].
 // По умолчанию используется [DefaultChunkSize].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.1.3 Загрузка и отправка заявления после резервирования номера"
 func (c *Client) WithChunkSize(n int) *Client {
 	if n > 0 {
@@ -87,7 +87,7 @@ func (c *Client) WithChunkSize(n int) *Client {
 //
 //	POST /api/gusmev/order
 //
-// Подробнее см. "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см. "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.1.2 Резервирование номера заявления".
 //
 // В случае успеха возвращает зарезервированный номер заявления.
@@ -120,7 +120,7 @@ func (c *Client) OrderCreate(ctx context.Context, token string, meta OrderMeta) 
 //
 //	POST /api/gusmev/push/chunked
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.1.3 Загрузка и отправка заявления после резервирования номера"
 //
 // Максимальный размер чанка по умолчанию: [DefaultChunkSize],
@@ -133,13 +133,19 @@ func (c *Client) OrderCreate(ctx context.Context, token string, meta OrderMeta) 
 //   - [ErrWrongOrderID] - в ответе не передан или передан некорректный ID заявления
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
-//
-// Примечание: согласно спецификации поле meta является обязательным
-// для запроса /api/gusmev/push/chunked. Но это, вероятнее всего,
-// опечатка в спецификации. Данный метод не отправляет поле meta.
 func (c *Client) OrderPushChunked(ctx context.Context, token string, orderId int, archive *Archive) error {
+	_, err := c.orderPushChunked(ctx, token, orderId, archive, false)
+	return err
+}
+
+func (c *Client) orderPushChunked(ctx context.Context, token string, orderId int, archive *Archive, v2 bool) (*OrderResult, error) {
+	endpoint := "/api/gusmev/push/chunked"
+	if v2 {
+		endpoint = "/api/gusmev/v2/push/chunked"
+	}
+
 	if archive == nil || len(archive.Data) == 0 {
-		return fmt.Errorf("%w: %w", ErrPushChunked, ErrNilArchive)
+		return nil, fmt.Errorf("%w: %w", ErrPushChunked, ErrNilArchive)
 	}
 
 	filename := archive.Name
@@ -150,6 +156,7 @@ func (c *Client) OrderPushChunked(ctx context.Context, token string, orderId int
 
 	total := 1 + (len(archive.Data)-1)/(c.chunkSize)
 
+	result := &OrderResult{OrderId: orderId}
 	for current := 0; current < total; current++ {
 		// prepare chunk
 		end := current*c.chunkSize + c.chunkSize
@@ -172,35 +179,44 @@ func (c *Client) OrderPushChunked(ctx context.Context, token string, orderId int
 			builder = builder.withChunkNum(current, total)
 		}
 		if err := builder.build(); err != nil {
-			return fmt.Errorf("%w: %w", ErrPushChunked, err)
+			return nil, fmt.Errorf("%w: %w", ErrPushChunked, err)
 		}
 
 		// make request
-		orderIdResponse := &dtoOrderIdResponse{}
+		orderIdResponse := &dtoOrderPushResponse{}
+		// Старые методы читают только orderId, как и до добавления V2.
+		var response any = &orderIdResponse.dtoOrderIdResponse
+		if v2 {
+			response = orderIdResponse
+		}
 		if err := c.requestJSON(
 			ctx,
 			http.MethodPost,
-			"/api/gusmev/push/chunked",
+			endpoint,
 			"multipart/form-data; boundary="+w.Boundary(),
 			token,
 			body,
-			orderIdResponse,
+			response,
 		); err != nil {
-			return fmt.Errorf("%w: %w", ErrPushChunked, err)
+			return nil, fmt.Errorf("%w: %w", ErrPushChunked, err)
 		}
 		if orderIdResponse.OrderId != orderId {
-			return fmt.Errorf("%w: %w", ErrPushChunked, ErrWrongOrderID)
+			return nil, fmt.Errorf("%w: %w", ErrPushChunked, ErrWrongOrderID)
+		}
+		// Пустое сообщение следующего чанка не затирает полученное предупреждение.
+		if orderIdResponse.Message != "" {
+			result.Message = orderIdResponse.Message
 		}
 	}
 
-	return nil
+	return result, nil
 }
 
 // OrderPush - загрузка и отправка заявления одним запросом.
 //
 //	POST /api/gusmev/push
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.1.4 Загрузка и отправка заявления одним запросом"
 //
 // В случае успеха возвращает номер созданного заявления.
@@ -212,8 +228,21 @@ func (c *Client) OrderPushChunked(ctx context.Context, token string, orderId int
 //   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusUnauthorized])
 //   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeBadRequest])
 func (c *Client) OrderPush(ctx context.Context, token string, meta OrderMeta, archive *Archive) (int, error) {
+	result, err := c.orderPush(ctx, token, meta, archive, false)
+	if err != nil {
+		return 0, err
+	}
+	return result.OrderId, nil
+}
+
+func (c *Client) orderPush(ctx context.Context, token string, meta OrderMeta, archive *Archive, v2 bool) (*OrderResult, error) {
+	endpoint := "/api/gusmev/push"
+	if v2 {
+		endpoint = "/api/gusmev/v2/push"
+	}
+
 	if archive == nil || len(archive.Data) == 0 {
-		return 0, fmt.Errorf("%w: %w", ErrPush, ErrNilArchive)
+		return nil, fmt.Errorf("%w: %w", ErrPush, ErrNilArchive)
 	}
 
 	filename := archive.Name
@@ -227,33 +256,100 @@ func (c *Client) OrderPush(ctx context.Context, token string, meta OrderMeta, ar
 		withMeta(meta).
 		withFile(filename+".zip", archive.Data).
 		build(); err != nil {
-		return 0, fmt.Errorf("%w: %w", ErrPush, err)
+		return nil, fmt.Errorf("%w: %w", ErrPush, err)
 	}
 
-	orderIdResponse := &dtoOrderIdResponse{}
+	orderIdResponse := &dtoOrderPushResponse{}
+	// Старые методы читают только orderId, как и до добавления V2.
+	var response any = &orderIdResponse.dtoOrderIdResponse
+	if v2 {
+		response = orderIdResponse
+	}
 	if err := c.requestJSON(
 		ctx,
 		http.MethodPost,
-		"/api/gusmev/push",
+		endpoint,
 		"multipart/form-data; boundary="+w.Boundary(),
 		token,
 		body,
-		orderIdResponse,
+		response,
 	); err != nil {
-		return 0, fmt.Errorf("%w: %w", ErrPush, err)
+		return nil, fmt.Errorf("%w: %w", ErrPush, err)
 	}
 	if orderIdResponse.OrderId == 0 {
-		return 0, fmt.Errorf("%w: %w", ErrPush, ErrWrongOrderID)
+		return nil, fmt.Errorf("%w: %w", ErrPush, ErrWrongOrderID)
 	}
 
-	return orderIdResponse.OrderId, nil
+	return &OrderResult{OrderId: orderIdResponse.OrderId, Message: orderIdResponse.Message}, nil
+}
+
+// OrderPushV2 - загрузка и отправка заявления одним запросом с учетом дисклеймера.
+//
+//	POST /api/gusmev/v2/push
+//
+// Подробнее см. "Спецификация API ЕПГУ версия 1.15",
+// раздел "2.1.4 Загрузка и отправка заявления одним запросом" и Приложение 6.
+//
+// В случае успеха возвращает номер заявления и сообщение о дисклеймере, если оно есть.
+// Предупреждение в Message не является ошибкой: err остается nil.
+//
+// Пример успешного ответа с предупреждением:
+//
+//	{"orderId":2058864134,"message":"Ведомственные работы. Сервис ведомства работает с перебоями"}
+//
+// Пример ошибки при недоступности подачи заявлений:
+//
+//	{"code":"service_unavailable","message":"Ведомственная авария. Попробуйте подать заявление позже"}
+//
+// В случае ошибки возвращает nil и цепочку из [ErrPush] и следующих возможных ошибок:
+//   - [ErrNilArchive] - не передан архив
+//   - [ErrRequest] - ошибка HTTP-запроса
+//   - [ErrMultipartBody] - ошибка подготовки multipart-содержимого
+//   - [ErrJSONUnmarshal] - ошибка разбора ответа
+//   - [ErrWrongOrderID] - в ответе не передан или передан некорректный ID заявления
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusInternalError])
+//   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeServiceUnavailable])
+func (c *Client) OrderPushV2(ctx context.Context, token string, meta OrderMeta, archive *Archive) (*OrderResult, error) {
+	return c.orderPush(ctx, token, meta, archive, true)
+}
+
+// OrderPushChunkedV2 - загрузка и отправка заявления после резервирования номера с учетом дисклеймера.
+//
+//	POST /api/gusmev/v2/push/chunked
+//
+// Подробнее см. "Спецификация API ЕПГУ версия 1.15",
+// раздел "2.1.3 Загрузка и отправка заявления после резервирования номера" и Приложение 6.
+//
+// В случае успеха возвращает номер заявления и сообщение о дисклеймере, если оно есть.
+// Предупреждение в Message не является ошибкой: err остается nil.
+// Message содержит последнее полученное непустое сообщение.
+// Размер чанка задается с помощью [Client.WithChunkSize].
+//
+// Пример успешного ответа с предупреждением:
+//
+//	{"orderId":2058864134,"message":"Ведомственные работы. Сервис ведомства работает с перебоями"}
+//
+// Пример ошибки при недоступности подачи заявлений:
+//
+//	{"code":"service_unavailable","message":"Ведомственная авария. Попробуйте подать заявление позже"}
+//
+// В случае ошибки возвращает nil и цепочку из [ErrPushChunked] и следующих возможных ошибок:
+//   - [ErrNilArchive] - не передан архив
+//   - [ErrRequest] - ошибка HTTP-запроса
+//   - [ErrMultipartBody] - ошибка подготовки multipart-содержимого
+//   - [ErrJSONUnmarshal] - ошибка разбора ответа
+//   - [ErrWrongOrderID] - в ответе не передан или передан некорректный ID заявления
+//   - HTTP-ошибок ErrStatusXXXX (например, [ErrStatusInternalError])
+//   - Ошибок ЕПГУ ErrCodeXXXX (например, [ErrCodeServiceUnavailable])
+func (c *Client) OrderPushChunkedV2(ctx context.Context, token string, orderId int, archive *Archive) (*OrderResult, error) {
+	return c.orderPushChunked(ctx, token, orderId, archive, true)
 }
 
 // OrderInfo - запрос детальной информации по отправленному заявлению.
 //
 //	POST /api/gusmev/order/{orderId}
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.4. Получение деталей по заявлению".
 //
 // В случае успеха возвращает детальную информацию по заявлению.
@@ -283,6 +379,11 @@ func (c *Client) OrderInfo(ctx context.Context, token string, orderId int) (*Ord
 		MessageId: orderInfoResponse.MessageId,
 	}
 
+	// В таблице 27 указан messageId, а в примере раздела 4.5 — message_id.
+	if orderInfo.MessageId == "" {
+		orderInfo.MessageId = orderInfoResponse.MessageIdLegacy
+	}
+
 	// unmarshal order field
 	if orderInfoResponse.Order != "" {
 		orderInfo.Order = &OrderDetails{}
@@ -298,7 +399,7 @@ func (c *Client) OrderInfo(ctx context.Context, token string, orderId int) (*Ord
 //
 //	POST /api/gusmev/order/{orderId}/cancel
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.2. Отмена заявления".
 //
 // В случае ошибки возвращает цепочку из [ErrOrderCancel] и следующих возможных ошибок:
@@ -327,7 +428,7 @@ func (c *Client) OrderCancel(ctx context.Context, token string, orderId int) err
 //
 //	GET /api/gusmev/order/getOrdersStatus?pageNum={n}&pageSize={m}&orderIds={array[integer]}
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.3.1 Получение статусов заявлений по переданному списку заявлений".
 //
 // Параметры:
@@ -373,7 +474,7 @@ func (c *Client) GetOrdersStatus(ctx context.Context, token string, pageNum, pag
 //
 //	GET /api/gusmev/order/getUpdatedAfter?pageNum={n}&pageSize={m}&updatedAfter={timestamp}
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.3.2 Получение статусов всех заявлений с даты обновления статуса".
 //
 // Параметры:
@@ -418,7 +519,7 @@ func (c *Client) GetUpdatedAfter(ctx context.Context, token string, pageNum, pag
 // Параметр link - значение поля [OrderAttachmentFile].Link или [OrderResponseFile].Link
 // из ответа метода [Client.OrderInfo].
 // Параметр eServiceCode - код услуги.
-// Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "2.6. Скачивание файла".
+// Подробнее см "Спецификация API ЕПГУ версия 1.15", раздел "2.6. Скачивание файла".
 //
 // В случае успеха записывает содержимое файла в dst.
 // В случае ошибки возвращает цепочку из [ErrAttachmentDownload] и следующих возможных ошибок:
@@ -496,7 +597,7 @@ func attachmentEndpoint(currentStatusHistoryId int, link, eServiceCode string) (
 //
 //	POST /api/nsi/v1/dictionary/{code}
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.5. Получение справочных данных".
 //
 // Параметры:

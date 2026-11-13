@@ -5,10 +5,12 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -1279,3 +1281,413 @@ const (
 	dictSuccessEmptyResponse   = `{"error":{"code":0,"message":"operation completed"},"fieldErrors":[],"total":5004,"items":[]}`
 	dictErrorResponse          = `{"error":{"code":7,"message":"Entity not found"},"fieldErrors":[],"total":0,"items":[]}`
 )
+
+type pushV2Method struct {
+	name   string
+	path   string
+	parent error
+	call   func(*Client, context.Context, *Archive) (*OrderResult, error)
+}
+
+func pushV2Methods() []pushV2Method {
+	return []pushV2Method{
+		{"OrderPushV2", "/api/gusmev/v2/push", ErrPush, func(c *Client, ctx context.Context, a *Archive) (*OrderResult, error) {
+			return c.OrderPushV2(ctx, testToken, testMeta, a)
+		}},
+		{"OrderPushChunkedV2", "/api/gusmev/v2/push/chunked", ErrPushChunked, func(c *Client, ctx context.Context, a *Archive) (*OrderResult, error) {
+			return c.OrderPushChunkedV2(ctx, testToken, 123456, a)
+		}},
+	}
+}
+
+func (suite *suiteTestClient) TestPushV2Requests() {
+	for _, method := range pushV2Methods() {
+		for _, size := range []int{1, 3, 4, 5, 8, 9} {
+			for _, name := range []string{"test-archive", ""} {
+				suite.Run(fmt.Sprintf("%s/size=%d/name=%s", method.name, size, name), func() {
+					data := bytes.Repeat([]byte("x"), size)
+					var received []byte
+					count := 0
+					total := 1
+					if method.parent == ErrPushChunked {
+						total = (size + 3) / 4
+					}
+					server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+						current := count
+						count++
+						suite.Equal(http.MethodPost, r.Method)
+						suite.Equal(method.path, r.URL.Path)
+						suite.Equal("Bearer "+testToken, r.Header.Get("Authorization"))
+						suite.Contains(r.Header.Get("Content-Type"), "multipart/form-data; boundary=")
+						if !suite.NoError(r.ParseMultipartForm(1024)) {
+							return
+						}
+						defer r.MultipartForm.RemoveAll()
+						if method.parent == ErrPush {
+							suite.JSONEq(string(testMeta.JSON()), r.FormValue("meta"))
+							suite.NotContains(r.Form, "orderId")
+						} else {
+							suite.NotContains(r.Form, "meta")
+							suite.Equal("123456", r.FormValue("orderId"))
+						}
+						if total > 1 {
+							suite.Equal(strconv.Itoa(current), r.FormValue("chunk"))
+							suite.Equal(strconv.Itoa(total), r.FormValue("chunks"))
+						} else {
+							suite.NotContains(r.Form, "chunk")
+							suite.NotContains(r.Form, "chunks")
+						}
+						if !suite.Len(r.MultipartForm.File["file"], 1) {
+							return
+						}
+						fh := r.MultipartForm.File["file"][0]
+						filename := name
+						if filename == "" {
+							filename = DefaultArchiveName
+						}
+						extension := ".zip"
+						if total > 1 {
+							extension = fmt.Sprintf(".z%03d", current+1)
+						}
+						suite.Equal(filename+extension, fh.Filename)
+						suite.Equal("application/octet-stream", fh.Header.Get("Content-Type"))
+						f, err := fh.Open()
+						if !suite.NoError(err) {
+							return
+						}
+						part, err := io.ReadAll(f)
+						f.Close()
+						suite.NoError(err)
+						if total > 1 && current < total-1 {
+							suite.Len(part, 4)
+						}
+						received = append(received, part...)
+						w.Header().Set("Content-Type", "application/json")
+						if current < total-1 {
+							w.WriteHeader(http.StatusPartialContent)
+						}
+						fmt.Fprint(w, `{"orderId":123456}`)
+					}))
+					defer server.Close()
+					result, err := method.call(NewClient(server.URL).WithChunkSize(4), context.Background(), &Archive{Name: name, Data: data})
+					suite.NoError(err)
+					suite.Equal(&OrderResult{OrderId: 123456}, result)
+					suite.Equal(total, count)
+					suite.Equal(data, received)
+				})
+			}
+		}
+	}
+}
+
+func (suite *suiteTestClient) TestPushV2Messages() {
+	for _, method := range pushV2Methods() {
+		for _, message := range []string{"", `,"message":""`, `,"message":null`, `,"message":"Ведомственные работы. Сервис ведомства работает с перебоями"`} {
+			suite.Run(method.name+message, func() {
+				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, `{"orderId":123456%s}`, message) }))
+				defer server.Close()
+				result, err := method.call(NewClient(server.URL), context.Background(), &Archive{Data: []byte("x")})
+				suite.NoError(err)
+				expected := ""
+				if message == `,"message":"Ведомственные работы. Сервис ведомства работает с перебоями"` {
+					expected = "Ведомственные работы. Сервис ведомства работает с перебоями"
+				}
+				suite.Equal(&OrderResult{OrderId: 123456, Message: expected}, result)
+			})
+		}
+	}
+	for _, tc := range []struct {
+		name     string
+		messages []string
+		want     string
+	}{
+		{"none", []string{"", `,"message":""`, `,"message":null`}, ""},
+		{"first survives empty and absent", []string{`,"message":"первое"`, `,"message":""`, ""}, "первое"},
+		{"first survives null", []string{`,"message":"первое"`, `,"message":null`}, "первое"},
+		{"last only", []string{"", `,"message":"последнее"`}, "последнее"},
+		{"last nonempty", []string{`,"message":"первое"`, `,"message":"второе"`, `,"message":""`}, "второе"},
+		{"repeated", []string{`,"message":"работы"`, `,"message":"работы"`}, "работы"},
+		{"text preserved", []string{`,"message":"  работы\n"`, ""}, "  работы\n"},
+	} {
+		suite.Run(tc.name, func() {
+			count := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				message := tc.messages[count]
+				count++
+				if count < len(tc.messages) {
+					w.WriteHeader(http.StatusPartialContent)
+				}
+				fmt.Fprintf(w, `{"orderId":123456%s}`, message)
+			}))
+			defer server.Close()
+			result, err := NewClient(server.URL).WithChunkSize(1).OrderPushChunkedV2(context.Background(), testToken, 123456, &Archive{Data: bytes.Repeat([]byte("x"), len(tc.messages))})
+			suite.NoError(err)
+			suite.Equal(&OrderResult{OrderId: 123456, Message: tc.want}, result)
+			suite.Equal(len(tc.messages), count)
+		})
+	}
+}
+
+func (suite *suiteTestClient) TestPushV2Errors() {
+	for _, method := range pushV2Methods() {
+		for _, tc := range []struct {
+			name              string
+			status            int
+			body, contentType string
+			want              []error
+		}{
+			{"missing ID", 200, `{}`, "application/json", []error{ErrWrongOrderID}},
+			{"zero ID", 200, `{"orderId":0}`, "application/json", []error{ErrWrongOrderID}},
+			{"malformed JSON", 200, `{`, "application/json", []error{ErrJSONUnmarshal}},
+			{"empty body", 200, ``, "application/json", []error{ErrJSONUnmarshal}},
+			{"wrong ID type", 200, `{"orderId":"123456"}`, "application/json", []error{ErrJSONUnmarshal}},
+			{"wrong message type", 200, `{"orderId":123456,"message":123}`, "application/json", []error{ErrJSONUnmarshal}},
+			{"service unavailable", 500, `{"code":"service_unavailable","message":"Ведомственная авария. Попробуйте подать заявление позже"}`, "application/json", []error{ErrStatusInternalError, ErrCodeServiceUnavailable}},
+			{"HTTP 503", 503, ``, "text/plain", []error{ErrStatusServiceUnavailable}},
+			{"known code", 403, `{"code":"access_denied_service","message":"нет доступа"}`, "application/json", []error{ErrStatusForbidden, ErrCodeAccessDeniedService}},
+			{"unknown code", 400, `{"code":"new_code","message":"ошибка"}`, "application/json", []error{ErrStatusBadRequest, ErrCodeUnexpected}},
+			{"malformed error", 400, `{`, "application/json", []error{ErrStatusBadRequest, ErrJSONUnmarshal}},
+			{"plain text error", 500, `error`, "text/plain", []error{ErrStatusInternalError, ErrUnexpectedContentType}},
+		} {
+			suite.Run(method.name+"/"+tc.name, func() {
+				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					w.Header().Set("Content-Type", tc.contentType)
+					w.WriteHeader(tc.status)
+					fmt.Fprint(w, tc.body)
+				}))
+				defer server.Close()
+				result, err := method.call(NewClient(server.URL), context.Background(), &Archive{Data: []byte("x")})
+				suite.Nil(result)
+				suite.ErrorIs(err, method.parent)
+				for _, want := range tc.want {
+					suite.ErrorIs(err, want)
+				}
+				if errors.Is(err, ErrCodeServiceUnavailable) {
+					suite.Contains(err.Error(), "Ведомственная авария. Попробуйте подать заявление позже")
+					suite.NotErrorIs(err, ErrStatusServiceUnavailable)
+				}
+			})
+		}
+		for i, archive := range []*Archive{nil, {}, {Data: []byte{}}} {
+			suite.Run(fmt.Sprintf("%s/empty archive %d", method.name, i), func() {
+				result, err := method.call(NewClient(""), context.Background(), archive)
+				suite.Nil(result)
+				suite.ErrorIs(err, method.parent)
+				suite.ErrorIs(err, ErrNilArchive)
+			})
+		}
+		suite.Run(method.name+"/transport", func() {
+			result, err := method.call(NewClient(":"), context.Background(), &Archive{Data: []byte("x")})
+			suite.Nil(result)
+			suite.ErrorIs(err, method.parent)
+			suite.ErrorIs(err, ErrRequest)
+		})
+		suite.Run(method.name+"/canceled", func() {
+			ctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			result, err := method.call(NewClient("http://127.0.0.1"), ctx, &Archive{Data: []byte("x")})
+			suite.Nil(result)
+			suite.ErrorIs(err, method.parent)
+			suite.ErrorIs(err, ErrRequest)
+			suite.ErrorIs(err, context.Canceled)
+		})
+	}
+}
+
+func (suite *suiteTestClient) TestPushChunkedV2StopsOnError() {
+	for _, tc := range []struct {
+		name, body string
+		status     int
+		want       error
+	}{
+		{"wrong ID", `{"orderId":999}`, 200, ErrWrongOrderID},
+		{"missing ID", `{}`, 200, ErrWrongOrderID},
+		{"invalid JSON", `{`, 200, ErrJSONUnmarshal},
+		{"blocked", `{"code":"service_unavailable","message":"авария"}`, 500, ErrCodeServiceUnavailable},
+		{"canceled", `{"orderId":123456}`, 206, context.Canceled},
+	} {
+		suite.Run(tc.name, func() {
+			count := 0
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				count++
+				w.Header().Set("Content-Type", "application/json")
+				if count == 1 {
+					w.WriteHeader(206)
+					fmt.Fprint(w, `{"orderId":123456,"message":"работы"}`)
+					return
+				}
+				if tc.name == "canceled" {
+					cancel()
+				}
+				w.WriteHeader(tc.status)
+				fmt.Fprint(w, tc.body)
+			}))
+			defer server.Close()
+			result, err := NewClient(server.URL).WithChunkSize(1).OrderPushChunkedV2(ctx, testToken, 123456, &Archive{Data: []byte("abc")})
+			suite.Nil(result)
+			suite.ErrorIs(err, ErrPushChunked)
+			suite.ErrorIs(err, tc.want)
+			suite.Equal(2, count)
+		})
+	}
+}
+
+// Старые методы игнорируют message, в том числе неизвестный им формат поля.
+func (suite *suiteTestClient) TestPushLegacyIgnoresMessage() {
+	for _, message := range []string{`"работы"`, `123`, `{}`} {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			suite.NotContains(r.URL.Path, "/v2/")
+			fmt.Fprintf(w, `{"orderId":123456,"message":%s}`, message)
+		}))
+		client := NewClient(server.URL)
+		archive := &Archive{Data: []byte("x")}
+		orderId, err := client.OrderPush(context.Background(), testToken, testMeta, archive)
+		suite.NoError(err)
+		suite.Equal(123456, orderId)
+		suite.NoError(client.OrderPushChunked(context.Background(), testToken, 123456, archive))
+		server.Close()
+	}
+}
+
+type pushV2RoundTripper func(*http.Request) (*http.Response, error)
+
+func (f pushV2RoundTripper) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
+
+type pushV2ErrorReader struct{ err error }
+
+func (r pushV2ErrorReader) Read([]byte) (int, error) { return 0, r.err }
+
+func (suite *suiteTestClient) TestPushV2IOErrors() {
+	failure := errors.New("test network failure")
+	for _, method := range pushV2Methods() {
+		for _, tc := range []struct {
+			name      string
+			transport pushV2RoundTripper
+		}{
+			{"round trip", func(r *http.Request) (*http.Response, error) { return nil, failure }},
+			{"read body", func(r *http.Request) (*http.Response, error) {
+				return &http.Response{StatusCode: 200, Header: make(http.Header), Body: io.NopCloser(pushV2ErrorReader{failure})}, nil
+			}},
+		} {
+			suite.Run(method.name+"/"+tc.name, func() {
+				client := NewClient("http://example.test").WithHTTPClient(&http.Client{Transport: tc.transport})
+				result, err := method.call(client, context.Background(), &Archive{Data: []byte("x")})
+				suite.Nil(result)
+				suite.ErrorIs(err, method.parent)
+				suite.ErrorIs(err, ErrRequest)
+				suite.ErrorIs(err, failure)
+			})
+		}
+		suite.Run(method.name+"/deadline", func() {
+			ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
+			defer cancel()
+			result, err := method.call(NewClient("http://127.0.0.1"), ctx, &Archive{Data: []byte("x")})
+			suite.Nil(result)
+			suite.ErrorIs(err, method.parent)
+			suite.ErrorIs(err, ErrRequest)
+			suite.ErrorIs(err, context.DeadlineExceeded)
+		})
+	}
+}
+
+// Полный ответ из раздела 4.5 спецификации API ЕПГУ версии 1.15.
+// Фикстура сохранена в тестах, чтение DOCX при запуске не требуется.
+const orderInfoSpecificationV115Response = `{"code":"OK","message":null,"message_id":"71e35026-ade1-11e9-9931-00155d040494","order":"{\"orderType\":\"ORDER\",\"smevTx\":\"b0ba0139-613d-4d4d-bc28-4240efc9a6ec\",\"hasEmpowerment2021\":false,\"smevMessageId\":\"WAIT_RESPONSE\",\"formVersion\":\"1\",\"ownerId\":1078941357,\"notifySms\":\"\",\"hasTimestamp\":false,\"orderStatusName\":\"Ошибка обработки заявления\",\"portalName\":\"Портал гос услуг v1\",\"paymentRequired\":false,\"id\":2058864134,\"signCnt\":0,\"childrenSigned\":false,\"stateOrgStatusCode\":\"\",\"inviteToEqueueUrl\":\"\",\"statusColorCode\":\"\",\"orderStatusId\":24,\"withCustomResult\":true,\"hasNoPaidPayment\":false,\"servicePassportId\":\"600113\",\"routingCode\":\"\",\"sourceSystem\":\"PGU\",\"stateOrgStatusName\":\"\",\"serviceUrl\":\"\",\"serviceEpguId\":\"1\",\"edsStatus\":\"EDS_NOT_SUPPORTED\",\"allowToDelete\":true,\"requestDate\":\"2022-07-25T13:01:47.438+0300\",\"complexMode\":\"\",\"stateOrgCode\":\"pfr\",\"personType\":\"PERSON\",\"serviceTargetId\":\"-10000000113\",\"orderPayments\":[],\"orderResponseFiles\":[],\"hasResult\":false,\"userId\":1078941357,\"allowToEdit\":false,\"closed\":true,\"readyToSign\":false,\"currentStatusHistory\":{\"date\":\"2022-07-25T13:01:52.121+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":true,\"orderId\":2058864134,\"stateOrgStatusCode\":\"\",\"author\":\"\",\"hasResult\":\"N\",\"stateOrgStatusDescr\":\"\",\"title\":\"Ошибка обработки заявления\",\"mfcFinalStatus\":false,\"sendMessageAllowed\":false,\"statusId\":24,\"editAllowed\":false,\"sender\":\"Пенсионный фонд Российской Федерации\",\"mnemonic\":\"\",\"comment\":\"\",\"id\":6268157772},\"infoMessages\":[],\"notifyEmail\":\"\",\"paymentCount\":0,\"draftHidden\":false,\"stateStructureId\":\"10000002796\",\"hasNewStatus\":true,\"stateOrgId\":266,\"redirectUrl\":\"\",\"hasChildren\":false,\"stateStructureName\":\"ПФР\",\"portalCode\":\"PGU\",\"esepOperationId\":\"\",\"orderAttributeEvents\":[],\"notifyPush\":\"\",\"eserviceId\":\"10000000113\",\"currentStatusHistoryId\":6268157772,\"linkToOrderForm\":\"\",\"extOrderUrl\":\"\",\"paymentStatusEvents\":[],\"payback\":false,\"readyToPush\":false,\"admLevelCode\":\"FEDERAL\",\"formPrefilling\":false,\"allFileSign\":false,\"orgUserName\":\"\",\"noPaidPaymentCount\":-1,\"creationMode\":\"direct\",\"steps\":[],\"powerMnemonic\":\"\",\"statuses\":[{\"date\":\"2022-07-25T13:01:46.413+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":2058864134,\"stateOrgStatusCode\":\"\",\"author\":\"\",\"hasResult\":\"N\",\"stateOrgStatusDescr\":\"\",\"title\":\"Черновик заявления\",\"mfcFinalStatus\":false,\"sendMessageAllowed\":false,\"statusId\":0,\"editAllowed\":false,\"sender\":\"\",\"mnemonic\":\"\",\"comment\":\"\",\"id\":6268157768},{\"date\":\"2022-07-25T13:01:47.426+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":2058864134,\"stateOrgStatusCode\":\"\",\"author\":\"\",\"hasResult\":\"N\",\"stateOrgStatusDescr\":\"\",\"title\":\"Зарегистрировано на портале\",\"mfcFinalStatus\":false,\"sendMessageAllowed\":false,\"statusId\":17,\"editAllowed\":false,\"sender\":\"Пенсионный фонд Российской Федерации\",\"mnemonic\":\"\",\"comment\":\"\",\"id\":6268157769},{\"date\":\"2022-07-25T13:01:48.520+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":2058864134,\"stateOrgStatusCode\":\"\",\"author\":\"\",\"hasResult\":\"N\",\"stateOrgStatusDescr\":\"\",\"title\":\"Заявление отправлено в ведомство\",\"mfcFinalStatus\":false,\"sendMessageAllowed\":false,\"statusId\":21,\"editAllowed\":false,\"sender\":\"Пенсионный фонд Российской Федерации\",\"mnemonic\":\"\",\"comment\":\"\",\"id\":6268157770},{\"date\":\"2022-07-25T13:01:51.810+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":false,\"orderId\":2058864134,\"stateOrgStatusCode\":\"\",\"author\":\"\",\"hasResult\":\"N\",\"stateOrgStatusDescr\":\"\",\"title\":\"Заявление получено ведомством\",\"mfcFinalStatus\":false,\"sendMessageAllowed\":false,\"statusId\":2,\"editAllowed\":false,\"sender\":\"Пенсионный фонд Российской Федерации\",\"mnemonic\":\"\",\"comment\":\"Сообщение доставлено\",\"id\":6268157771},{\"date\":\"2022-07-25T13:01:52.121+0300\",\"cancelAllowed\":false,\"unreadEvent\":true,\"deliveryCancelAllowed\":false,\"finalStatus\":true,\"orderId\":2058864134,\"stateOrgStatusCode\":\"\",\"author\":\"\",\"hasResult\":\"N\",\"stateOrgStatusDescr\":\"\",\"title\":\"Ошибка обработки заявления\",\"mfcFinalStatus\":false,\"sendMessageAllowed\":false,\"statusId\":24,\"editAllowed\":false,\"sender\":\"Пенсионный фонд Российской Федерации\",\"mnemonic\":\"\",\"comment\":\"\",\"id\":6268157772}],\"orderDate\":\"2022-07-25T13:01:46.000+0300\",\"updated\":\"2022-07-25T13:01:52.129+0300\",\"checkQueue\":false,\"withDelivery\":false,\"gisdo\":false,\"userSelectedRegion\":\"00000000000\",\"description\":\"\",\"eQueueEvents\":[],\"hasActiveInviteToEqueue\":false,\"multRegion\":false,\"extSystem\":false,\"useAsTemplate\":false,\"qrlink\":{\"hasAltMimeType\":false,\"fileName\":\"\",\"edsStatus\":\"\",\"fileSize\":0,\"canSentToMFC\":false,\"link\":\"\",\"id\":\"\",\"mimeType\":\"\",\"hasDigitalSignature\":false,\"additionalName\":\"\"},\"hasPreviewPdf\":false,\"testUser\":false,\"textMessages\":[],\"unreadMessageCnt\":0,\"parentOrderStateStructureName\":\"\",\"cr_uin\":\"\",\"infSysCode\":\"\",\"serviceName\":\"Выдача справки о размере пенсии и иных социальных выплат на дату\",\"deprecatedService\":false,\"hubForm\":false,\"extOrderId\":\"\",\"orderAttachmentFiles\":[{\"fileName\":\"req.xml\",\"fileSize\":653,\"link\":\"terrabyte://00/2058864134/req.xml/2\",\"id\":\"2058864134/files/cmVxLnhtbA\",\"mimeType\":\"application/xml\",\"hasDigitalSignature\":false,\"type\":\"REQUEST\"}],\"online\":false,\"location\":\"36\"}"}`
+
+func (suite *suiteTestClient) TestOrderInfoSpecificationV115() {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, orderInfoSpecificationV115Response)
+	}))
+	defer server.Close()
+	result, err := NewClient(server.URL).OrderInfo(context.Background(), testToken, 2058864134)
+	suite.Require().NoError(err)
+	suite.Equal("OK", result.Code)
+	suite.Equal("71e35026-ade1-11e9-9931-00155d040494", result.MessageId)
+	suite.Require().NotNil(result.Order)
+	suite.Equal(2058864134, result.Order.Id)
+	suite.Equal(24, result.Order.OrderStatusId)
+	suite.Len(result.Order.Statuses, 5)
+	suite.Equal("Ошибка обработки заявления", result.Order.CurrentStatusHistory.Title)
+	suite.Len(result.Order.OrderAttachmentFiles, 1)
+	suite.Equal("req.xml", result.Order.OrderAttachmentFiles[0].FileName)
+	suite.False(result.Order.OrderDate.IsZero())
+	suite.False(result.Order.CurrentStatusHistory.Date.IsZero())
+}
+
+func (suite *suiteTestClient) TestOrderInfoAdditionalFields() {
+	// В документе эти поля пусты. Непустые значения проверяют их разбор и JSON-теги.
+	order := `{
+  "inviteToEqueueUrl":"invite", "statusColorCode":"color", "complexMode":"complex",
+  "redirectUrl":"redirect", "esepOperationId":"operation", "linkToOrderForm":"form",
+  "extOrderUrl":"external", "description":"description", "parentOrderStateStructureName":"parent",
+  "cr_uin":"uin", "infSysCode":"system", "extOrderId":"external-id", "formPrefilling":true,
+  "statuses":[{"author":"status-author", "mfcFinalStatus":true}],
+  "currentStatusHistory":{"author":"history-author", "mfcFinalStatus":true, "mnemonic":"sender"},
+  "qrlink":{"fileName":"qr.pdf", "edsStatus":"signed", "link":"storage-link",
+   "id":"file-id", "mimeType":"application/pdf", "additionalName":"additional"}
+ }`
+	body, err := json.Marshal(map[string]any{"code": "OK", "order": order})
+	suite.Require().NoError(err)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(body)
+	}))
+	defer server.Close()
+	result, err := NewClient(server.URL).OrderInfo(context.Background(), testToken, 123456)
+	suite.Require().NoError(err)
+	suite.Require().NotNil(result.Order)
+	details := result.Order
+	suite.Equal("invite", details.InviteToEqueueUrl)
+	suite.Equal("color", details.StatusColorCode)
+	suite.Equal("complex", details.ComplexMode)
+	suite.Equal("redirect", details.RedirectUrl)
+	suite.Equal("operation", details.EsepOperationId)
+	suite.Equal("form", details.LinkToOrderForm)
+	suite.Equal("external", details.ExtOrderUrl)
+	suite.Equal("description", details.Description)
+	suite.Equal("parent", details.ParentOrderStateStructureName)
+	suite.Equal("uin", details.CrUin)
+	suite.Equal("system", details.InfSysCode)
+	suite.Equal("external-id", details.ExtOrderId)
+	suite.True(details.FormPrefilling)
+	suite.Require().Len(details.Statuses, 1)
+	suite.Equal("status-author", details.Statuses[0].Author)
+	suite.True(details.Statuses[0].MFCFinalStatus)
+	suite.Equal("history-author", details.CurrentStatusHistory.Author)
+	suite.True(details.CurrentStatusHistory.MFCFinalStatus)
+	suite.Equal("sender", details.CurrentStatusHistory.Mnemonic)
+	suite.Equal("qr.pdf", details.Qrlink.FileName)
+	suite.Equal("signed", details.Qrlink.EdsStatus)
+	suite.Equal("storage-link", details.Qrlink.Link)
+	suite.Equal("file-id", details.Qrlink.Id)
+	suite.Equal("application/pdf", details.Qrlink.MimeType)
+	suite.Equal("additional", details.Qrlink.AdditionalName)
+}
+
+func (suite *suiteTestClient) TestOrderInfoMessageIdVariants() {
+	for _, tc := range []struct{ name, fields, want string }{
+		{"table spelling", `"messageId":"canonical"`, "canonical"},
+		{"example spelling", `"message_id":"example"`, "example"},
+		{"both", `"messageId":"canonical", "message_id":"example"`, "canonical"},
+		{"both reversed", `"message_id":"example", "messageId":"canonical"`, "canonical"},
+		{"empty canonical", `"messageId":"", "message_id":"example"`, "example"},
+		{"null canonical", `"messageId":null, "message_id":"example"`, "example"},
+		{"both empty", `"messageId":"", "message_id":""`, ""},
+		{"absent", `"message":null`, ""},
+	} {
+		suite.Run(tc.name, func() {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				fmt.Fprintf(w, `{"code":"OK",%s,"order":null}`, tc.fields)
+			}))
+			defer server.Close()
+			result, err := NewClient(server.URL).OrderInfo(context.Background(), testToken, 123456)
+			suite.Require().NoError(err)
+			suite.Equal(tc.want, result.MessageId)
+			suite.Nil(result.Order)
+		})
+	}
+}

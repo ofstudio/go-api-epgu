@@ -4,19 +4,47 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/ofstudio/go-api-epgu)](https://goreportcard.com/report/github.com/ofstudio/go-api-epgu)
 
 REST-клиент для работы с [API Госуслуг (ЕПГУ)](https://partners.gosuslugi.ru/catalog/api_for_gu).
-Разработан в соответствии с документом [«Спецификация API ЕПГУ, версия 1.14»](/doc/Specifikaciya_API_EPGU_v1_14.docx)
+Разработан в соответствии с документом [«Спецификация API ЕПГУ, версия 1.15»](/doc/Specifikaciya_API_EPGU_v1_15.docx)
 
 ## Методы
 
  - [Client.OrderCreate](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCreate) — резервирование номера заявления
  - [Client.OrderPushChunked](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunked) — загрузка и отправка заявления после резервирования номера
+ - [Client.OrderPushChunkedV2](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushChunkedV2) — загрузка и отправка заявления после резервирования номера с учетом дисклеймера
  - [Client.OrderPush](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPush) — загрузка и отправка заявления одним запросом
+ - [Client.OrderPushV2](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderPushV2) — загрузка и отправка заявления одним запросом с учетом дисклеймера
  - [Client.OrderInfo](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderInfo) — запрос детальной информации по отправленному заявлению
  - [Client.GetOrdersStatus](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.GetOrdersStatus) — получение статусов заявлений по списку заявлений
  - [Client.GetUpdatedAfter](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.GetUpdatedAfter) — получение статусов заявлений с даты обновления статуса
  - [Client.OrderCancel](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.OrderCancel) — отмена заявления
  - [Client.AttachmentDownload](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.AttachmentDownload) — скачивание файла
  - [Client.Dict](https://pkg.go.dev/github.com/ofstudio/go-api-epgu#Client.Dict) — получение справочных данных
+
+Методы V2 возвращают `*OrderResult`: номер заявления `OrderId` и сообщение о дисклеймере `Message`.
+Предупреждение, например «Ведомственные работы. Сервис ведомства работает с перебоями»,
+может сопровождать успешную отправку: в этом случае `err == nil`.
+При отправке нескольких чанков в `Message` сохраняется последнее полученное непустое сообщение.
+Отсутствующее или пустое сообщение следующего чанка не затирает предыдущее.
+
+Если подача заявлений заблокирована, API возвращает код `service_unavailable`, например
+с сообщением «Ведомственная авария. Попробуйте подать заявление позже».
+Проверить эту ошибку можно через `errors.Is(err, apipgu.ErrCodeServiceUnavailable)`.
+
+```go
+result, err := client.OrderPushChunkedV2(ctx, accessToken, orderId, archive)
+if err != nil {
+    if errors.Is(err, apipgu.ErrCodeServiceUnavailable) {
+        log.Printf("Подача заявлений временно недоступна: %v", err)
+    } else {
+        log.Printf("Ошибка отправки заявления: %v", err)
+    }
+    return
+}
+log.Printf("Заявление отправлено: %d", result.OrderId)
+if result.Message != "" {
+    log.Printf("Предупреждение: %s", result.Message)
+}
+```
 
 ## Запрос согласия и получение маркера доступа ЕСИА
 
@@ -93,7 +121,7 @@ go get -u github.com/ofstudio/go-api-epgu
 #### Подключение через TLS
 
 Прямое подключение к API ЕПГУ через TLS-соединение.
-Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "1.2. Реализация подключения по ГОСТ TLS"
+Подробнее см "Спецификация API ЕПГУ версия 1.15", раздел "1.2. Реализация подключения по ГОСТ TLS"
 
 - Тестовая среда (SVCDEV): https://svcdev-beta.test.gosuslugi.ru
 - Продуктовая среда: https://lk.gosuslugi.ru
@@ -101,7 +129,7 @@ go get -u github.com/ofstudio/go-api-epgu
 #### Подключение через СМЭВ4 (Агент ПОДД)
 
 Подключение через регламентированный запрос типа REST-сервис в среде СМЭВ4.
-Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "1.3. Подключение через СМЭВ 4".
+Подробнее см "Спецификация API ЕПГУ версия 1.15", раздел "1.3. Подключение через СМЭВ 4".
 
 - Тестовая среда (SVCDEV): https://nsud.gosuslugi.ru/pud/paip-portal/#/podd/open-api/specifications/card/e28f1ae0-0fdc-431a-9adb-17173564d1db
 - Продуктовая среда: https://nsud.gosuslugi.ru/pud/paip-portal/#/podd/open-api/specifications/card/936fbb29-07bb-4206-8374-395eb2bd36b0

@@ -2,8 +2,12 @@ package apipgu
 
 // OrderInfo - детальная информация по отправленному заявлению метода [Client.OrderInfo].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.4. Получение деталей по заявлению".
+// Идентификатор исходящего запроса СМЭВ позволяет просмотреть сведения
+// в ЛК УВ: https://lkuv.gosuslugi.ru/paip-portal/#/exchange-session.
+// В таблице 27 используется messageId, в примере раздела 4.5 — message_id;
+// [Client.OrderInfo] принимает оба варианта.
 //
 // Пример для заявления "Доставка пенсии и социальных выплат СФР" (10000000109):
 //
@@ -16,16 +20,17 @@ package apipgu
 type OrderInfo struct {
 	Code      string        // Код состояния заявления в соответствии с Приложением 1 Спецификации
 	Message   string        // Текстовое сообщение, описывающее текущее состояние запроса на создание заявления
-	MessageId string        // [Не документировано, GUID]
+	MessageId string        // Идентификатор исходящего запроса СМЭВ; используется для поиска в ЛК УВ
 	Order     *OrderDetails // Детали заявления, если оно уже создано на портале и отправлено в ведомство
 }
 
 // OrderDetails - детальная информация по заявлению из структуры [OrderInfo] метода [Client.OrderInfo].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "2.4. Получение деталей по заявлению".
+// Подробнее см "Спецификация API ЕПГУ версия 1.15", раздел "2.4. Получение деталей по заявлению".
 //
-// Примечание: поля, отмеченные как не документированные, не описаны
-// в спецификации, однако могут приходить в ответе.
+// Примечание: поля с отметкой [Не документировано] отсутствуют в таблицах
+// и примере спецификации, однако могут приходить в ответе.
+// Для полей, приведенных только в примере раздела 4.5, это указано отдельно.
 //
 // Пример для заявления "Доставка пенсии и социальных выплат СФР" (10000000109).
 // Обратите внимание, что структура в примере содержит не все поля, упомянутые в спецификации.
@@ -45,6 +50,8 @@ type OrderInfo struct {
 //	     "date": "2023-11-02T07:27:22.586+0300",   // Дата и время смены статуса
 //	     "orderId": 1230254874,                    // Номер заявления
 //	     "finalStatus": false,                     // Флаг финального статуса
+//	     "author": "",                            // Только пример §4.5; описание отсутствует
+//	     "mfcFinalStatus": false,                 // Только пример §4.5; описание отсутствует
 //	     "cancelAllowed": false,                   // Флаг возможности отменить заявление
 //	     "hasResult": "N",                         // Флаг передачи файла в ответ на заявление
 //	     "unreadEvent": true,                      // Признак прочтения
@@ -60,6 +67,8 @@ type OrderInfo struct {
 //	     "date": "2023-11-02T07:27:22.936+0300",
 //	     "orderId": 1230254874,
 //	     "finalStatus": false,
+//	     "author": "",                            // Только пример §4.5; описание отсутствует
+//	     "mfcFinalStatus": false,                 // Только пример §4.5; описание отсутствует
 //	     "hasResult": "N",
 //	     "cancelAllowed": false,
 //	     "sender": "Фонд пенсионного и социального страхования Российской Федерации", // Отправитель СМЭВ-сообщения о смене статуса
@@ -76,6 +85,8 @@ type OrderInfo struct {
 //	     "date": "2023-11-02T07:27:23.527+0300",
 //	     "orderId": 1230254874,
 //	     "finalStatus": false,
+//	     "author": "",                            // Только пример §4.5; описание отсутствует
+//	     "mfcFinalStatus": false,                 // Только пример §4.5; описание отсутствует
 //	     "hasResult": "N",
 //	     "cancelAllowed": false,
 //	     "sender": "Фонд пенсионного и социального страхования Российской Федерации",
@@ -83,7 +94,7 @@ type OrderInfo struct {
 //	     "deliveryCancelAllowed": false,
 //	     "sendMessageAllowed": false,
 //	     "editAllowed": false,
-//	     "statusColorCode": "in_progress",
+//	     "statusColorCode": "in_progress"
 //	   },
 //	   {
 //	     "id": 12300710522,
@@ -92,6 +103,8 @@ type OrderInfo struct {
 //	     "date": "2023-11-02T07:27:44.134+0300",
 //	     "orderId": 1230254874,
 //	     "finalStatus": false,
+//	     "author": "",                            // Только пример §4.5; описание отсутствует
+//	     "mfcFinalStatus": false,                 // Только пример §4.5; описание отсутствует
 //	     "hasResult": "N",
 //	     "cancelAllowed": false,
 //	     "sender": "Фонд пенсионного и социального страхования Российской Федерации",
@@ -106,10 +119,12 @@ type OrderInfo struct {
 //	 "currentStatusHistory": { // История статуса
 //	   "id": 12300710522,                        // Идентификатор статуса
 //	   "statusId": 2,                            // Код статуса
-//	   "title": "Заявление получено ведомством", // Код статуса
+//	   "title": "Заявление получено ведомством", // Наименование статуса
 //	   "date": "2023-11-02T07:27:44.134+0300",   // Дата и время смены статуса
 //	   "orderId": 1230254874,                    // Номер заявления
 //	   "finalStatus": false,                     // Флаг финального статуса
+//	   "author": "",                              // Только пример §4.5; описание отсутствует
+//	   "mfcFinalStatus": false,                   // Только пример §4.5; описание отсутствует
 //	   "hasResult": "N",                         // Флаг передачи файла в ответ на заявление
 //	   "cancelAllowed": false,                   // Флаг наличия отмены
 //	   "sender": "Фонд пенсионного и социального страхования Российской Федерации", // Наименование ведомства
@@ -118,7 +133,8 @@ type OrderInfo struct {
 //	   "deliveryCancelAllowed": false,           // Флаг наличия отмены доставки
 //	   "sendMessageAllowed": false,              // Признак разрешения отправки сообщения
 //	   "editAllowed": false,                     // Признак редактирования
-//	   "statusColorCode": "in_progress",         // [Не документировано]
+//	   "mnemonic": "",                            // Мнемоника ИС отправителя; только пример §4.5
+//	   "statusColorCode": "in_progress"         // [Не документировано]
 //	 },
 //	 "updated": "2023-11-02T07:27:44.140+0300", // Дата и время обновления статуса заявления
 //	 "closed": false,          // Флаг наличия финального статуса
@@ -130,8 +146,8 @@ type OrderInfo struct {
 //	     "mimeType": "application/xml",                                                        // MIME-тип
 //	     "link": "terrabyte://00/1230254874/req_8d8567db-d445-4759-a122-6b4cefeca22c.xml/2",   // Ссылка на файл в хранилище
 //	     "hasDigitalSignature": false,                                                         // Наличие подписи
-//	     "fileSize": 5519,                                                                     // Наличие подписи
-//	     "type": "REQUEST"                                                                     // Наличие подписи
+//	     "fileSize": 5519,                                                                     // Размер файла
+//	     "type": "REQUEST"                                                                     // Тип файла
 //	   },
 //	   {
 //	     "id": "1230254874/files/dHJhbnNYTRQ4NzA5ZGItZGQ0NS95MTI5LWFlMzItNmI0Y2VmZWNhOTBjLnhtbA",
@@ -167,7 +183,7 @@ type OrderInfo struct {
 //	 "personType": "PERSON",              // Тип пользователя
 //	 "userSelectedRegion": "00000000000", // Код ОКАТО местоположения пользователя
 //	 "testUser": false,                   // Флаг тестового пользователя
-//	 "location": "92000000000",           // Код уровня услуги [ОКАТО пользователя?]
+//	 "location": "92000000000",           // Код уровня услуги
 //
 //	 "orderType": "ORDER",               // Тип заявления
 //	 "eserviceId": "10000000109",        // Идентификатор формы заявления
@@ -223,14 +239,33 @@ type OrderInfo struct {
 //	 "textMessages": [],       // Информация о сообщениях [структура объекта текстового сообщения не документирована]
 //	 "unreadMessageCnt": 0,    // unreadMessageCnt
 //
-//	 "qrlink": { // [Не документировано]
+//	 "qrlink": { // Объект qrlink (таблица 28)
 //	   "hasAltMimeType": false,        // Связанно с alternativeMimeTypes из сервиса terrabyte
 //	   "fileSize": 0,                  // Размер файла
 //	   "hasDigitalSignature": false,   // Флаг наличия ЭП
 //	   "canSentToMFC": false,          // Флаг отправки в МФЦ
+//	   "fileName": "",                            // Только пример §4.5; описание отсутствует
+//	   "edsStatus": "",                           // Только пример §4.5; описание отсутствует
+//	   "link": "",                                // Только пример §4.5; описание отсутствует
+//	   "id": "",                                  // Только пример §4.5; описание отсутствует
+//	   "mimeType": "",                            // Только пример §4.5; описание отсутствует
+//	   "additionalName": "",                      // Только пример §4.5; описание отсутствует
 //	   "canPrintMFC": false            // [Не документировано]
 //	 },
-//	 "steps": [] // [Не документировано]
+//	 "inviteToEqueueUrl": "",                     // Только пример §4.5; описание отсутствует
+//	 "statusColorCode": "",                       // Только пример §4.5; описание отсутствует
+//	 "complexMode": "",                           // Только пример §4.5; описание отсутствует
+//	 "redirectUrl": "",                           // Только пример §4.5; описание отсутствует
+//	 "esepOperationId": "",                       // Только пример §4.5; описание отсутствует
+//	 "linkToOrderForm": "",                       // Только пример §4.5; описание отсутствует
+//	 "extOrderUrl": "",                           // Только пример §4.5; описание отсутствует
+//	 "description": "",                           // Только пример §4.5; описание отсутствует
+//	 "parentOrderStateStructureName": "",         // Только пример §4.5; описание отсутствует
+//	 "cr_uin": "",                                // Только пример §4.5; описание отсутствует
+//	 "infSysCode": "",                            // Только пример §4.5; описание отсутствует
+//	 "extOrderId": "",                            // Только пример §4.5; описание отсутствует
+//	 "formPrefilling": false,                     // Только пример §4.5; описание отсутствует
+//	 "steps": []                                  // Только пример §4.5; описание отсутствует
 //	}
 type OrderDetails struct {
 
@@ -268,7 +303,7 @@ type OrderDetails struct {
 	PersonType         string `json:"personType"`            // Тип пользователя
 	UserSelectedRegion string `json:"userSelectedRegion"`    // Код ОКАТО местоположения пользователя
 	TestUser           bool   `json:"testUser"`              // Флаг тестового пользователя
-	Location           string `json:"location"`              // Код уровня услуги [ОКАТО пользователя?]
+	Location           string `json:"location"`              // Код уровня услуги
 	OrgUserName        string `json:"orgUserName,omitempty"` // Наименование организации пользователя
 
 	OrderType         string         `json:"orderType"`                // Тип заявления
@@ -335,9 +370,22 @@ type OrderDetails struct {
 	NotifyEmail string `json:"notifyEmail,omitempty"` // Флаг необходимости уведомления о смене статуса через сообщение на эл. почту
 	NotifyPush  string `json:"notifyPush,omitempty"`  // Флаг необходимости уведомления о смене статуса через push-сообщение
 
-	Qrlink OrderQrlink `json:"qrlink"` // [Не документировано]
-	Steps  []any       `json:"steps"`  // [Не документировано]
+	Qrlink OrderQrlink `json:"qrlink"` // Объект qrlink (таблица 28)
+	Steps  []any       `json:"steps"`  // Только пример §4.5; описание отсутствует
 
+	InviteToEqueueUrl             string `json:"inviteToEqueueUrl,omitempty"`             // Только пример §4.5; описание отсутствует
+	StatusColorCode               string `json:"statusColorCode,omitempty"`               // Только пример §4.5; описание отсутствует
+	ComplexMode                   string `json:"complexMode,omitempty"`                   // Только пример §4.5; описание отсутствует
+	RedirectUrl                   string `json:"redirectUrl,omitempty"`                   // Только пример §4.5; описание отсутствует
+	EsepOperationId               string `json:"esepOperationId,omitempty"`               // Только пример §4.5; описание отсутствует
+	LinkToOrderForm               string `json:"linkToOrderForm,omitempty"`               // Только пример §4.5; описание отсутствует
+	ExtOrderUrl                   string `json:"extOrderUrl,omitempty"`                   // Только пример §4.5; описание отсутствует
+	Description                   string `json:"description,omitempty"`                   // Только пример §4.5; описание отсутствует
+	ParentOrderStateStructureName string `json:"parentOrderStateStructureName,omitempty"` // Только пример §4.5; описание отсутствует
+	CrUin                         string `json:"cr_uin,omitempty"`                        // Только пример §4.5; описание отсутствует
+	InfSysCode                    string `json:"infSysCode,omitempty"`                    // Только пример §4.5; описание отсутствует
+	ExtOrderId                    string `json:"extOrderId,omitempty"`                    // Только пример §4.5; описание отсутствует
+	FormPrefilling                bool   `json:"formPrefilling,omitempty"`                // Только пример §4.5; описание отсутствует
 }
 
 // OrderStatus - статусы заявления структуры [OrderDetails] метода [Client.OrderInfo].
@@ -367,11 +415,13 @@ type OrderStatus struct {
 	Mnemonic              string `json:"mnemonic,omitempty"`    // Мнемоника ИС отправителя
 	StatusColorCode       string `json:"statusColorCode"`       // [Не документировано]
 
+	Author         string `json:"author,omitempty"`         // Только пример §4.5; описание отсутствует
+	MFCFinalStatus bool   `json:"mfcFinalStatus,omitempty"` // Только пример §4.5; описание отсутствует
 }
 
 // OrderStatusHistory - история статуса заявления структуры [OrderDetails] метода [Client.OrderInfo].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "2.4. Получение деталей по заявлению".
+// Подробнее см "Спецификация API ЕПГУ версия 1.15", раздел "2.4. Получение деталей по заявлению".
 type OrderStatusHistory struct {
 
 	// Основные аттрибуты
@@ -397,11 +447,14 @@ type OrderStatusHistory struct {
 	SendMessageAllowed    bool `json:"sendMessageAllowed"`    // Признак разрешения отправки сообщения
 	EditAllowed           bool `json:"editAllowed"`           // Признак редактирования
 
+	Author         string `json:"author,omitempty"`         // Только пример §4.5; описание отсутствует
+	MFCFinalStatus bool   `json:"mfcFinalStatus,omitempty"` // Только пример §4.5; описание отсутствует
+	Mnemonic       string `json:"mnemonic,omitempty"`       // Мнемоника ИС отправителя; только пример §4.5 для currentStatusHistory
 }
 
 // OrderAttachmentFile - файл заявления, отправленный пользователем из структуры [OrderDetails] метода [Client.OrderInfo].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "2.4. Получение деталей по заявлению".
+// Подробнее см "Спецификация API ЕПГУ версия 1.15", раздел "2.4. Получение деталей по заявлению".
 type OrderAttachmentFile struct {
 	// Основные аттрибуты
 
@@ -419,7 +472,7 @@ type OrderAttachmentFile struct {
 
 // OrderResponseFile - информация о файле в ответе заявления из структуры [OrderDetails].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "2.4. Получение деталей по заявлению".
+// Подробнее см "Спецификация API ЕПГУ версия 1.15", раздел "2.4. Получение деталей по заявлению".
 type OrderResponseFile struct {
 	// Основные аттрибуты
 
@@ -438,28 +491,35 @@ type OrderResponseFile struct {
 
 // OrderAttributeEvent - атрибуты событий для заявления из структуры [OrderDetails] метода [Client.OrderInfo].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "2.4. Получение деталей по заявлению".
+// Подробнее см "Спецификация API ЕПГУ версия 1.15", раздел "2.4. Получение деталей по заявлению".
 type OrderAttributeEvent struct {
 	Name     string `json:"name"`     // Наименование атрибута
 	NewValue string `json:"newValue"` // Новое значение
 	OldValue string `json:"oldValue"` // Старое значение
 }
 
-// OrderQrlink - не документированное поле структуры [OrderDetails] метода [Client.OrderInfo].
+// OrderQrlink - объект qrlink структуры [OrderDetails] метода [Client.OrderInfo].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14", раздел "2.4. Получение деталей по заявлению".
+// Подробнее см "Спецификация API ЕПГУ версия 1.15", раздел "2.4. Получение деталей по заявлению".
 type OrderQrlink struct {
 	HasAltMimeType      bool `json:"hasAltMimeType"`      // Связано с alternativeMimeTypes из сервиса terrabyte
 	FileSize            int  `json:"fileSize"`            // Размер файла
 	HasDigitalSignature bool `json:"hasDigitalSignature"` // Флаг наличия ЭП
 	CanSentToMFC        bool `json:"canSentToMFC"`        // Флаг отправки в МФЦ
 	CanPrintMFC         bool `json:"canPrintMFC"`         // [Не документировано]
+
+	FileName       string `json:"fileName,omitempty"`       // Только пример §4.5; описание отсутствует
+	EdsStatus      string `json:"edsStatus,omitempty"`      // Только пример §4.5; описание отсутствует
+	Link           string `json:"link,omitempty"`           // Только пример §4.5; описание отсутствует
+	Id             string `json:"id,omitempty"`             // Только пример §4.5; описание отсутствует
+	MimeType       string `json:"mimeType,omitempty"`       // Только пример §4.5; описание отсутствует
+	AdditionalName string `json:"additionalName,omitempty"` // Только пример §4.5; описание отсутствует
 }
 
 // OrdersStatus - статусы заявлений из ответа методов [Client.GetOrdersStatus]
 // и [Client.GetUpdatedAfter].
 //
-// Подробнее см "Спецификация API ЕПГУ версия 1.14",
+// Подробнее см "Спецификация API ЕПГУ версия 1.15",
 // раздел "2.3. Получение статусов заявлений".
 type OrdersStatus struct {
 	Count      int            `json:"count"`      // Количество записей, содержащихся в массиве Content
